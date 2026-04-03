@@ -89,6 +89,10 @@ export class RpcGateway {
         await this.sessionRpc(sessionId, 'switch', { to })
     }
 
+    async takeOverSession(sessionId: string): Promise<void> {
+        await this.sessionRpc(sessionId, 'take-over', {})
+    }
+
     async requestSessionConfig(
         sessionId: string,
         config: {

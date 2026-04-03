@@ -278,6 +278,10 @@ export class SyncEngine {
         await this.rpcGateway.switchSession(sessionId, to)
     }
 
+    async takeOverSession(sessionId: string): Promise<void> {
+        await this.rpcGateway.takeOverSession(sessionId)
+    }
+
     async renameSession(sessionId: string, name: string): Promise<void> {
         await this.sessionCache.renameSession(sessionId, name)
     }

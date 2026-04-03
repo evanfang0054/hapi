@@ -51,12 +51,17 @@ function createSession(overrides?: Partial<Session>): Session {
 
 function createApp(session: Session) {
     const applySessionConfigCalls: Array<[string, Record<string, unknown>]> = []
+    const takeOverCalls: string[] = []
     const applySessionConfig = async (sessionId: string, config: Record<string, unknown>) => {
         applySessionConfigCalls.push([sessionId, config])
     }
+    const takeOverSession = async (sessionId: string) => {
+        takeOverCalls.push(sessionId)
+    }
     const engine = {
         resolveSessionAccess: () => ({ ok: true, sessionId: session.id, session }),
-        applySessionConfig
+        applySessionConfig,
+        takeOverSession
     } as Partial<SyncEngine>
 
     const app = new Hono<WebAppEnv>()
@@ -66,7 +71,7 @@ function createApp(session: Session) {
     })
     app.route('/api', createSessionsRoutes(() => engine as SyncEngine))
 
-    return { app, applySessionConfigCalls }
+    return { app, applySessionConfigCalls, takeOverCalls }
 }
 
 describe('sessions routes', () => {
@@ -169,5 +174,33 @@ describe('sessions routes', () => {
         expect(applySessionConfigCalls).toEqual([
             ['session-1', { effort: 'max' }]
         ])
+    })
+
+    it('triggers take-over route for active session', async () => {
+        const { app, takeOverCalls } = createApp(createSession())
+
+        const response = await app.request('/api/sessions/session-1/take-over', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({})
+        })
+
+        expect(response.status).toBe(200)
+        expect(await response.json()).toEqual({ ok: true })
+        expect(takeOverCalls).toEqual(['session-1'])
+    })
+
+    it('rejects take-over route for inactive session', async () => {
+        const { app, takeOverCalls } = createApp(createSession({ active: false }))
+
+        const response = await app.request('/api/sessions/session-1/take-over', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({})
+        })
+
+        expect(response.status).toBe(409)
+        expect(await response.json()).toEqual({ error: 'Session is inactive' })
+        expect(takeOverCalls).toEqual([])
     })
 })
