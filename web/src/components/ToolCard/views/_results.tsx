@@ -209,6 +209,58 @@ function isProbablyMarkdownList(text: string): boolean {
     return trimmed.startsWith('- ') || trimmed.startsWith('* ') || trimmed.startsWith('1. ')
 }
 
+function extractSkillNameFromInput(input: unknown): string | null {
+    if (typeof input === 'string' && input.trim().length > 0) {
+        return input.trim()
+    }
+
+    if (!isObject(input)) return null
+
+    if (typeof input.name === 'string' && input.name.trim().length > 0) {
+        return input.name.trim()
+    }
+
+    if (typeof input.skill === 'string' && input.skill.trim().length > 0) {
+        return input.skill.trim()
+    }
+
+    return null
+}
+
+function extractSkillNameFromResult(result: unknown): string | null {
+    if (isObject(result)) {
+        if (typeof result.name === 'string' && result.name.trim().length > 0) {
+            return result.name.trim()
+        }
+        if (typeof result.skill === 'string' && result.skill.trim().length > 0) {
+            return result.skill.trim()
+        }
+    }
+
+    const text = extractTextFromResult(result)
+    if (!text) return null
+    const match = text.match(/(?:^|\n)Name:\s*([^\n]+)/i)
+    if (!match || typeof match[1] !== 'string') return null
+    const name = match[1].trim()
+    return name.length > 0 ? name : null
+}
+
+function getLongTextPreview(text: string, maxLines: number, maxChars: number): { preview: string; hiddenLineCount: number } {
+    const normalized = text.trimEnd()
+    const lines = normalized.split('\n')
+
+    const previewLines = lines.slice(0, maxLines)
+    let preview = previewLines.join('\n')
+    if (preview.length > maxChars) {
+        preview = `${preview.slice(0, maxChars).trimEnd()}…`
+    }
+
+    return {
+        preview,
+        hiddenLineCount: Math.max(0, lines.length - previewLines.length)
+    }
+}
+
 const AskUserQuestionResultView: ToolViewComponent = (props: ToolViewProps) => {
     const answers = props.block.tool.permission?.answers ?? null
 
@@ -506,6 +558,54 @@ const TodoWriteResultView: ToolViewComponent = (props: ToolViewProps) => {
     return <ChecklistList items={todos} />
 }
 
+const SkillResultView: ToolViewComponent = (props: ToolViewProps) => {
+    const result = props.block.tool.result
+
+    if (result === undefined || result === null) {
+        return <div className="text-sm text-[var(--app-hint)]">{placeholderForState(props.block.tool.state)}</div>
+    }
+
+    const text = extractTextFromResult(result)
+    const skillName = extractSkillNameFromInput(props.block.tool.input) ?? extractSkillNameFromResult(result)
+
+    if (!text) {
+        return (
+            <>
+                <div className="text-sm text-[var(--app-hint)]">(no output)</div>
+                <RawJsonDevOnly value={result} />
+            </>
+        )
+    }
+
+    const normalizedText = text.trimEnd()
+    const isLongOutput = normalizedText.length > 1200 || normalizedText.split('\n').length > 24
+    const preview = getLongTextPreview(normalizedText, 8, 480)
+
+    return (
+        <>
+            <div className="mb-2 text-xs text-[var(--app-hint)]">
+                {skillName ? `Loaded skill: ${skillName}` : 'Skill loaded'}
+            </div>
+            {isLongOutput ? (
+                <div className="flex flex-col gap-2">
+                    <CodeBlock code={preview.preview} language="text" />
+                    <details>
+                        <summary className="cursor-pointer text-xs font-medium text-[var(--app-hint)]">
+                            Show full skill output{preview.hiddenLineCount > 0 ? ` (+${preview.hiddenLineCount} lines)` : ''}
+                        </summary>
+                        <div className="mt-2">
+                            <CodeBlock code={normalizedText} language="text" />
+                        </div>
+                    </details>
+                </div>
+            ) : (
+                <CodeBlock code={normalizedText} language="text" />
+            )}
+            <RawJsonDevOnly value={result} />
+        </>
+    )
+}
+
 const GenericResultView: ToolViewComponent = (props: ToolViewProps) => {
     const result = props.block.tool.result
 
@@ -568,6 +668,9 @@ export const toolResultViewRegistry: Record<string, ToolViewComponent> = {
     CodexDiff: CodexDiffResultView,
     AskUserQuestion: AskUserQuestionResultView,
     ExitPlanMode: MarkdownResultView,
+    Skill: SkillResultView,
+    skill: SkillResultView,
+    activate_skill: SkillResultView,
     ask_user_question: AskUserQuestionResultView,
     exit_plan_mode: MarkdownResultView
 }

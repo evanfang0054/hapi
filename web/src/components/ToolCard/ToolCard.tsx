@@ -15,13 +15,32 @@ import { isAskUserQuestionToolName } from '@/components/ToolCard/askUserQuestion
 import { isRequestUserInputToolName } from '@/components/ToolCard/requestUserInput'
 import { getToolPresentation } from '@/components/ToolCard/knownTools'
 import { getToolFullViewComponent, getToolViewComponent } from '@/components/ToolCard/views/_all'
-import { getToolResultViewComponent } from '@/components/ToolCard/views/_results'
+import { extractTextFromResult, getToolResultViewComponent } from '@/components/ToolCard/views/_results'
 import { usePointerFocusRing } from '@/hooks/usePointerFocusRing'
 import { getInputString, getInputStringAny, truncate } from '@/lib/toolInputUtils'
 import { cn } from '@/lib/utils'
 import { useTranslation } from '@/lib/use-translation'
 
 const ELAPSED_INTERVAL_MS = 1000
+
+function isSkillToolName(name: string): boolean {
+    return name === 'Skill' || name === 'skill' || name === 'activate_skill'
+}
+
+function getTextPreview(text: string, maxLines: number, maxChars: number): { preview: string; hiddenLineCount: number } {
+    const normalized = text.trimEnd()
+    const lines = normalized.split('\n')
+    const previewLines = lines.slice(0, maxLines)
+    let preview = previewLines.join('\n')
+    if (preview.length > maxChars) {
+        preview = `${preview.slice(0, maxChars).trimEnd()}...`
+    }
+
+    return {
+        preview,
+        hiddenLineCount: Math.max(0, lines.length - previewLines.length)
+    }
+}
 
 function ElapsedView(props: { from: number; active: boolean }) {
     const [now, setNow] = useState(() => Date.now())
@@ -306,7 +325,8 @@ function ToolCardInner(props: ToolCardProps) {
     const subtitle = presentation.subtitle ?? props.block.tool.description
     const taskSummary = renderTaskSummary(props.block, props.metadata)
     const runningFrom = props.block.tool.startedAt ?? props.block.tool.createdAt
-    const showInline = !presentation.minimal && toolName !== 'Task'
+    const isSkillTool = isSkillToolName(toolName)
+    const showInline = !presentation.minimal && toolName !== 'Task' && !isSkillTool
     const CompactToolView = showInline ? getToolViewComponent(toolName) : null
     const FullToolView = getToolFullViewComponent(toolName)
     const ResultToolView = getToolResultViewComponent(toolName)
@@ -380,6 +400,16 @@ function ToolCardInner(props: ToolCardProps) {
                                 && permission?.answers
                                 && Object.keys(permission.answers).length > 0
 
+                            const fullSkillResultText = isSkillTool
+                                ? extractTextFromResult(props.block.tool.result)
+                                : null
+                            const skillPreview = fullSkillResultText
+                                ? getTextPreview(fullSkillResultText, 12, 1200)
+                                : null
+                            const skillIsLong = fullSkillResultText
+                                ? fullSkillResultText.length > 1400 || fullSkillResultText.split('\n').length > 28
+                                : false
+
                             return (
                                 <div className="mt-3 flex max-h-[75vh] flex-col gap-4 overflow-auto">
                                     <div>
@@ -395,7 +425,25 @@ function ToolCardInner(props: ToolCardProps) {
                                     {!isQuestionToolWithAnswers && (
                                         <div>
                                             <div className="mb-1 text-xs font-medium text-[var(--app-hint)]">{t('tool.result')}</div>
-                                            <ResultToolView block={props.block} metadata={props.metadata} />
+                                            {isSkillTool && fullSkillResultText ? (
+                                                skillIsLong && skillPreview ? (
+                                                    <div className="flex flex-col gap-2">
+                                                        <CodeBlock code={skillPreview.preview} language="text" />
+                                                        <details>
+                                                            <summary className="cursor-pointer text-xs font-medium text-[var(--app-hint)]">
+                                                                Show full output{skillPreview.hiddenLineCount > 0 ? ` (+${skillPreview.hiddenLineCount} lines)` : ''}
+                                                            </summary>
+                                                            <div className="mt-2">
+                                                                <CodeBlock code={fullSkillResultText} language="text" />
+                                                            </div>
+                                                        </details>
+                                                    </div>
+                                                ) : (
+                                                    <CodeBlock code={fullSkillResultText} language="text" />
+                                                )
+                                            ) : (
+                                                <ResultToolView block={props.block} metadata={props.metadata} />
+                                            )}
                                         </div>
                                     )}
                                 </div>

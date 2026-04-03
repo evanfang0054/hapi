@@ -4,6 +4,57 @@ import { createCliOutputBlock, isCliOutputText, mergeCliOutputBlocks } from '@/c
 import { parseMessageAsEvent } from '@/chat/reducerEvents'
 import { ensureToolBlock, extractTitleFromChangeTitleInput, isChangeTitleToolName, type PermissionEntry } from '@/chat/reducerTools'
 
+function isSkillToolName(name: string): boolean {
+    return name === 'Skill' || name === 'skill' || name === 'activate_skill'
+}
+
+function isSkillBoilerplateText(text: string): boolean {
+    const trimmed = text.trimStart()
+    if (trimmed.length === 0) return false
+
+    const hasSkillHeader = trimmed.startsWith('Name:') && trimmed.includes('Base directory for this skill:')
+    const hasSkillPolicyMarkers = trimmed.includes('<EXTREMELY-IMPORTANT>') && trimmed.includes('How to Access Skills')
+    const hasSkillBaseDirectoryDoc = trimmed.includes('Base directory for this skill:')
+        && trimmed.length > 200
+
+    return hasSkillHeader || hasSkillPolicyMarkers || hasSkillBaseDirectoryDoc
+}
+
+function isCompactionSummaryText(text: string): boolean {
+    const trimmed = text.trimStart()
+    if (trimmed.length < 120) return false
+
+    // Heuristic scoring instead of exact phrase matching:
+    // classify as compaction dump only when multiple structural signals appear together.
+    let signals = 0
+
+    if (/(?:^|\n)<\/summary>/.test(trimmed) || /(?:^|\n)<summary>/i.test(trimmed)) {
+        signals += 1
+    }
+
+    if (/\bcompaction\b/i.test(trimmed) || /\bcompact(?:ed|ion)?\b/i.test(trimmed)) {
+        signals += 1
+    }
+
+    if (/\bfull transcript\b/i.test(trimmed) || /\btranscript at\b/i.test(trimmed)) {
+        signals += 1
+    }
+
+    if (/\.claude\/projects\//i.test(trimmed)) {
+        signals += 1
+    }
+
+    if (/If you need specific details/i.test(trimmed) && /before compaction/i.test(trimmed)) {
+        signals += 1
+    }
+
+    if (trimmed.length > 1200) {
+        signals += 1
+    }
+
+    return signals >= 2
+}
+
 export function reduceTimeline(
     messages: TracedMessage[],
     context: {
@@ -17,6 +68,8 @@ export function reduceTimeline(
     const blocks: ChatBlock[] = []
     const toolBlocksById = new Map<string, ToolCallBlock>()
     let hasReadyEvent = false
+    let lastSkillToolCallAt: number | null = null
+    let lastSkillToolCallId: string | null = null
 
     for (const msg of messages) {
         if (msg.role === 'event') {
@@ -89,11 +142,46 @@ export function reduceTimeline(
                 return null
             })()
 
+            const hasSkillToolCall = msg.content.some(
+                (c) => c.type === 'tool-call' && isSkillToolName(c.name)
+            )
+
             for (let idx = 0; idx < msg.content.length; idx += 1) {
                 const c = msg.content[idx]
                 if (c.type === 'text') {
                     // Skip text blocks that are just the Task tool prompt (already shown in tool card)
                     if (taskPromptText && c.text.trim() === taskPromptText.trim()) continue
+
+                    // Skill calls can emit the full skill document as text; keep the tool card and drop boilerplate.
+                    const shouldSuppressSkillBoilerplate = isSkillBoilerplateText(c.text)
+                        && (
+                            hasSkillToolCall
+                            || (lastSkillToolCallAt !== null && Math.abs(msg.createdAt - lastSkillToolCallAt) < 2 * 60 * 1000)
+                        )
+                    if (shouldSuppressSkillBoilerplate) {
+                        const skillBlock = lastSkillToolCallId ? toolBlocksById.get(lastSkillToolCallId) : null
+                        if (skillBlock && isSkillToolName(skillBlock.tool.name)) {
+                            const existing = typeof skillBlock.tool.result === 'string'
+                                ? skillBlock.tool.result.trimEnd()
+                                : ''
+                            skillBlock.tool.result = existing.length > 0
+                                ? `${existing}\n\n${c.text}`
+                                : c.text
+                        }
+                        continue
+                    }
+
+                    if (isCompactionSummaryText(c.text)) {
+                        blocks.push({
+                            kind: 'agent-reasoning',
+                            id: `${msg.id}:${idx}`,
+                            localId: msg.localId,
+                            createdAt: msg.createdAt,
+                            text: c.text,
+                            meta: msg.meta
+                        })
+                        continue
+                    }
 
                     if (isCliOutputText(c.text, msg.meta)) {
                         blocks.push(createCliOutputBlock({
@@ -141,6 +229,11 @@ export function reduceTimeline(
                 }
 
                 if (c.type === 'tool-call') {
+                    if (isSkillToolName(c.name)) {
+                        lastSkillToolCallAt = msg.createdAt
+                        lastSkillToolCallId = c.id
+                    }
+
                     if (isChangeTitleToolName(c.name)) {
                         const title = context.titleChangesByToolUseId.get(c.id) ?? extractTitleFromChangeTitleInput(c.input)
                         if (title && !context.emittedTitleChangeToolUseIds.has(c.id)) {
@@ -232,6 +325,11 @@ export function reduceTimeline(
                         description: null,
                         permission
                     })
+
+                    if (isSkillToolName(block.tool.name)) {
+                        lastSkillToolCallAt = msg.createdAt
+                        lastSkillToolCallId = c.tool_use_id
+                    }
 
                     block.tool.result = c.content
                     block.tool.completedAt = msg.createdAt

@@ -90,6 +90,17 @@ describe('getToolResultViewComponent registry', () => {
         expect(multiEditView).toBe(notebookEditView)
     })
 
+    it('uses dedicated view for skill tools', () => {
+        const skillView = getToolResultViewComponent('Skill')
+        const skillLowerView = getToolResultViewComponent('skill')
+        const activateSkillView = getToolResultViewComponent('activate_skill')
+        const unknownView = getToolResultViewComponent('SomeUnknownTool')
+
+        expect(skillView).toBe(skillLowerView)
+        expect(skillView).toBe(activateSkillView)
+        expect(skillView).not.toBe(unknownView)
+    })
+
     it('returns GenericResultView for mcp__ prefixed tools', () => {
         const mcpView = getToolResultViewComponent('mcp__test__tool')
         const unknownView = getToolResultViewComponent('SomeUnknownTool')

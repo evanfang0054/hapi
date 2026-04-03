@@ -33,6 +33,20 @@ function ShimmerDot() {
     )
 }
 
+function isCompactionSummaryText(text: string): boolean {
+    const normalized = text.trim()
+    if (normalized.length < 120) return false
+
+    let signals = 0
+    if (/(?:^|\n)<\/summary>/i.test(normalized) || /(?:^|\n)<summary>/i.test(normalized)) signals += 1
+    if (/\bcompaction\b/i.test(normalized) || /\bcompact(?:ed|ion)?\b/i.test(normalized)) signals += 1
+    if (/\bfull transcript\b/i.test(normalized) || /\btranscript at\b/i.test(normalized)) signals += 1
+    if (/\.claude\/projects\//i.test(normalized)) signals += 1
+    if (normalized.length > 1200) signals += 1
+
+    return signals >= 2
+}
+
 /**
  * Renders individual reasoning message part content with markdown support.
  */
@@ -58,6 +72,10 @@ export const ReasoningGroup: FC<PropsWithChildren> = ({ children }) => {
     const isStreaming = message.status?.type === 'running'
         && message.content.length > 0
         && message.content[message.content.length - 1]?.type === 'reasoning'
+    const hasCompactionSummary = message.content.some((part) => (
+        part.type === 'reasoning' && typeof part.text === 'string' && isCompactionSummaryText(part.text)
+    ))
+    const groupLabel = hasCompactionSummary ? 'Summary' : 'Reasoning'
 
     // Auto-expand while streaming
     useEffect(() => {
@@ -78,7 +96,7 @@ export const ReasoningGroup: FC<PropsWithChildren> = ({ children }) => {
                 )}
             >
                 <ChevronIcon open={isOpen} />
-                <span>Reasoning</span>
+                <span>{groupLabel}</span>
                 {isStreaming && (
                     <span className="flex items-center gap-1 ml-1 text-[var(--app-hint)]">
                         <ShimmerDot />
