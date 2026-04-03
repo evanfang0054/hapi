@@ -6,6 +6,12 @@ import { queryKeys } from '@/lib/query-keys'
 import { clearMessageWindow } from '@/lib/message-window-store'
 import { isKnownFlavor } from '@/lib/agentFlavorUtils'
 
+function isTakeOverHandlerMissing(error: unknown): boolean {
+    const message = error instanceof Error ? error.message : String(error)
+    const normalized = message.toLowerCase()
+    return normalized.includes('take-over') && normalized.includes('not registered')
+}
+
 export function useSessionActions(
     api: ApiClient | null,
     sessionId: string | null,
@@ -55,6 +61,14 @@ export function useSessionActions(
         mutationFn: async () => {
             if (!api || !sessionId) {
                 throw new Error('Session unavailable')
+            }
+            try {
+                await api.takeOverSession(sessionId)
+                return
+            } catch (error) {
+                if (!isTakeOverHandlerMissing(error)) {
+                    throw error
+                }
             }
             await api.switchSession(sessionId)
         },

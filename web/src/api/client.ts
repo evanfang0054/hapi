@@ -306,6 +306,13 @@ export class ApiClient {
         })
     }
 
+    async takeOverSession(sessionId: string): Promise<void> {
+        await this.request(`/api/sessions/${encodeURIComponent(sessionId)}/take-over`, {
+            method: 'POST',
+            body: JSON.stringify({})
+        })
+    }
+
     async setPermissionMode(sessionId: string, mode: PermissionMode): Promise<void> {
         await this.request(`/api/sessions/${encodeURIComponent(sessionId)}/permission-mode`, {
             method: 'POST',
