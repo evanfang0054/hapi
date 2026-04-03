@@ -12,7 +12,7 @@
     },
     "cli": {
       "name": "@twsxtd/hapi",
-      "version": "0.16.6",
+      "version": "0.16.7",
       "bin": {
         "hapi": "bin/hapi.cjs",
       },
@@ -43,11 +43,11 @@
         "vitest": "^4.0.16",
       },
       "optionalDependencies": {
-        "@twsxtd/hapi-darwin-arm64": "0.16.6",
-        "@twsxtd/hapi-darwin-x64": "0.16.6",
-        "@twsxtd/hapi-linux-arm64": "0.16.6",
-        "@twsxtd/hapi-linux-x64": "0.16.6",
-        "@twsxtd/hapi-win32-x64": "0.16.6",
+        "@twsxtd/hapi-darwin-arm64": "0.16.7",
+        "@twsxtd/hapi-darwin-x64": "0.16.7",
+        "@twsxtd/hapi-linux-arm64": "0.16.7",
+        "@twsxtd/hapi-linux-x64": "0.16.7",
+        "@twsxtd/hapi-win32-x64": "0.16.7",
       },
     },
     "docs": {
