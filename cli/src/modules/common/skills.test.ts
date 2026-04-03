@@ -162,4 +162,124 @@ describe('listSkills', () => {
             description: 'Local shared skill'
         })
     })
+
+    it('lists plugin skills from installed_plugins.json', async () => {
+        const pluginInstallPath = join(sandboxDir, 'plugins', 'my-plugin')
+        const installedPluginsJson = {
+            version: 1,
+            plugins: {
+                'my-plugin@marketplace': [{
+                    scope: 'user',
+                    installPath: pluginInstallPath,
+                    version: '1.0.0',
+                    installedAt: '2024-01-01T00:00:00Z',
+                    lastUpdated: '2024-01-01T00:00:00Z',
+                }]
+            }
+        }
+
+        await mkdir(join(homeDir, '.claude', 'plugins'), { recursive: true })
+        await writeFile(
+            join(homeDir, '.claude', 'plugins', 'installed_plugins.json'),
+            JSON.stringify(installedPluginsJson)
+        )
+        await writeSkill(join(pluginInstallPath, 'skills', 'plugin-skill'), 'plugin-skill', 'A skill from plugin')
+
+        const skills = await listSkills()
+
+        expect(skills.map((skill) => skill.name)).toEqual(['plugin-skill'])
+        expect(skills[0]?.description).toBe('A skill from plugin')
+    })
+
+    it('uses newest plugin installation when multiple exist', async () => {
+        const oldInstallPath = join(sandboxDir, 'plugins', 'old')
+        const newInstallPath = join(sandboxDir, 'plugins', 'new')
+        const installedPluginsJson = {
+            version: 1,
+            plugins: {
+                'test-plugin@marketplace': [
+                    {
+                        scope: 'user',
+                        installPath: oldInstallPath,
+                        version: '1.0.0',
+                        installedAt: '2024-01-01T00:00:00Z',
+                        lastUpdated: '2024-01-01T00:00:00Z',
+                    },
+                    {
+                        scope: 'user',
+                        installPath: newInstallPath,
+                        version: '2.0.0',
+                        installedAt: '2024-06-01T00:00:00Z',
+                        lastUpdated: '2024-06-01T00:00:00Z',
+                    }
+                ]
+            }
+        }
+
+        await mkdir(join(homeDir, '.claude', 'plugins'), { recursive: true })
+        await writeFile(
+            join(homeDir, '.claude', 'plugins', 'installed_plugins.json'),
+            JSON.stringify(installedPluginsJson)
+        )
+        await writeSkill(join(oldInstallPath, 'skills', 'my-skill'), 'my-skill', 'Old version')
+        await writeSkill(join(newInstallPath, 'skills', 'my-skill'), 'my-skill', 'New version')
+
+        const skills = await listSkills()
+
+        expect(skills).toHaveLength(1)
+        expect(skills[0]?.description).toBe('New version')
+    })
+
+    it('prefers user skills over plugin skills with same name', async () => {
+        const pluginInstallPath = join(sandboxDir, 'plugins', 'my-plugin')
+        const installedPluginsJson = {
+            version: 1,
+            plugins: {
+                'my-plugin@marketplace': [{
+                    scope: 'user',
+                    installPath: pluginInstallPath,
+                    version: '1.0.0',
+                    installedAt: '2024-01-01T00:00:00Z',
+                    lastUpdated: '2024-01-01T00:00:00Z',
+                }]
+            }
+        }
+
+        await mkdir(join(homeDir, '.claude', 'plugins'), { recursive: true })
+        await writeFile(
+            join(homeDir, '.claude', 'plugins', 'installed_plugins.json'),
+            JSON.stringify(installedPluginsJson)
+        )
+        await writeSkill(join(pluginInstallPath, 'skills', 'shared'), 'shared', 'Plugin skill')
+        await writeSkill(join(homeDir, '.agents', 'skills', 'shared'), 'shared', 'User skill')
+
+        const skills = await listSkills()
+
+        expect(skills).toHaveLength(1)
+        expect(skills[0]?.description).toBe('User skill')
+    })
+
+    it('returns empty when installed_plugins.json is missing', async () => {
+        // No installed_plugins.json created
+        await expect(listSkills()).resolves.toEqual([])
+    })
+})
+
+describe('listSkills integration', () => {
+    it('loads real plugin skills from ~/.claude/plugins', async () => {
+        // Use real HOME to test actual plugin loading
+        const skills = await listSkills()
+
+        // If plugins are installed, we should find some skills
+        // This test verifies the integration works in real environment
+        console.log(`Found ${skills.length} skills from real environment:`)
+        skills.slice(0, 5).forEach(s => console.log(`  - ${s.name}`))
+        if (skills.length > 5) console.log(`  ... and ${skills.length - 5} more`)
+
+        expect(Array.isArray(skills)).toBe(true)
+        skills.forEach(skill => {
+            expect(skill.name).toBeDefined()
+            expect(typeof skill.name).toBe('string')
+        })
+    })
 })

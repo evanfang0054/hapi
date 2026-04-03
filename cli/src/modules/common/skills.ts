@@ -3,6 +3,24 @@ import { basename, dirname, join, resolve } from 'path';
 import { homedir } from 'os';
 import { parse as parseYaml } from 'yaml';
 
+/**
+ * Interface for installed_plugins.json structure
+ */
+interface PluginInstallation {
+    scope: 'user' | 'project';
+    projectPath?: string;
+    installPath: string;
+    version: string;
+    installedAt: string;
+    lastUpdated: string;
+    gitCommitSha?: string;
+}
+
+interface InstalledPluginsFile {
+    version: number;
+    plugins: Record<string, PluginInstallation[]>;
+}
+
 export interface SkillSummary {
     name: string;
     description?: string;
@@ -137,12 +155,91 @@ async function readSkillsFromDirs(skillDirs: string[]): Promise<SkillSummary[]> 
     return skills.filter((skill): skill is SkillSummary => skill !== null);
 }
 
+/**
+ * Check if workingDirectory is under or equal to projectPath.
+ */
+function isWorkingDirectoryInProject(workingDirectory: string, projectPath: string): boolean {
+    const resolvedWorkDir = resolve(workingDirectory);
+    const resolvedProjectPath = resolve(projectPath);
+    return resolvedWorkDir === resolvedProjectPath || resolvedWorkDir.startsWith(resolvedProjectPath + '/');
+}
+
+/**
+ * Filter plugin installations based on scope and workingDirectory.
+ * - scope: "user" → always included
+ * - scope: "project" → only if workingDirectory is under projectPath
+ */
+function filterInstallationsByScope(
+    installations: PluginInstallation[],
+    workingDirectory?: string
+): PluginInstallation[] {
+    return installations.filter((inst) => {
+        if (inst.scope === 'user') {
+            return true;
+        }
+        if (inst.scope === 'project' && workingDirectory && inst.projectPath) {
+            return isWorkingDirectoryInProject(workingDirectory, inst.projectPath);
+        }
+        return false;
+    });
+}
+
+/**
+ * Scan plugin skills from installed Claude plugins.
+ * Reads ~/.claude/plugins/installed_plugins.json to find installed plugins,
+ * then scans each plugin's skills directory.
+ * Only loads plugins that match the scope (user or project with matching path).
+ */
+async function scanPluginSkills(workingDirectory?: string): Promise<SkillSummary[]> {
+    const configDir = process.env.CLAUDE_CONFIG_DIR ?? join(getHomeDirectory(), '.claude');
+    const installedPluginsPath = join(configDir, 'plugins', 'installed_plugins.json');
+
+    try {
+        const content = await readFile(installedPluginsPath, 'utf-8');
+        const installedPlugins = JSON.parse(content) as InstalledPluginsFile;
+
+        if (!installedPlugins.plugins) {
+            return [];
+        }
+
+        const allSkills: SkillSummary[] = [];
+
+        // Process each installed plugin
+        for (const [pluginKey, installations] of Object.entries(installedPlugins.plugins)) {
+            if (installations.length === 0) continue;
+
+            // Filter by scope first
+            const eligibleInstallations = filterInstallationsByScope(installations, workingDirectory);
+            if (eligibleInstallations.length === 0) continue;
+
+            // Sort eligible installations by lastUpdated descending to get the newest one
+            const sortedInstallations = [...eligibleInstallations].sort((a, b) => {
+                return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime();
+            });
+
+            const installation = sortedInstallations[0];
+            if (!installation?.installPath) continue;
+
+            const skillsDir = join(installation.installPath, 'skills');
+            const skillDirs = await listTopLevelSkillDirs(skillsDir);
+            const skills = await readSkillsFromDirs(skillDirs);
+            allSkills.push(...skills);
+        }
+
+        return allSkills;
+    } catch {
+        // installed_plugins.json doesn't exist or is invalid
+        return [];
+    }
+}
+
 export async function listSkills(workingDirectory?: string): Promise<SkillSummary[]> {
     const projectRoots = await listProjectSkillsRoots(workingDirectory);
-    const [projectSkillDirs, userSkillDirs, adminSkillDirs] = await Promise.all([
+    const [projectSkillDirs, userSkillDirs, adminSkillDirs, pluginSkills] = await Promise.all([
         Promise.all(projectRoots.map(async (root) => await listTopLevelSkillDirs(root))).then((dirs) => dirs.flat()),
         Promise.all(getUserSkillsRoots().map(async (root) => await listTopLevelSkillDirs(root))).then((dirs) => dirs.flat()),
         listTopLevelSkillDirs(getAdminSkillsRoot()),
+        scanPluginSkills(workingDirectory),
     ]);
 
     const [projectSkills, userSkills, adminSkills] = await Promise.all([
@@ -155,6 +252,7 @@ export async function listSkills(workingDirectory?: string): Promise<SkillSummar
     for (const skill of [
         ...projectSkills,
         ...userSkills,
+        ...pluginSkills,
         ...adminSkills,
     ]) {
         if (!dedupedSkills.has(skill.name)) {
