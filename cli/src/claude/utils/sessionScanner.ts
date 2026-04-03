@@ -20,11 +20,13 @@ export async function createSessionScanner(opts: {
     sessionId: string | null;
     workingDirectory: string;
     onMessage: (message: RawJSONLines) => void;
+    includeInitialMessages?: boolean;
 }) {
     const scanner = new ClaudeSessionScanner({
         sessionId: opts.sessionId,
         workingDirectory: opts.workingDirectory,
-        onMessage: opts.onMessage
+        onMessage: opts.onMessage,
+        includeInitialMessages: opts.includeInitialMessages
     });
 
     await scanner.start();
@@ -50,11 +52,19 @@ class ClaudeSessionScanner extends BaseSessionScanner<RawJSONLines> {
     private currentSessionId: string | null;
     private readonly scannedSessions = new Set<string>();
 
-    constructor(opts: { sessionId: string | null; workingDirectory: string; onMessage: (message: RawJSONLines) => void }) {
+    private readonly includeInitialMessages: boolean;
+
+    constructor(opts: {
+        sessionId: string | null;
+        workingDirectory: string;
+        onMessage: (message: RawJSONLines) => void;
+        includeInitialMessages?: boolean;
+    }) {
         super({ intervalMs: 3000 });
         this.projectDir = getProjectPath(opts.workingDirectory);
         this.onMessage = opts.onMessage;
         this.currentSessionId = opts.sessionId;
+        this.includeInitialMessages = Boolean(opts.includeInitialMessages);
     }
 
     public onNewSession(sessionId: string): void {
@@ -82,6 +92,11 @@ class ClaudeSessionScanner extends BaseSessionScanner<RawJSONLines> {
         if (!this.currentSessionId) {
             return;
         }
+        if (this.includeInitialMessages) {
+            logger.debug(`[SESSION_SCANNER] Replaying existing messages for session ${this.currentSessionId}`);
+            return;
+        }
+
         const sessionFile = this.sessionFilePath(this.currentSessionId);
         const { events, totalLines } = await readSessionLog(sessionFile, 0);
         logger.debug(`[SESSION_SCANNER] Marking ${events.length} existing messages as processed from session ${this.currentSessionId}`);

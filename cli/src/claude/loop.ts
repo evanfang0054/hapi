@@ -4,6 +4,7 @@ import { logger } from "@/ui/logger"
 import { runLocalRemoteSession } from "@/agent/loopBase"
 import { Session } from "./session"
 import { claudeLocalLauncher } from "./claudeLocalLauncher"
+import { claudeAdoptLauncher } from "./claudeAdoptLauncher"
 import { claudeRemoteLauncher } from "./claudeRemoteLauncher"
 import { ApiClient } from "@/lib"
 import type { SessionEffort, SessionModel } from "@/api/types"
@@ -29,6 +30,8 @@ interface LoopOptions {
     permissionMode?: PermissionMode
     startingMode?: 'local' | 'remote'
     startedBy?: 'runner' | 'terminal'
+    adoptSessionId?: string
+    adoptReplayHistory?: boolean
     onModeChange: (mode: 'local' | 'remote') => void
     mcpServers: Record<string, any>
     session: ApiSessionClient
@@ -51,7 +54,8 @@ export async function loop(opts: LoopOptions) {
         api: opts.api,
         client: opts.session,
         path: opts.path,
-        sessionId: null,
+        sessionId: opts.adoptSessionId ?? null,
+        adoptReplayHistory: opts.adoptReplayHistory,
         claudeEnvVars: opts.claudeEnvVars,
         claudeArgs: opts.claudeArgs,
         mcpServers: opts.mcpServers,
@@ -72,7 +76,7 @@ export async function loop(opts: LoopOptions) {
         session,
         startingMode: opts.startingMode,
         logTag: 'loop',
-        runLocal: claudeLocalLauncher,
+        runLocal: opts.adoptSessionId ? claudeAdoptLauncher : claudeLocalLauncher,
         runRemote: claudeRemoteLauncher,
         onSessionReady: opts.onSessionReady
     });

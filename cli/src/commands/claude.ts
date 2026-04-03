@@ -90,6 +90,8 @@ ${chalk.bold('Usage:')}
   hapi runner            Manage background service that allows
                             to spawn new sessions away from your computer
   hapi doctor            System diagnostics & troubleshooting
+  hapi adopt <sessionId> Observe external Claude session and
+                          take over in remote mode when ready
 
 ${chalk.bold('Examples:')}
   hapi                    Start session (will prompt for token if not set)

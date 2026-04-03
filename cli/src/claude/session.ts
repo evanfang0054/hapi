@@ -20,6 +20,7 @@ export class Session extends AgentSessionBase<EnhancedMode> {
     readonly hookSettingsPath: string;
     readonly startedBy: 'runner' | 'terminal';
     readonly startingMode: 'local' | 'remote';
+    readonly adoptReplayHistory: boolean;
     localLaunchFailure: LocalLaunchFailure | null = null;
 
     constructor(opts: {
@@ -37,6 +38,7 @@ export class Session extends AgentSessionBase<EnhancedMode> {
         mode?: 'local' | 'remote';
         startedBy: 'runner' | 'terminal';
         startingMode: 'local' | 'remote';
+        adoptReplayHistory?: boolean;
         hookSettingsPath: string;
         permissionMode?: PermissionMode;
         model?: SessionModel;
@@ -69,6 +71,7 @@ export class Session extends AgentSessionBase<EnhancedMode> {
         this.hookSettingsPath = opts.hookSettingsPath;
         this.startedBy = opts.startedBy;
         this.startingMode = opts.startingMode;
+        this.adoptReplayHistory = Boolean(opts.adoptReplayHistory);
         this.permissionMode = opts.permissionMode;
         this.model = opts.model;
         this.effort = opts.effort;

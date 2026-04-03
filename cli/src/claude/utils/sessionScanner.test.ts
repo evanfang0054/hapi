@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { createSessionScanner } from './sessionScanner'
+import { getProjectPath } from './path'
 import { RawJSONLines } from '../types'
 import { mkdir, writeFile, appendFile, rm, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { tmpdir, homedir } from 'node:os'
+import { tmpdir } from 'node:os'
 import { existsSync } from 'node:fs'
 
 describe('sessionScanner', () => {
@@ -16,8 +17,7 @@ describe('sessionScanner', () => {
     testDir = join(tmpdir(), `scanner-test-${Date.now()}`)
     await mkdir(testDir, { recursive: true })
     
-    const projectName = testDir.replace(/\//g, '-')
-    projectDir = join(homedir(), '.claude', 'projects', projectName)
+    projectDir = getProjectPath(testDir)
     await mkdir(projectDir, { recursive: true })
     
     collectedMessages = []
@@ -63,7 +63,9 @@ describe('sessionScanner', () => {
     // Write first line
     await writeFile(sessionFile1, lines1[0] + '\n')
     scanner.onNewSession(sessionId1)
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await vi.waitFor(() => {
+      expect(collectedMessages).toHaveLength(1)
+    }, { timeout: 2000 })
     
     expect(collectedMessages).toHaveLength(1)
     expect(collectedMessages[0].type).toBe('user')

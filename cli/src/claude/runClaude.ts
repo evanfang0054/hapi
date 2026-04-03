@@ -30,6 +30,8 @@ export interface StartOptions {
     claudeEnvVars?: Record<string, string>
     claudeArgs?: string[]
     startedBy?: 'runner' | 'terminal'
+    adoptSessionId?: string
+    adoptReplayHistory?: boolean
 }
 
 export async function runClaude(options: StartOptions = {}): Promise<void> {
@@ -51,15 +53,23 @@ export async function runClaude(options: StartOptions = {}): Promise<void> {
     const initialState: AgentState = {};
     const initialModel = normalizeClaudeSessionModel(options.model);
     const initialEffort = normalizeClaudeSessionEffort(options.effort);
+    const adoptSessionTag = options.adoptSessionId ? `adopt:claude:${options.adoptSessionId}` : undefined;
     const { api, session, sessionInfo } = await bootstrapSession({
         flavor: 'claude',
         startedBy,
         workingDirectory,
+        tag: adoptSessionTag,
         agentState: initialState,
         model: initialModel ?? undefined,
         effort: initialEffort ?? undefined
     });
     logger.debug(`Session created: ${sessionInfo.id}`);
+
+    if (options.adoptSessionId) {
+        // Replay existing Claude JSONL messages only on the first adopt bind.
+        // Re-running adopt on an existing HAPI session should not duplicate history.
+        options.adoptReplayHistory = sessionInfo.seq === 0;
+    }
 
     // Extract SDK metadata in background and update session when ready
     extractSDKMetadataAsync(async (sdkMetadata) => {
@@ -360,6 +370,8 @@ export async function runClaude(options: StartOptions = {}): Promise<void> {
             effort: currentEffort,
             permissionMode: options.permissionMode,
             startingMode,
+            adoptSessionId: options.adoptSessionId,
+            adoptReplayHistory: options.adoptReplayHistory,
             messageQueue,
             api,
             allowedTools: happyServer.toolNames.map(toolName => `mcp__hapi__${toolName}`),
