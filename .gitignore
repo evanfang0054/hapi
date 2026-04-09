@@ -42,3 +42,5 @@ execplan/
 cli/npm/main/
 .ace-tool/
 *.bun-build
+!CLAUDE.md
+!docs
