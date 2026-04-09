@@ -133,7 +133,7 @@ export function AskUserQuestionView(props: ToolViewProps) {
                 const isMulti = q.multiSelect
 
                 return (
-                    <div key={idx} className="rounded-md border border-[var(--app-border)] bg-[var(--app-bg)] p-3">
+                    <div key={idx} className="rounded-[18px] border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-3 py-3">
                         {q.question ? (
                             <div>
                                 <MarkdownRenderer content={q.question} />

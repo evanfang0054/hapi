@@ -13,15 +13,15 @@ export function SessionTypeSelector(props: {
     const { t } = useTranslation()
 
     return (
-        <div className="flex flex-col gap-1.5 px-3 py-3">
-            <label className="text-xs font-medium text-[var(--app-hint)]">
+        <div className="space-y-3">
+            <label className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--app-hint)]">
                 {t('newSession.type')}
             </label>
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-3">
                 {(['simple', 'worktree'] as const).map((type) => (
                     <div key={type} className="flex flex-col gap-2">
                         {type === 'worktree' ? (
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-3">
                                 <input
                                     id="session-type-worktree"
                                     type="radio"
@@ -33,7 +33,7 @@ export function SessionTypeSelector(props: {
                                     className="accent-[var(--app-link)]"
                                 />
                                 <div className="flex-1">
-                                    <div className="min-h-[34px] flex items-center">
+                                    <div className="min-h-12 flex items-center">
                                         {props.sessionType === 'worktree' ? (
                                             <input
                                                 ref={props.worktreeInputRef}
@@ -42,26 +42,26 @@ export function SessionTypeSelector(props: {
                                                 value={props.worktreeName}
                                                 onChange={(e) => props.onWorktreeNameChange(e.target.value)}
                                                 disabled={props.isDisabled}
-                                                className="w-full rounded-md border border-[var(--app-border)] bg-[var(--app-bg)] px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--app-link)] disabled:opacity-60"
+                                                className="min-h-12 w-full rounded-[18px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-4 py-3 text-sm text-[var(--app-fg)] shadow-[var(--app-shadow-sm)] focus:outline-none focus:ring-2 focus:ring-[var(--app-link)] disabled:opacity-60"
                                             />
                                         ) : (
-                                            <>
+                                            <div className="flex items-center gap-2">
                                                 <label
                                                     htmlFor="session-type-worktree"
-                                                    className="text-sm capitalize cursor-pointer"
+                                                    className="cursor-pointer text-sm capitalize text-[var(--app-fg)]"
                                                 >
                                                     {t('newSession.type.worktree')}
                                                 </label>
-                                                <span className="ml-2 text-xs text-[var(--app-hint)]">
+                                                <span className="text-xs text-[var(--app-hint)]">
                                                     {t('newSession.type.worktree.desc')}
                                                 </span>
-                                            </>
+                                            </div>
                                         )}
                                     </div>
                                 </div>
                             </div>
                         ) : (
-                            <label className="flex items-center gap-2 cursor-pointer min-h-[34px]">
+                            <label className="flex min-h-12 items-center gap-3 cursor-pointer">
                                 <input
                                     id="session-type-simple"
                                     type="radio"
@@ -72,7 +72,7 @@ export function SessionTypeSelector(props: {
                                     disabled={props.isDisabled}
                                     className="accent-[var(--app-link)]"
                                 />
-                                <span className="text-sm capitalize">{t('newSession.type.simple')}</span>
+                                <span className="text-sm capitalize text-[var(--app-fg)]">{t('newSession.type.simple')}</span>
                                 <span className="text-xs text-[var(--app-hint)]">
                                     {t('newSession.type.simple.desc')}
                                 </span>

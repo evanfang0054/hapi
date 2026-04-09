@@ -27,6 +27,13 @@ import { Autocomplete } from '@/components/ChatInput/Autocomplete'
 import { StatusBar } from '@/components/AssistantChat/StatusBar'
 import { ComposerButtons } from '@/components/AssistantChat/ComposerButtons'
 import { AttachmentItem } from '@/components/AssistantChat/AttachmentItem'
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle
+} from '@/components/ui/dialog'
 import { useTranslation } from '@/lib/use-translation'
 import { getModelOptionsForFlavor, getNextModelForFlavor } from './modelOptions'
 import { getClaudeComposerEffortOptions } from './claudeEffortOptions'
@@ -128,11 +135,13 @@ export function HappyComposer(props: {
         selection: { start: 0, end: 0 }
     })
     const [showSettings, setShowSettings] = useState(false)
+    const [isFullscreenOpen, setIsFullscreenOpen] = useState(false)
     const [isAborting, setIsAborting] = useState(false)
     const [isSwitching, setIsSwitching] = useState(false)
     const [showContinueHint, setShowContinueHint] = useState(false)
 
     const textareaRef = useRef<HTMLTextAreaElement>(null)
+    const fullscreenTextareaRef = useRef<HTMLTextAreaElement>(null)
     const prevControlledByUser = useRef(controlledByUser)
 
     useEffect(() => {
@@ -159,7 +168,7 @@ export function HappyComposer(props: {
     const { haptic: platformHaptic, isTouch } = usePlatform()
     const { isStandalone, isIOS } = usePWAInstall()
     const isIOSPWA = isIOS && isStandalone
-    const bottomPaddingClass = isIOSPWA ? 'pb-0' : 'pb-3'
+    const bottomPaddingClass = isIOSPWA ? 'pb-0' : ''
     const activeWord = useActiveWord(inputState.text, inputState.selection, autocompletePrefixes)
     const [suggestions, selectedIndex, moveUp, moveDown, clearSuggestions] = useActiveSuggestions(
         activeWord,
@@ -363,6 +372,11 @@ export function HappyComposer(props: {
         return () => window.removeEventListener('keydown', handleGlobalKeyDown)
     }, [model, onModelChange, haptic, agentFlavor])
 
+    useEffect(() => {
+        if (!isFullscreenOpen) return
+        setShowSettings(false)
+    }, [isFullscreenOpen])
+
     const handleChange = useCallback((e: ReactChangeEvent<HTMLTextAreaElement>) => {
         const selection = {
             start: e.target.selectionStart,
@@ -399,6 +413,12 @@ export function HappyComposer(props: {
     const handleSettingsToggle = useCallback(() => {
         haptic('light')
         setShowSettings(prev => !prev)
+    }, [haptic])
+
+    const handleExpandToggle = useCallback(() => {
+        haptic('light')
+        setShowSettings(false)
+        setIsFullscreenOpen(prev => !prev)
     }, [haptic])
 
     const handleSubmit = useCallback((event?: ReactFormEvent<HTMLFormElement>) => {
@@ -658,72 +678,136 @@ export function HappyComposer(props: {
         t
     ])
 
+    useEffect(() => {
+        if (!isFullscreenOpen) return
+        const focusTimer = window.setTimeout(() => {
+            const el = fullscreenTextareaRef.current
+            if (!el) return
+            try {
+                el.focus({ preventScroll: true })
+            } catch {
+                el.focus()
+            }
+            const cursorPosition = el.value.length
+            el.setSelectionRange(cursorPosition, cursorPosition)
+        }, 0)
+
+        return () => window.clearTimeout(focusTimer)
+    }, [isFullscreenOpen])
+
     return (
-        <div className={`px-3 ${bottomPaddingClass} pt-2 bg-[var(--app-bg)]`}>
-            <div className="mx-auto w-full max-w-content">
+        <div className={`bg-[var(--app-panel-bg)] ${bottomPaddingClass} md:px-4 md:pt-4`}>
+            <div className="mx-auto w-full max-w-[960px]">
                 <ComposerPrimitive.Root className="relative" onSubmit={handleSubmit}>
+                    <Dialog open={isFullscreenOpen} onOpenChange={setIsFullscreenOpen}>
+                        <DialogContent className="flex h-[min(100dvh-24px,820px)] w-[calc(100vw-16px)] max-w-3xl flex-col gap-0 overflow-hidden rounded-[var(--app-radius-panel)] p-0 sm:w-[calc(100vw-24px)]">
+                            <DialogHeader className="border-b border-[var(--app-divider)] px-4 py-4 text-left md:px-5">
+                                <DialogTitle>{t('composer.expand')}</DialogTitle>
+                                <DialogDescription>{t('misc.typeAMessage')}</DialogDescription>
+                            </DialogHeader>
+                            <div className="flex min-h-0 flex-1 flex-col px-4 py-4 md:px-5 md:py-5">
+                                <ComposerPrimitive.Input
+                                    ref={fullscreenTextareaRef}
+                                    placeholder={showContinueHint ? t('misc.typeMessage') : t('misc.typeAMessage')}
+                                    disabled={controlsDisabled}
+                                    maxRows={18}
+                                    submitOnEnter={!isTouch}
+                                    cancelOnEscape={false}
+                                    onChange={handleChange}
+                                    onSelect={handleSelect}
+                                    onKeyDown={handleKeyDown}
+                                    onPaste={handlePaste}
+                                    className="min-h-0 flex-1 resize-none rounded-[var(--app-radius-control)] border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-4 py-4 text-[15px] leading-7 text-[var(--app-fg)] placeholder-[var(--app-hint)] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                />
+                            </div>
+                            <div className="border-t border-[var(--app-divider)] px-4 py-3 md:px-5">
+                                <div className="flex items-center justify-between gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsFullscreenOpen(false)}
+                                        className="rounded-[var(--app-radius-pill)] border border-[var(--app-border)] px-4 py-2 text-sm text-[var(--app-hint)] transition-colors hover:bg-[var(--app-panel-bg)] hover:text-[var(--app-fg)]"
+                                    >
+                                        {t('tool.canceled')}
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={!canSend}
+                                        onClick={() => setIsFullscreenOpen(false)}
+                                        className="rounded-[var(--app-radius-pill)] bg-[var(--app-button)] px-4 py-2 text-sm font-medium text-[var(--app-button-text)] transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        {t('composer.send')}
+                                    </button>
+                                </div>
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+
                     {overlays}
 
-                    <StatusBar
-                        active={active}
-                        thinking={thinking}
-                        agentState={agentState}
-                        contextSize={contextSize}
-                        model={model}
-                        permissionMode={permissionMode}
-                        collaborationMode={collaborationMode}
-                        agentFlavor={agentFlavor}
-                        voiceStatus={voiceStatus}
-                    />
+                    <div className="overflow-hidden rounded-[var(--app-radius-panel)] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] shadow-[var(--app-shadow-sm)]">
+                        <StatusBar
+                            active={active}
+                            thinking={thinking}
+                            agentState={agentState}
+                            contextSize={contextSize}
+                            model={model}
+                            permissionMode={permissionMode}
+                            collaborationMode={collaborationMode}
+                            agentFlavor={agentFlavor}
+                            voiceStatus={voiceStatus}
+                        />
 
-                    <div className="overflow-hidden rounded-[20px] bg-[var(--app-secondary-bg)]">
                         {attachments.length > 0 ? (
-                            <div className="flex flex-wrap gap-2 px-4 pt-3">
+                            <div className="flex flex-wrap gap-2 border-b border-[var(--app-divider)] px-4 py-3 md:px-5">
                                 <ComposerPrimitive.Attachments components={{ Attachment: AttachmentItem }} />
                             </div>
                         ) : null}
 
-                        <div className="flex items-center px-4 py-3">
+                        <div className="flex items-end gap-2 px-4 py-2 md:gap-3 md:px-5 md:py-4">
                             <ComposerPrimitive.Input
                                 ref={textareaRef}
-                                autoFocus={!controlsDisabled && !isTouch}
+                                autoFocus={!controlsDisabled && !isTouch && !isFullscreenOpen}
                                 placeholder={showContinueHint ? t('misc.typeMessage') : t('misc.typeAMessage')}
                                 disabled={controlsDisabled}
-                                maxRows={5}
+                                maxRows={4}
                                 submitOnEnter={!isTouch}
                                 cancelOnEscape={false}
                                 onChange={handleChange}
                                 onSelect={handleSelect}
                                 onKeyDown={handleKeyDown}
                                 onPaste={handlePaste}
-                                className="flex-1 resize-none bg-transparent text-base leading-snug text-[var(--app-fg)] placeholder-[var(--app-hint)] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                className="flex-1 resize-none bg-transparent text-[15px] leading-7 text-[var(--app-fg)] placeholder-[var(--app-hint)] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:min-h-[84px]"
                             />
                         </div>
 
-                        <ComposerButtons
-                            canSend={canSend}
-                            controlsDisabled={controlsDisabled}
-                            showSettingsButton={showSettingsButton}
-                            onSettingsToggle={handleSettingsToggle}
-                            showTerminalButton={showTerminalButton}
-                            terminalDisabled={terminalDisabled}
-                            terminalLabel={terminalLabel}
-                            onTerminal={onTerminal ?? (() => {})}
-                            showAbortButton={showAbortButton}
-                            abortDisabled={abortDisabled}
-                            isAborting={isAborting}
-                            onAbort={handleAbort}
-                            showSwitchButton={showSwitchButton}
-                            switchDisabled={switchDisabled}
-                            isSwitching={isSwitching}
-                            onSwitch={handleSwitch}
-                            voiceEnabled={voiceEnabled}
-                            voiceStatus={voiceStatus}
-                            voiceMicMuted={voiceMicMuted}
-                            onVoiceToggle={onVoiceToggle ?? (() => {})}
-                            onVoiceMicToggle={onVoiceMicToggle}
-                            onSend={handleSend}
-                        />
+                        <div className="border-t border-[var(--app-divider)] px-3 py-2 md:px-4 md:py-3">
+                            <ComposerButtons
+                                canSend={canSend}
+                                controlsDisabled={controlsDisabled}
+                                showSettingsButton={showSettingsButton}
+                                onSettingsToggle={handleSettingsToggle}
+                                showTerminalButton={showTerminalButton}
+                                terminalDisabled={terminalDisabled}
+                                terminalLabel={terminalLabel}
+                                onTerminal={onTerminal ?? (() => {})}
+                                showExpandButton
+                                onExpand={handleExpandToggle}
+                                showAbortButton={showAbortButton}
+                                abortDisabled={abortDisabled}
+                                isAborting={isAborting}
+                                onAbort={handleAbort}
+                                showSwitchButton={showSwitchButton}
+                                switchDisabled={switchDisabled}
+                                isSwitching={isSwitching}
+                                onSwitch={handleSwitch}
+                                voiceEnabled={voiceEnabled}
+                                voiceStatus={voiceStatus}
+                                voiceMicMuted={voiceMicMuted}
+                                onVoiceToggle={onVoiceToggle ?? (() => {})}
+                                onVoiceMicToggle={onVoiceMicToggle}
+                                onSend={handleSend}
+                            />
+                        </div>
                     </div>
                 </ComposerPrimitive.Root>
             </div>

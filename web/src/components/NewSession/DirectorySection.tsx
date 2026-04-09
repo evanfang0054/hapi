@@ -22,8 +22,8 @@ export function DirectorySection(props: {
     const { t } = useTranslation()
 
     return (
-        <div className="flex flex-col gap-1.5 px-3 py-3">
-            <label className="text-xs font-medium text-[var(--app-hint)]">
+        <div className="space-y-3">
+            <label className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--app-hint)]">
                 {t('newSession.directory')}
             </label>
             <div className="relative">
@@ -36,7 +36,7 @@ export function DirectorySection(props: {
                     onFocus={props.onDirectoryFocus}
                     onBlur={props.onDirectoryBlur}
                     disabled={props.isDisabled}
-                    className="w-full rounded-md border border-[var(--app-border)] bg-[var(--app-bg)] p-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--app-link)] disabled:opacity-50"
+                    className="min-h-12 w-full rounded-[18px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-4 py-3 text-sm text-[var(--app-fg)] shadow-[var(--app-shadow-sm)] focus:outline-none focus:ring-2 focus:ring-[var(--app-link)] disabled:opacity-50"
                 />
                 {props.suggestions.length > 0 && (
                     <div className="absolute top-full left-0 right-0 z-10 mt-1">
@@ -52,16 +52,16 @@ export function DirectorySection(props: {
             </div>
 
             {props.recentPaths.length > 0 && (
-                <div className="flex flex-col gap-1 mt-1">
-                    <span className="text-xs text-[var(--app-hint)]">{t('newSession.recent')}:</span>
-                    <div className="flex flex-wrap gap-1">
+                <div className="space-y-2">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--app-hint)]">{t('newSession.recent')}:</span>
+                    <div className="flex flex-wrap gap-2">
                         {props.recentPaths.map((path) => (
                             <button
                                 key={path}
                                 type="button"
                                 onClick={() => props.onPathClick(path)}
                                 disabled={props.isDisabled}
-                                className="rounded bg-[var(--app-subtle-bg)] px-2 py-1 text-xs text-[var(--app-fg)] hover:bg-[var(--app-secondary-bg)] transition-colors truncate max-w-[200px] disabled:opacity-50"
+                                className="max-w-[220px] truncate rounded-full border border-[var(--app-border)] bg-[var(--app-subtle-bg)] px-3 py-1.5 text-xs text-[var(--app-fg)] transition-colors hover:bg-[var(--app-panel-muted-bg)] disabled:opacity-50"
                                 title={path}
                             >
                                 {path}
@@ -73,10 +73,10 @@ export function DirectorySection(props: {
 
             {props.statusMessage ? (
                 <div
-                    className={`mt-1 rounded-md px-2 py-1 text-xs ${
+                    className={`rounded-[16px] px-4 py-2.5 text-xs leading-5 ${
                         props.statusTone === 'error'
-                            ? 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
-                            : 'bg-amber-500/10 text-[var(--app-hint)]'
+                            ? 'border border-red-200 bg-red-50 text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400'
+                            : 'border border-[var(--app-border)] bg-[var(--app-panel-muted-bg)] text-[var(--app-hint)]'
                     }`}
                 >
                     {props.statusMessage}

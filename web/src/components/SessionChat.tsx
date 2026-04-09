@@ -323,7 +323,7 @@ export function SessionChat(props: {
     })
 
     return (
-        <div className="flex h-full min-h-0 flex-col">
+        <div className="flex h-full min-h-0 flex-col bg-[var(--app-bg)]">
             <SessionHeader
                 session={props.session}
                 onBack={props.onBack}
@@ -332,72 +332,76 @@ export function SessionChat(props: {
                 onSessionDeleted={props.onBack}
             />
 
-            {props.session.teamState && (
-                <TeamPanel teamState={props.session.teamState} />
-            )}
-
-            {sessionInactive ? (
-                <div className="px-3 pt-3">
-                    <div className="mx-auto w-full max-w-content rounded-md bg-[var(--app-subtle-bg)] p-3 text-sm text-[var(--app-hint)]">
-                        Session is inactive. Sending will resume it automatically.
-                    </div>
-                </div>
-            ) : null}
-
             <AssistantRuntimeProvider runtime={runtime}>
-                <div className="relative flex min-h-0 flex-1 flex-col">
-                    <HappyThread
-                        key={props.session.id}
-                        api={props.api}
-                        sessionId={props.session.id}
-                        metadata={props.session.metadata}
-                        disabled={sessionInactive}
-                        onRefresh={props.onRefresh}
-                        onRetryMessage={props.onRetryMessage}
-                        onFlushPending={props.onFlushPending}
-                        onAtBottomChange={props.onAtBottomChange}
-                        isLoadingMessages={props.isLoadingMessages}
-                        messagesWarning={props.messagesWarning}
-                        hasMoreMessages={props.hasMoreMessages}
-                        isLoadingMoreMessages={props.isLoadingMoreMessages}
-                        onLoadMore={props.onLoadMore}
-                        pendingCount={props.pendingCount}
-                        rawMessagesCount={props.messages.length}
-                        normalizedMessagesCount={normalizedMessages.length}
-                        messagesVersion={props.messagesVersion}
-                        forceScrollToken={forceScrollToken}
-                    />
+                <div className="mx-auto flex min-h-0 w-full max-w-content flex-1 flex-col md:px-5 md:pb-5">
+                    {props.session.teamState ? (
+                        <div className="mt-2.5 md:mt-3">
+                            <TeamPanel teamState={props.session.teamState} />
+                        </div>
+                    ) : null}
 
-                    <HappyComposer
-                        disabled={props.isSending}
-                        permissionMode={props.session.permissionMode}
-                        collaborationMode={codexCollaborationModeSupported ? props.session.collaborationMode : undefined}
-                        model={props.session.model}
-                        effort={props.session.effort}
-                        agentFlavor={agentFlavor}
-                        active={props.session.active}
-                        allowSendWhenInactive
-                        thinking={props.session.thinking}
-                        agentState={props.session.agentState}
-                        contextSize={reduced.latestUsage?.contextSize}
-                        controlledByUser={controlledByUser}
-                        onCollaborationModeChange={
-                            codexCollaborationModeSupported && props.session.active && !controlledByUser
-                                ? handleCollaborationModeChange
-                                : undefined
-                        }
-                        onPermissionModeChange={handlePermissionModeChange}
-                        onModelChange={handleModelChange}
-                        onEffortChange={handleEffortChange}
-                        onSwitchToRemote={handleSwitchToRemote}
-                        onTerminal={props.session.active && terminalSupported ? handleViewTerminal : undefined}
-                        terminalUnsupported={props.session.active && !terminalSupported}
-                        autocompleteSuggestions={props.autocompleteSuggestions}
-                        voiceStatus={voice?.status}
-                        voiceMicMuted={voice?.micMuted}
-                        onVoiceToggle={voice ? handleVoiceToggle : undefined}
-                        onVoiceMicToggle={voice ? handleVoiceMicToggle : undefined}
-                    />
+                    <div className="flex min-h-0 flex-1 flex-col overflow-hidden border border-[var(--app-border)] bg-[var(--app-panel-bg)] shadow-[var(--app-shadow-sm)] md:mt-3">
+                        {sessionInactive ? (
+                            <div className="border-b border-[var(--app-divider)] bg-[var(--app-panel-muted-bg)] px-3 py-2.5 text-sm text-[var(--app-hint)] md:px-5 md:py-3">
+                                Session is inactive. Sending will resume it automatically.
+                            </div>
+                        ) : null}
+
+                        <div className="relative flex min-h-0 flex-1 flex-col">
+                            <HappyThread
+                                key={props.session.id}
+                                api={props.api}
+                                sessionId={props.session.id}
+                                metadata={props.session.metadata}
+                                disabled={sessionInactive}
+                                onRefresh={props.onRefresh}
+                                onRetryMessage={props.onRetryMessage}
+                                onFlushPending={props.onFlushPending}
+                                onAtBottomChange={props.onAtBottomChange}
+                                isLoadingMessages={props.isLoadingMessages}
+                                messagesWarning={props.messagesWarning}
+                                hasMoreMessages={props.hasMoreMessages}
+                                isLoadingMoreMessages={props.isLoadingMoreMessages}
+                                onLoadMore={props.onLoadMore}
+                                pendingCount={props.pendingCount}
+                                rawMessagesCount={props.messages.length}
+                                normalizedMessagesCount={normalizedMessages.length}
+                                messagesVersion={props.messagesVersion}
+                                forceScrollToken={forceScrollToken}
+                            />
+
+                            <HappyComposer
+                                disabled={props.isSending}
+                                permissionMode={props.session.permissionMode}
+                                collaborationMode={codexCollaborationModeSupported ? props.session.collaborationMode : undefined}
+                                model={props.session.model}
+                                effort={props.session.effort}
+                                agentFlavor={agentFlavor}
+                                active={props.session.active}
+                                allowSendWhenInactive
+                                thinking={props.session.thinking}
+                                agentState={props.session.agentState}
+                                contextSize={reduced.latestUsage?.contextSize}
+                                controlledByUser={controlledByUser}
+                                onCollaborationModeChange={
+                                    codexCollaborationModeSupported && props.session.active && !controlledByUser
+                                        ? handleCollaborationModeChange
+                                        : undefined
+                                }
+                                onPermissionModeChange={handlePermissionModeChange}
+                                onModelChange={handleModelChange}
+                                onEffortChange={handleEffortChange}
+                                onSwitchToRemote={handleSwitchToRemote}
+                                onTerminal={props.session.active && terminalSupported ? handleViewTerminal : undefined}
+                                terminalUnsupported={props.session.active && !terminalSupported}
+                                autocompleteSuggestions={props.autocompleteSuggestions}
+                                voiceStatus={voice?.status}
+                                voiceMicMuted={voice?.micMuted}
+                                onVoiceToggle={voice ? handleVoiceToggle : undefined}
+                                onVoiceMicToggle={voice ? handleVoiceMicToggle : undefined}
+                            />
+                        </div>
+                    </div>
                 </div>
             </AssistantRuntimeProvider>
 

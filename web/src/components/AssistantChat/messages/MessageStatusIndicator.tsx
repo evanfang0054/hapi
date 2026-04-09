@@ -25,7 +25,7 @@ export function MessageStatusIndicator(props: {
 }) {
     if (props.status === 'sending') {
         return (
-            <span className="inline-flex items-center text-[var(--app-fg-muted)]">
+            <span className="inline-flex items-center rounded-full border border-[var(--app-border)] bg-[var(--app-panel-muted-bg)] px-2 py-1 text-[var(--app-hint)]">
                 <SendingIcon />
             </span>
         )
@@ -36,15 +36,15 @@ export function MessageStatusIndicator(props: {
     }
 
     return (
-        <span className="inline-flex items-center gap-1">
-            <span className="text-red-500">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-red-500/20 bg-red-500/8 px-2 py-1 text-red-600">
+            <span>
                 <ErrorIcon />
             </span>
             {props.onRetry ? (
                 <button
                     type="button"
                     onClick={props.onRetry}
-                    className="text-xs text-blue-500 hover:underline"
+                    className="text-xs font-medium text-current transition-opacity hover:opacity-80"
                 >
                     Retry
                 </button>

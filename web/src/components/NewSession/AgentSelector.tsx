@@ -9,28 +9,35 @@ export function AgentSelector(props: {
     const { t } = useTranslation()
 
     return (
-        <div className="flex flex-col gap-1.5 px-3 py-3">
-            <label className="text-xs font-medium text-[var(--app-hint)]">
+        <div className="space-y-3">
+            <label className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--app-hint)]">
                 {t('newSession.agent')}
             </label>
-            <div className="flex flex-wrap gap-x-3 gap-y-2">
-                {(['claude', 'codex', 'cursor', 'gemini', 'opencode'] as const).map((agentType) => (
-                    <label
-                        key={agentType}
-                        className="flex items-center gap-1.5 cursor-pointer"
-                    >
-                        <input
-                            type="radio"
-                            name="agent"
-                            value={agentType}
-                            checked={props.agent === agentType}
-                            onChange={() => props.onAgentChange(agentType)}
-                            disabled={props.isDisabled}
-                            className="accent-[var(--app-link)]"
-                        />
-                        <span className="text-sm capitalize">{agentType}</span>
-                    </label>
-                ))}
+            <div className="flex flex-wrap gap-2">
+                {(['claude', 'codex', 'cursor', 'gemini', 'opencode'] as const).map((agentType) => {
+                    const checked = props.agent === agentType
+                    return (
+                        <label
+                            key={agentType}
+                            className={`inline-flex min-h-11 items-center gap-2 rounded-full border px-4 py-2 text-sm capitalize transition-colors ${
+                                checked
+                                    ? 'border-[var(--app-link)] bg-[color:color-mix(in srgb,var(--app-link) 12%,transparent)] text-[var(--app-fg)]'
+                                    : 'border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] text-[var(--app-fg)] hover:bg-[var(--app-panel-muted-bg)]'
+                            } ${props.isDisabled ? 'opacity-50' : 'cursor-pointer'}`}
+                        >
+                            <input
+                                type="radio"
+                                name="agent"
+                                value={agentType}
+                                checked={checked}
+                                onChange={() => props.onAgentChange(agentType)}
+                                disabled={props.isDisabled}
+                                className="accent-[var(--app-link)]"
+                            />
+                            <span>{agentType}</span>
+                        </label>
+                    )
+                })}
             </div>
         </div>
     )

@@ -6,6 +6,8 @@ import { useSessionActions } from '@/hooks/mutations/useSessionActions'
 import { SessionActionMenu } from '@/components/SessionActionMenu'
 import { RenameSessionDialog } from '@/components/RenameSessionDialog'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { getSessionModelLabel } from '@/lib/sessionModelLabel'
 import { useTranslation } from '@/lib/use-translation'
 
@@ -107,13 +109,14 @@ export function SessionHeader(props: {
 
     return (
         <>
-            <div className="bg-[var(--app-bg)] pt-[env(safe-area-inset-top)]">
-                <div className="mx-auto w-full max-w-content flex items-center gap-2 p-3">
-                    {/* Back button */}
-                    <button
+            <div className="bg-[color:color-mix(in_srgb,var(--app-bg)_92%,transparent)] pt-[env(safe-area-inset-top)] backdrop-blur-md">
+                <div className="mx-auto flex w-full max-w-content items-start gap-1.5 px-2 py-1.5 md:gap-3 md:px-5 md:py-4">
+                    <Button
                         type="button"
+                        variant="outline"
+                        size="sm"
                         onClick={props.onBack}
-                        className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--app-hint)] transition-colors hover:bg-[var(--app-secondary-bg)] hover:text-[var(--app-fg)]"
+                        className="self-center h-8 w-8 rounded-full p-0 text-[var(--app-hint)] hover:text-[var(--app-fg)] md:h-10 md:w-10"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -128,53 +131,64 @@ export function SessionHeader(props: {
                         >
                             <polyline points="15 18 9 12 15 6" />
                         </svg>
-                    </button>
+                    </Button>
 
-                    {/* Session info - two lines: title and path */}
-                    <div className="min-w-0 flex-1">
-                        <div className="truncate font-semibold">
-                            {title}
-                        </div>
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-[var(--app-hint)]">
-                            <span className="inline-flex items-center gap-1">
-                                <span aria-hidden="true">❖</span>
-                                {session.metadata?.flavor?.trim() || 'unknown'}
-                            </span>
-                            {modelLabel ? (
-                                <span>
-                                    {t(modelLabel.key)}: {modelLabel.value}
-                                </span>
-                            ) : null}
-                            {worktreeBranch ? (
-                                <span>{t('session.item.worktree')}: {worktreeBranch}</span>
-                            ) : null}
+                    <div className="min-w-0 flex-1 rounded-[var(--app-radius-panel)] border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2.5 py-2 shadow-[var(--app-shadow-sm)] md:px-5 md:py-3">
+                        <div className="flex items-start justify-between gap-1.5 md:gap-3">
+                            <div className="min-w-0">
+                                <div className="truncate text-[15px] leading-tight text-[var(--app-fg)] md:text-xl" data-ui-heading="serif">
+                                    {title}
+                                </div>
+                                <div className="mt-1 flex flex-wrap items-center gap-1 text-[10px] text-[var(--app-hint)] md:mt-2 md:gap-2 md:text-xs">
+                                    <Badge className="gap-1.5 bg-[var(--app-panel-muted-bg)] text-[var(--app-fg)]">
+                                        <span aria-hidden="true">❖</span>
+                                        {session.metadata?.flavor?.trim() || 'unknown'}
+                                    </Badge>
+                                    {modelLabel ? (
+                                        <Badge variant="default" className="bg-[var(--app-panel-elevated-bg)]">
+                                            {t(modelLabel.key)}: {modelLabel.value}
+                                        </Badge>
+                                    ) : null}
+                                    {worktreeBranch ? (
+                                        <Badge variant="default" className="bg-[var(--app-panel-elevated-bg)]">
+                                            {t('session.item.worktree')}: {worktreeBranch}
+                                        </Badge>
+                                    ) : null}
+                                </div>
+                            </div>
+
+                            <div className="self-center flex items-center gap-1 md:gap-2">
+                                {props.onViewFiles ? (
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        size="sm"
+                                        onClick={props.onViewFiles}
+                                        className="h-8 w-8 rounded-full p-0 text-[var(--app-hint)] hover:text-[var(--app-fg)] md:h-10 md:w-10"
+                                        title={t('session.title')}
+                                    >
+                                        <FilesIcon className="h-4 w-4 md:h-[18px] md:w-[18px]" />
+                                    </Button>
+                                ) : null}
+
+                                <Button
+                                    type="button"
+                                    variant="secondary"
+                                    size="sm"
+                                    onClick={handleMenuToggle}
+                                    onPointerDown={(e) => e.stopPropagation()}
+                                    ref={menuAnchorRef}
+                                    aria-haspopup="menu"
+                                    aria-expanded={menuOpen}
+                                    aria-controls={menuOpen ? menuId : undefined}
+                                    className="h-8 w-8 rounded-full p-0 text-[var(--app-hint)] hover:text-[var(--app-fg)] md:h-10 md:w-10"
+                                    title={t('session.more')}
+                                >
+                                    <MoreVerticalIcon className="h-4 w-4 md:h-[18px] md:w-[18px]" />
+                                </Button>
+                            </div>
                         </div>
                     </div>
-
-                    {props.onViewFiles ? (
-                        <button
-                            type="button"
-                            onClick={props.onViewFiles}
-                            className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--app-hint)] transition-colors hover:bg-[var(--app-secondary-bg)] hover:text-[var(--app-fg)]"
-                            title={t('session.title')}
-                        >
-                            <FilesIcon />
-                        </button>
-                    ) : null}
-
-                    <button
-                        type="button"
-                        onClick={handleMenuToggle}
-                        onPointerDown={(e) => e.stopPropagation()}
-                        ref={menuAnchorRef}
-                        aria-haspopup="menu"
-                        aria-expanded={menuOpen}
-                        aria-controls={menuOpen ? menuId : undefined}
-                        className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--app-hint)] transition-colors hover:bg-[var(--app-secondary-bg)] hover:text-[var(--app-fg)]"
-                        title={t('session.more')}
-                    >
-                        <MoreVerticalIcon />
-                    </button>
                 </div>
             </div>
 

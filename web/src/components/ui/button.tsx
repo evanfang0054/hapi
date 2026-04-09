@@ -4,19 +4,20 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-    'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-link)] disabled:pointer-events-none disabled:opacity-50',
+    'inline-flex items-center justify-center whitespace-nowrap rounded-[var(--app-radius-pill)] text-sm font-medium transition-[background-color,color,border-color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-link)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--app-bg)] disabled:pointer-events-none disabled:opacity-50 active:translate-y-px',
     {
         variants: {
             variant: {
-                default: 'bg-[var(--app-button)] text-[var(--app-button-text)] hover:opacity-90',
-                secondary: 'bg-[var(--app-secondary-bg)] text-[var(--app-fg)] hover:opacity-90',
-                outline: 'border border-[var(--app-border)] bg-transparent hover:bg-[var(--app-subtle-bg)]',
-                destructive: 'bg-red-600 text-white hover:bg-red-600/90'
+                default: 'border border-transparent bg-[var(--app-button)] text-[var(--app-button-text)] shadow-[var(--app-ring)] hover:brightness-[0.98]',
+                secondary: 'border border-[var(--app-border)] bg-[var(--app-subtle-bg)] text-[var(--app-fg)] hover:bg-[var(--app-panel-muted-bg)]',
+                outline: 'border border-[var(--app-border)] bg-[var(--app-panel-bg)] text-[var(--app-fg)] hover:bg-[var(--app-subtle-bg)]',
+                destructive: 'border border-transparent bg-[var(--app-badge-error-text)] text-white hover:opacity-90',
+                inverted: 'border border-[var(--app-border)] bg-[var(--app-fg)] text-[var(--app-bg)] hover:opacity-90'
             },
             size: {
-                default: 'h-9 px-4 py-2',
-                sm: 'h-8 rounded-md px-3',
-                lg: 'h-10 rounded-md px-8'
+                default: 'h-10 px-4',
+                sm: 'h-8 px-3 text-xs',
+                lg: 'h-11 px-6'
             }
         },
         defaultVariants: {

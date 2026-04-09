@@ -2,95 +2,141 @@
 @config "../tailwind.config.ts";
 
 :root {
-    --app-bg: var(--tg-theme-bg-color, #ffffff);
-    --app-fg: var(--tg-theme-text-color, #111827);
-    --app-hint: var(--tg-theme-hint-color, #6b7280);
-    --app-link: var(--tg-theme-link-color, #111827);
-    --app-button: var(--tg-theme-button-color, #111827);
-    --app-button-text: var(--tg-theme-button-text-color, #ffffff);
-    --app-banner-bg: var(--tg-theme-button-color, #111827);
-    --app-banner-text: var(--tg-theme-button-text-color, #ffffff);
-    --app-secondary-bg: var(--tg-theme-secondary-bg-color, #f3f4f6);
+    --app-bg: #f5f4ed;
+    --app-fg: #141413;
+    --app-hint: #5e5d59;
+    --app-link: #c96442;
+    --app-button: #c96442;
+    --app-button-text: #faf9f5;
+    --app-banner-bg: #1f1d1a;
+    --app-banner-text: #faf9f5;
+    --app-secondary-bg: #faf9f5;
 
     /* Theme-aware colors (light mode defaults) */
-    --app-border: rgba(0, 0, 0, 0.1);
-    --app-divider: rgba(0, 0, 0, 0.08);
-    --app-subtle-bg: rgba(0, 0, 0, 0.05);
-    --app-code-bg: #f6f8fa;
-    --app-inline-code-bg: rgba(0, 0, 0, 0.08);
+    --app-border: #ebe7dc;
+    --app-divider: rgba(20, 20, 19, 0.08);
+    --app-subtle-bg: #e8e6dc;
+    --app-code-bg: #f3f0e8;
+    --app-inline-code-bg: rgba(92, 83, 71, 0.08);
 
     /* Diff colors (light) - from hapi-app */
-    --app-diff-added-bg: #e6ffed;
-    --app-diff-added-text: #24292e;
-    --app-diff-removed-bg: #ffeef0;
-    --app-diff-removed-text: #24292e;
+    --app-diff-added-bg: #edf4ea;
+    --app-diff-added-text: #243126;
+    --app-diff-removed-bg: #f8e9e7;
+    --app-diff-removed-text: #362521;
 
     /* Git status colors (light) */
-    --app-git-staged-color: #34C759;
-    --app-git-unstaged-color: #FF9500;
-    --app-git-deleted-color: #FF3B30;
-    --app-git-renamed-color: #2563eb;
-    --app-git-untracked-color: #8E8E93;
+    --app-git-staged-color: #5f8a63;
+    --app-git-unstaged-color: #c58a3a;
+    --app-git-deleted-color: #c96442;
+    --app-git-renamed-color: #7b6cb6;
+    --app-git-untracked-color: #87867f;
 
     /* Badge colors (light) */
-    --app-badge-warning-bg: rgba(245, 158, 11, 0.2);
-    --app-badge-warning-text: #b45309;
-    --app-badge-warning-border: rgba(245, 158, 11, 0.3);
-    --app-badge-success-bg: rgba(34, 197, 94, 0.2);
-    --app-badge-success-text: #15803d;
-    --app-badge-success-border: rgba(34, 197, 94, 0.3);
-    --app-badge-error-bg: rgba(239, 68, 68, 0.18);
-    --app-badge-error-text: #b91c1c;
-    --app-badge-error-border: rgba(239, 68, 68, 0.3);
+    --app-badge-warning-bg: rgba(197, 138, 58, 0.14);
+    --app-badge-warning-text: #9a6420;
+    --app-badge-warning-border: rgba(197, 138, 58, 0.24);
+    --app-badge-success-bg: rgba(95, 138, 99, 0.14);
+    --app-badge-success-text: #436447;
+    --app-badge-success-border: rgba(95, 138, 99, 0.24);
+    --app-badge-error-bg: rgba(201, 100, 66, 0.14);
+    --app-badge-error-text: #a74e31;
+    --app-badge-error-border: rgba(201, 100, 66, 0.24);
+
+    --app-panel-bg: #faf9f5;
+    --app-panel-elevated-bg: #ffffff;
+    --app-panel-muted-bg: #f0ede3;
+    --app-shadow-sm: 0 1px 2px rgba(30, 24, 17, 0.04);
+    --app-shadow-md: 0 10px 30px rgba(30, 24, 17, 0.06);
+    --app-ring: 0 0 0 1px rgba(113, 92, 69, 0.08);
+
+    --app-font-serif: Georgia, 'Times New Roman', serif;
+    --app-font-sans: 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+    --app-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+    --app-radius-panel: 28px;
+    --app-radius-control: 18px;
+    --app-radius-pill: 999px;
 
     --app-font-scale: 1;
 }
 
 [data-theme="dark"] {
     /* Primary colors - override fallbacks for non-Telegram browsers */
-    --app-bg: var(--tg-theme-bg-color, #1c1c1e);
-    --app-fg: var(--tg-theme-text-color, #ffffff);
-    --app-hint: var(--tg-theme-hint-color, #8e8e93);
-    --app-link: var(--tg-theme-link-color, #ffffff);
-    --app-button: var(--tg-theme-button-color, #ffffff);
-    --app-button-text: var(--tg-theme-button-text-color, #111827);
-    --app-banner-bg: var(--tg-theme-button-color, #3A3A3C);
-    --app-banner-text: var(--tg-theme-button-text-color, #ffffff);
-    --app-secondary-bg: var(--tg-theme-secondary-bg-color, #2C2C2E);
+    --app-bg: #141413;
+    --app-fg: #f5f1e8;
+    --app-hint: #b0aea5;
+    --app-link: #d97757;
+    --app-button: #d97757;
+    --app-button-text: #141413;
+    --app-banner-bg: #30302e;
+    --app-banner-text: #f5f1e8;
+    --app-secondary-bg: #1d1c1a;
 
-    --app-border: rgba(255, 255, 255, 0.1);
-    --app-divider: rgba(255, 255, 255, 0.08);
-    --app-subtle-bg: rgba(255, 255, 255, 0.05);
-    --app-code-bg: #282c34;
-    --app-inline-code-bg: rgba(255, 255, 255, 0.1);
+    --app-border: rgba(245, 241, 232, 0.1);
+    --app-divider: rgba(245, 241, 232, 0.08);
+    --app-subtle-bg: #30302e;
+    --app-code-bg: #22211f;
+    --app-inline-code-bg: rgba(245, 241, 232, 0.08);
 
     /* Diff colors (dark) - from hapi-app */
-    --app-diff-added-bg: #0d2e1f;
-    --app-diff-added-text: #c9d1d9;
-    --app-diff-removed-bg: #3f1b23;
-    --app-diff-removed-text: #c9d1d9;
+    --app-diff-added-bg: #1f2b22;
+    --app-diff-added-text: #d7e2d3;
+    --app-diff-removed-bg: #382523;
+    --app-diff-removed-text: #f0dbd4;
 
     /* Git status colors (dark) */
-    --app-git-staged-color: #4ade80;
-    --app-git-unstaged-color: #f59e0b;
-    --app-git-deleted-color: #f87171;
-    --app-git-renamed-color: #60a5fa;
-    --app-git-untracked-color: #9ca3af;
+    --app-git-staged-color: #8ab08d;
+    --app-git-unstaged-color: #dfad61;
+    --app-git-deleted-color: #e08c72;
+    --app-git-renamed-color: #a89be0;
+    --app-git-untracked-color: #9f9c93;
 
     /* Badge colors (dark) */
-    --app-badge-warning-bg: rgba(251, 191, 36, 0.2);
-    --app-badge-warning-text: #fbbf24;
-    --app-badge-warning-border: rgba(251, 191, 36, 0.3);
-    --app-badge-success-bg: rgba(74, 222, 128, 0.2);
-    --app-badge-success-text: #4ade80;
-    --app-badge-success-border: rgba(74, 222, 128, 0.3);
-    --app-badge-error-bg: rgba(248, 113, 113, 0.2);
-    --app-badge-error-text: #fca5a5;
-    --app-badge-error-border: rgba(248, 113, 113, 0.35);
+    --app-badge-warning-bg: rgba(223, 173, 97, 0.16);
+    --app-badge-warning-text: #f0c27b;
+    --app-badge-warning-border: rgba(223, 173, 97, 0.26);
+    --app-badge-success-bg: rgba(138, 176, 141, 0.16);
+    --app-badge-success-text: #b8d4ba;
+    --app-badge-success-border: rgba(138, 176, 141, 0.26);
+    --app-badge-error-bg: rgba(224, 140, 114, 0.16);
+    --app-badge-error-text: #f2b29f;
+    --app-badge-error-border: rgba(224, 140, 114, 0.26);
+
+    --app-panel-bg: #1d1c1a;
+    --app-panel-elevated-bg: #252422;
+    --app-panel-muted-bg: #30302e;
+    --app-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.28);
+    --app-shadow-md: 0 12px 32px rgba(0, 0, 0, 0.32);
+    --app-ring: 0 0 0 1px rgba(245, 241, 232, 0.06);
 }
 
 html {
     font-size: calc(100% * var(--app-font-scale, 1));
+    background: var(--app-bg);
+}
+
+body {
+    font-family: var(--app-font-sans);
+    background:
+        radial-gradient(circle at top, rgba(201, 100, 66, 0.05), transparent 32%),
+        var(--app-bg);
+    color: var(--app-fg);
+}
+
+h1,
+h2,
+h3,
+[data-ui-heading="serif"] {
+    font-family: var(--app-font-serif);
+    letter-spacing: -0.02em;
+}
+
+code,
+pre,
+.shiki,
+.xterm {
+    font-family: var(--app-font-mono);
 }
 
 html,
@@ -116,8 +162,6 @@ html:not([data-telegram-app="true"]) body {
 
 body {
     font-size: 1rem;
-    background: var(--app-bg);
-    color: var(--app-fg);
 }
 
 #root {
@@ -161,7 +205,13 @@ body {
 
 /* Markdown styles */
 .markdown-content a { color: var(--app-link); text-decoration: underline; }
-.markdown-content code { background: var(--app-inline-code-bg); padding: 0.1em 0.3em; border-radius: 4px; font-size: 0.9em; }
+.markdown-content code {
+    background: var(--app-inline-code-bg);
+    border: 1px solid var(--app-border);
+    border-radius: 8px;
+    padding: 0.1em 0.3em;
+    font-size: 0.9em;
+}
 .markdown-content blockquote { border-left: 3px solid var(--app-hint); padding-left: 0.75rem; margin: 0.5rem 0; opacity: 0.85; }
 .markdown-content ul, .markdown-content ol { padding-left: 1.5rem; margin: 0.5rem 0; }
 .markdown-content table { border-collapse: collapse; width: 100%; }

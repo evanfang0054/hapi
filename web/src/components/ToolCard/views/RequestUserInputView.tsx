@@ -41,7 +41,7 @@ export function RequestUserInputView(props: ToolViewProps) {
                 const isPureTextQuestion = q.options.length === 0
 
                 return (
-                    <div key={q.id} className="rounded-md border border-[var(--app-border)] bg-[var(--app-bg)] p-3">
+                    <div key={q.id} className="rounded-[18px] border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-3 py-3">
                         {q.question ? (
                             <div>
                                 <MarkdownRenderer content={q.question} />

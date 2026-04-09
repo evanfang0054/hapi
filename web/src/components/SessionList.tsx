@@ -7,6 +7,7 @@ import { useSessionActions } from '@/hooks/mutations/useSessionActions'
 import { SessionActionMenu } from '@/components/SessionActionMenu'
 import { RenameSessionDialog } from '@/components/RenameSessionDialog'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { Button } from '@/components/ui/button'
 import { getSessionModelLabel } from '@/lib/sessionModelLabel'
 import { useTranslation } from '@/lib/use-translation'
 
@@ -248,60 +249,60 @@ function SessionItem(props: {
             <button
                 type="button"
                 {...longPressHandlers}
-                className={`session-list-item flex w-full flex-col gap-1.5 px-3 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-link)] select-none ${selected ? 'bg-[var(--app-secondary-bg)]' : ''}`}
+                className={`session-list-item flex w-full flex-col gap-3 rounded-[var(--app-radius-control)] border px-4 py-4 text-left transition-[background-color,border-color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-link)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--app-panel-bg)] select-none ${selected ? 'border-[var(--app-border)] bg-[var(--app-subtle-bg)] shadow-[var(--app-shadow-sm)]' : 'border-transparent bg-[var(--app-panel-elevated-bg)] hover:border-[var(--app-border)] hover:bg-[var(--app-subtle-bg)]'}`}
                 style={{ WebkitTouchCallout: 'none' }}
                 aria-current={selected ? 'page' : undefined}
             >
-                <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2 min-w-0">
-                        <span className="flex h-4 w-4 items-center justify-center" aria-hidden="true">
-                            <span
-                                className={`h-2 w-2 rounded-full ${statusDotClass}`}
-                            />
-                        </span>
-                        <div className="truncate text-base font-medium">
-                            {sessionName}
+                <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 space-y-1.5">
+                        <div className="flex min-w-0 items-center gap-2">
+                            <span className="mt-1 flex h-4 w-4 shrink-0 items-center justify-center" aria-hidden="true">
+                                <span className={`h-2 w-2 rounded-full ${statusDotClass}`} />
+                            </span>
+                            <div className="truncate text-[15px] font-medium leading-5">
+                                {sessionName}
+                            </div>
                         </div>
+                        {showPath ? (
+                            <div className="truncate pl-6 text-xs text-[var(--app-hint)]">
+                                {s.metadata?.path ?? s.id}
+                            </div>
+                        ) : null}
                     </div>
-                    <div className="flex items-center gap-2 shrink-0 text-xs">
-                        {s.thinking ? (
-                            <span className="text-[#007AFF] animate-pulse">
-                                {t('session.item.thinking')}
-                            </span>
-                        ) : null}
-                        {todoProgress ? (
-                            <span className="flex items-center gap-1 text-[var(--app-hint)]">
-                                <BulbIcon className="h-3 w-3" />
-                                {todoProgress.completed}/{todoProgress.total}
-                            </span>
-                        ) : null}
-                        {s.pendingRequestsCount > 0 ? (
-                            <span className="text-[var(--app-badge-warning-text)]">
-                                {t('session.item.pending')} {s.pendingRequestsCount}
-                            </span>
-                        ) : null}
-                        <span className="text-[var(--app-hint)]">
-                            {formatRelativeTime(s.updatedAt, t)}
-                        </span>
+                    <div className="shrink-0 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2.5 py-1 text-[11px] text-[var(--app-hint)]">
+                        {formatRelativeTime(s.updatedAt, t)}
                     </div>
                 </div>
-                {showPath ? (
-                    <div className="truncate text-xs text-[var(--app-hint)]">
-                        {s.metadata?.path ?? s.id}
-                    </div>
-                ) : null}
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--app-hint)]">
-                    <span className="inline-flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 text-xs">
+                    {s.thinking ? (
+                        <span className="rounded-full border border-[var(--app-link)]/20 bg-[var(--app-link)]/10 px-2.5 py-1 text-[var(--app-link)] animate-pulse">
+                            {t('session.item.thinking')}
+                        </span>
+                    ) : null}
+                    {todoProgress ? (
+                        <span className="flex items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2.5 py-1 text-[var(--app-hint)]">
+                            <BulbIcon className="h-3 w-3" />
+                            {todoProgress.completed}/{todoProgress.total}
+                        </span>
+                    ) : null}
+                    {s.pendingRequestsCount > 0 ? (
+                        <span className="rounded-full border border-[var(--app-badge-warning-border)] bg-[var(--app-badge-warning-bg)] px-2.5 py-1 text-[var(--app-badge-warning-text)]">
+                            {t('session.item.pending')} {s.pendingRequestsCount}
+                        </span>
+                    ) : null}
+                </div>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-[var(--app-hint)]">
+                    <span className="inline-flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2.5 py-1">
                         <span className="flex h-4 w-4 items-center justify-center" aria-hidden="true">
                             ❖
                         </span>
                         {getAgentLabel(s)}
                     </span>
                     {modelLabel ? (
-                        <span>{t(modelLabel.key)}: {modelLabel.value}</span>
+                        <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2.5 py-1">{t(modelLabel.key)}: {modelLabel.value}</span>
                     ) : null}
                     {s.metadata?.worktree?.branch ? (
-                        <span>{t('session.item.worktree')}: {s.metadata.worktree.branch}</span>
+                        <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2.5 py-1">{t('session.item.worktree')}: {s.metadata.worktree.branch}</span>
                     ) : null}
                 </div>
             </button>
@@ -428,58 +429,90 @@ export function SessionList(props: {
     }, [groups])
 
     return (
-        <div className="mx-auto w-full max-w-content flex flex-col">
+        <div className="mx-auto flex w-full max-w-content flex-col gap-4 px-3 pb-4 pt-4 md:px-5 md:pt-6">
             {renderHeader ? (
-                <div className="flex items-center justify-between px-3 py-1">
-                    <div className="text-xs text-[var(--app-hint)]">
-                        {t('sessions.count', { n: props.sessions.length, m: groups.length })}
+                <div className="rounded-[var(--app-radius-panel)] border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-5 py-5 shadow-[var(--app-shadow-sm)]">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                        <div className="space-y-2">
+                            <p className="text-xs uppercase tracking-[0.16em] text-[var(--app-hint)]">
+                                Workspace
+                            </p>
+                            <h1 className="text-3xl leading-none" data-ui-heading="serif">
+                                hapi
+                            </h1>
+                            <p className="max-w-2xl text-sm leading-6 text-[var(--app-hint)]">
+                                {t('sessions.count', { n: props.sessions.length, m: groups.length })}
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Button type="button" variant="secondary" onClick={props.onRefresh}>
+                                Refresh
+                            </Button>
+                            <Button type="button" onClick={props.onNewSession}>
+                                New session
+                            </Button>
+                        </div>
                     </div>
-                    <button
-                        type="button"
-                        onClick={props.onNewSession}
-                        className="session-list-new-button p-1.5 rounded-full text-[var(--app-link)] transition-colors"
-                        title={t('sessions.new')}
-                    >
-                        <PlusIcon className="h-5 w-5" />
-                    </button>
                 </div>
             ) : null}
 
-            <div className="flex flex-col">
+            <div className="flex flex-col gap-4">
+                {groups.length === 0 ? (
+                    <div className="rounded-[var(--app-radius-panel)] border border-dashed border-[var(--app-border)] bg-[var(--app-panel-bg)] px-6 py-10 text-center shadow-[var(--app-shadow-sm)]">
+                        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--app-subtle-bg)] text-[var(--app-link)]">
+                            <PlusIcon className="h-5 w-5" />
+                        </div>
+                        <h2 className="text-xl" data-ui-heading="serif">
+                            Start a new workspace
+                        </h2>
+                        <p className="mt-2 text-sm text-[var(--app-hint)]">
+                            当前没有 session，但创建入口、说明和主 CTA 都保持清晰。
+                        </p>
+                        <Button type="button" className="mt-5" onClick={props.onNewSession}>
+                            New session
+                        </Button>
+                    </div>
+                ) : null}
                 {groups.map((group) => {
                     const isCollapsed = isGroupCollapsed(group)
                     const machineLabel = resolveMachineLabel(group.machineId)
                     return (
-                        <div key={group.key} className="mt-2 first:mt-0">
+                        <div
+                            key={group.key}
+                            className="rounded-[var(--app-radius-panel)] border border-[var(--app-border)] bg-[var(--app-panel-bg)] p-2 shadow-[var(--app-shadow-sm)]"
+                        >
                             <button
                                 type="button"
                                 onClick={() => toggleGroup(group.key, isCollapsed)}
-                                className="sticky top-0 z-10 flex w-full flex-col gap-1 px-3 py-2.5 text-left bg-[var(--app-secondary-bg)] border-b border-[var(--app-border)] border-l-[3px] border-l-[var(--app-hint)] transition-colors hover:bg-[var(--app-subtle-bg)]"
+                                className="flex w-full items-center justify-between gap-4 rounded-[var(--app-radius-control)] px-4 py-3 text-left transition-colors hover:bg-[var(--app-subtle-bg)]"
                             >
-                                <div className="flex items-center gap-2 min-w-0 w-full">
-                                    <ChevronIcon
-                                        className="h-4 w-4 text-[var(--app-hint)] shrink-0"
-                                        collapsed={isCollapsed}
-                                    />
-                                    <span className="font-semibold text-sm break-words min-w-0" title={group.directory}>
-                                        {group.displayName}
-                                    </span>
-                                    <span className="shrink-0 rounded-full bg-[var(--app-subtle-bg)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--app-hint)]">
-                                        {group.sessions.length}
-                                    </span>
+                                <div className="min-w-0">
+                                    <div className="flex min-w-0 items-center gap-2">
+                                        <span className="font-semibold text-sm break-words min-w-0" title={group.directory}>
+                                            {group.displayName}
+                                        </span>
+                                        <span className="shrink-0 rounded-full bg-[var(--app-subtle-bg)] px-2 py-0.5 text-[10px] font-medium text-[var(--app-hint)]">
+                                            {group.sessions.length}
+                                        </span>
+                                    </div>
+                                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--app-hint)]">
+                                        <span className="inline-flex items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-bg)] px-2 py-0.5">
+                                            <MachineIcon className="h-3 w-3 shrink-0" />
+                                            {machineLabel}
+                                        </span>
+                                        <span className="min-w-0 flex-1 truncate" title={group.directory}>
+                                            {group.directory}
+                                        </span>
+                                        <span>{formatRelativeTime(group.latestUpdatedAt, t)}</span>
+                                    </div>
                                 </div>
-                                <div className="flex min-w-0 w-full flex-wrap items-center gap-2 pl-6 text-xs text-[var(--app-hint)]">
-                                    <span className="inline-flex items-center gap-1 rounded border border-[var(--app-border)] bg-[var(--app-bg)] px-2 py-0.5">
-                                        <MachineIcon className="h-3 w-3 shrink-0" />
-                                        {machineLabel}
-                                    </span>
-                                    <span className="min-w-0 flex-1 truncate" title={group.directory}>
-                                        {group.directory}
-                                    </span>
-                                </div>
+                                <ChevronIcon
+                                    className="h-4 w-4 shrink-0 text-[var(--app-hint)]"
+                                    collapsed={isCollapsed}
+                                />
                             </button>
                             {!isCollapsed ? (
-                                <div className="flex flex-col divide-y divide-[var(--app-divider)] border-b border-[var(--app-divider)] border-l border-l-[var(--app-divider)]">
+                                <div className="mt-2 space-y-2">
                                     {group.sessions.map((s) => (
                                         <SessionItem
                                             key={s.id}

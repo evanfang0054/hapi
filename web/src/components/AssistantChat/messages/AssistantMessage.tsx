@@ -33,19 +33,23 @@ export function HappyAssistantMessage() {
     })
     const rootClass = toolOnly
         ? 'py-1 min-w-0 max-w-full overflow-x-hidden'
-        : 'px-1 min-w-0 max-w-full overflow-x-hidden'
+        : 'mr-auto min-w-0 max-w-full overflow-x-hidden'
 
     if (isCliOutput) {
         return (
-            <MessagePrimitive.Root className="px-1 min-w-0 max-w-full overflow-x-hidden">
-                <CliOutputBlock text={cliText} />
+            <MessagePrimitive.Root className="mr-auto min-w-0 max-w-full overflow-x-hidden">
+                <div className="w-full max-w-[min(82ch,100%)] rounded-[24px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-4 py-3 shadow-[var(--app-shadow-sm)]">
+                    <CliOutputBlock text={cliText} />
+                </div>
             </MessagePrimitive.Root>
         )
     }
 
     return (
         <MessagePrimitive.Root className={rootClass}>
-            <MessagePrimitive.Content components={MESSAGE_PART_COMPONENTS} />
+            <div className="w-full max-w-[min(82ch,100%)] rounded-[24px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-4 py-3 shadow-[var(--app-shadow-sm)]">
+                <MessagePrimitive.Content components={MESSAGE_PART_COMPONENTS} />
+            </div>
         </MessagePrimitive.Root>
     )
 }

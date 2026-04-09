@@ -22,13 +22,14 @@ export function MultiEditView(props: ToolViewProps) {
     if (edits.length === 0) return null
 
     return (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
             {edits.slice(0, MAX_COMPACT_EDITS).map((edit, idx) => (
-                <DiffView
-                    key={idx}
-                    oldString={edit.old_string}
-                    newString={edit.new_string}
-                />
+                <div key={idx} className="rounded-[18px] border border-[var(--app-border)] bg-[var(--app-panel-bg)] p-3">
+                    <DiffView
+                        oldString={edit.old_string}
+                        newString={edit.new_string}
+                    />
+                </div>
             ))}
             {edits.length > MAX_COMPACT_EDITS ? (
                 <div className="text-xs text-[var(--app-hint)]">
@@ -44,14 +45,15 @@ export function MultiEditFullView(props: ToolViewProps) {
     if (edits.length === 0) return null
 
     return (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
             {edits.map((edit, idx) => (
-                <DiffView
-                    key={idx}
-                    oldString={edit.old_string}
-                    newString={edit.new_string}
-                    variant="inline"
-                />
+                <div key={idx} className="rounded-[18px] border border-[var(--app-border)] bg-[var(--app-panel-bg)] p-3">
+                    <DiffView
+                        oldString={edit.old_string}
+                        newString={edit.new_string}
+                        variant="inline"
+                    />
+                </div>
             ))}
         </div>
     )

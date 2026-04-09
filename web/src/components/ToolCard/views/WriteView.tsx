@@ -10,10 +10,12 @@ export function WriteView(props: ToolViewProps) {
     if (content === null) return null
 
     return (
-        <DiffView
-            oldString=""
-            newString={content}
-            variant="inline"
-        />
+        <div className="rounded-[18px] border border-[var(--app-border)] bg-[var(--app-panel-bg)] p-3">
+            <DiffView
+                oldString=""
+                newString={content}
+                variant="inline"
+            />
+        </div>
     )
 }

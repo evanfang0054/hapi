@@ -45,12 +45,12 @@ export function HappyUserMessage() {
     const canRetry = status === 'failed' && typeof localId === 'string' && Boolean(ctx.onRetryMessage)
     const onRetry = canRetry ? () => ctx.onRetryMessage!(localId) : undefined
 
-    const userBubbleClass = 'w-fit min-w-0 max-w-[92%] ml-auto rounded-xl bg-[var(--app-secondary-bg)] px-3 py-2 text-[var(--app-fg)] shadow-sm'
+    const userBubbleClass = 'ml-auto w-fit min-w-0 max-w-[min(78ch,85%)] rounded-[22px] border border-transparent bg-[var(--app-subtle-bg)] px-4 py-3 text-[var(--app-fg)] shadow-[var(--app-shadow-xs)]'
 
     if (isCliOutput) {
         return (
-            <MessagePrimitive.Root className="px-1 min-w-0 max-w-full overflow-x-hidden">
-                <div className="ml-auto w-full max-w-[92%]">
+            <MessagePrimitive.Root className="ml-auto min-w-0 max-w-full overflow-x-hidden">
+                <div className="ml-auto w-full max-w-[min(78ch,85%)]">
                     <CliOutputBlock text={cliText} />
                 </div>
             </MessagePrimitive.Root>

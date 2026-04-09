@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import {
     Dialog,
     DialogContent,
+    DialogFooter,
     DialogHeader,
     DialogTitle,
     DialogDescription
@@ -69,12 +70,12 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
                 </DialogHeader>
 
                 {error ? (
-                    <div className="mt-3 rounded-md bg-red-50 p-3 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
+                    <div className="mt-3 rounded-[18px] border border-[var(--app-badge-error-border)] bg-[var(--app-badge-error-bg)] px-4 py-3 text-sm text-[var(--app-badge-error-text)]">
                         {error}
                     </div>
                 ) : null}
 
-                <div className="mt-4 flex gap-2 justify-end">
+                <DialogFooter className="mt-5">
                     <Button
                         type="button"
                         variant="secondary"
@@ -85,13 +86,13 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
                     </Button>
                     <Button
                         type="button"
-                        variant={destructive ? 'destructive' : 'secondary'}
+                        variant={destructive ? 'destructive' : 'default'}
                         onClick={handleConfirm}
                         disabled={isPending}
                     >
                         {isPending ? confirmingLabel : confirmLabel}
                     </Button>
-                </div>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     )

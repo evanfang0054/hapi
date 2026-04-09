@@ -374,8 +374,8 @@ function ToolCardInner(props: ToolCardProps) {
     )
 
     return (
-        <Card className="overflow-hidden shadow-sm">
-            <CardHeader className="p-3 space-y-0">
+        <Card className="overflow-hidden rounded-[24px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] shadow-[var(--app-shadow-sm)]">
+            <CardHeader className="border-b border-[var(--app-divider)] px-4 py-3 space-y-0">
                 <Dialog>
                     <DialogTrigger asChild>
                         <button
@@ -454,7 +454,7 @@ function ToolCardInner(props: ToolCardProps) {
             </CardHeader>
 
             {hasBody ? (
-                <CardContent className="px-3 pb-3 pt-0">
+                <CardContent className="px-4 pb-4 pt-0">
                     {taskSummary ? (
                         <div className="mt-2">
                             {taskSummary}

@@ -19,9 +19,13 @@ function NewMessagesIndicator(props: { count: number; onClick: () => void }) {
     return (
         <button
             onClick={props.onClick}
-            className="absolute bottom-20 left-1/2 -translate-x-1/2 bg-[var(--app-button)] text-[var(--app-button-text)] px-3 py-1.5 rounded-full text-sm font-medium shadow-lg animate-bounce-in z-10"
+            className="absolute bottom-20 left-1/2 z-10 inline-flex -translate-x-1/2 items-center gap-2 rounded-full border border-[var(--app-border)] bg-[color:color-mix(in_srgb,var(--app-panel-elevated-bg)_92%,transparent)] px-3 py-1.5 text-xs font-medium text-[var(--app-fg)] shadow-[var(--app-shadow-sm)] backdrop-blur md:bottom-24 md:px-4 md:py-2 md:text-sm"
         >
-            {t('misc.newMessage', { n: props.count })} &#8595;
+            <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--app-panel-muted-bg)] px-1 text-xs text-[var(--app-hint)]">
+                {props.count}
+            </span>
+            <span>{t('misc.newMessage', { n: props.count })}</span>
+            <span aria-hidden="true">↓</span>
         </button>
     )
 }
@@ -277,56 +281,54 @@ export function HappyThread(props: {
             onRefresh: props.onRefresh,
             onRetryMessage: props.onRetryMessage
         }}>
-            <ThreadPrimitive.Root className="flex min-h-0 flex-1 flex-col relative">
+            <ThreadPrimitive.Root className="relative flex min-h-0 flex-1 flex-col">
                 <ThreadPrimitive.Viewport asChild autoScroll={autoScrollEnabled}>
-                    <div ref={viewportRef} className="app-scroll-y min-h-0 flex-1 overflow-x-hidden">
-                        <div className="mx-auto w-full max-w-content min-w-0 p-3">
+                    <div ref={viewportRef} className="app-scroll-y min-h-0 flex-1 overflow-x-hidden bg-transparent">
+                        <div className="mx-auto flex w-full max-w-[960px] min-w-0 flex-col px-2.5 py-3 md:px-6 md:py-6">
                             <div ref={topSentinelRef} className="h-px w-full" aria-hidden="true" />
                             {showSkeleton ? (
                                 <MessageSkeleton />
                             ) : (
                                 <>
                                     {props.messagesWarning ? (
-                                        <div className="mb-3 rounded-md bg-amber-500/10 p-2 text-xs">
+                                        <div className="mb-3 rounded-[18px] border border-amber-500/20 bg-amber-500/8 px-3 py-2.5 text-sm text-[var(--app-fg)] shadow-[var(--app-shadow-xs)] md:mb-4 md:px-4 md:py-3">
                                             {props.messagesWarning}
                                         </div>
                                     ) : null}
 
                                     {props.hasMoreMessages && !props.isLoadingMessages ? (
-                                        <div className="py-1 mb-2">
-                                            <div className="mx-auto w-fit">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={handleLoadMore}
-                                                    disabled={props.isLoadingMoreMessages || props.isLoadingMessages}
-                                                    aria-busy={props.isLoadingMoreMessages}
-                                                    className="gap-1.5 text-xs opacity-80 hover:opacity-100"
-                                                >
-                                                    {props.isLoadingMoreMessages ? (
-                                                        <>
-                                                            <Spinner size="sm" label={null} className="text-current" />
-                                                            {t('misc.loading')}
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <span aria-hidden="true">↑</span>
-                                                            {t('misc.loadOlder')}
-                                                        </>
-                                                    )}
-                                                </Button>
-                                            </div>
+                                        <div className="mb-3 self-center md:mb-4">
+                                            <Button
+                                                variant="secondary"
+                                                size="sm"
+                                                onClick={handleLoadMore}
+                                                disabled={props.isLoadingMoreMessages || props.isLoadingMessages}
+                                                aria-busy={props.isLoadingMoreMessages}
+                                                className="gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-4 text-xs text-[var(--app-hint)] shadow-[var(--app-shadow-xs)] hover:text-[var(--app-fg)]"
+                                            >
+                                                {props.isLoadingMoreMessages ? (
+                                                    <>
+                                                        <Spinner size="sm" label={null} className="text-current" />
+                                                        {t('misc.loading')}
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <span aria-hidden="true">↑</span>
+                                                        {t('misc.loadOlder')}
+                                                    </>
+                                                )}
+                                            </Button>
                                         </div>
                                     ) : null}
 
                                     {import.meta.env.DEV && props.normalizedMessagesCount === 0 && props.rawMessagesCount > 0 ? (
-                                        <div className="mb-2 rounded-md bg-amber-500/10 p-2 text-xs">
+                                        <div className="mb-4 rounded-[20px] border border-amber-500/20 bg-amber-500/8 px-4 py-3 text-sm text-[var(--app-fg)] shadow-[var(--app-shadow-xs)]">
                                             Message normalization returned 0 items for {props.rawMessagesCount} messages (see `web/src/chat/normalize.ts`).
                                         </div>
                                     ) : null}
                                 </>
                             )}
-                            <div className="happy-thread-messages flex flex-col gap-3">
+                            <div className="happy-thread-messages flex flex-col gap-3 md:gap-4">
                                 <ThreadPrimitive.Messages components={THREAD_MESSAGE_COMPONENTS} />
                             </div>
                         </div>

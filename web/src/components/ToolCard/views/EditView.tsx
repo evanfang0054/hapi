@@ -11,10 +11,12 @@ export function EditView(props: ToolViewProps) {
     if (oldString === null || newString === null) return null
 
     return (
-        <DiffView
-            oldString={oldString}
-            newString={newString}
-            variant="inline"
-        />
+        <div className="rounded-[18px] border border-[var(--app-border)] bg-[var(--app-panel-bg)] p-3">
+            <DiffView
+                oldString={oldString}
+                newString={newString}
+                variant="inline"
+            />
+        </div>
     )
 }
