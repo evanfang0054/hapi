@@ -1,18 +1,18 @@
-# How it Works
+# 工作原理
 
-HAPI consists of three interconnected components that work together to provide remote AI agent control.
+HAPI 由三个相互连接的组件组成，共同提供远程 AI 代理控制。
 
-## Architecture Overview
+## 架构概览
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────┐
-│                     Your Machine (Local or Hub Host)                       │
+│                     你的机器（本地或 Hub 主机）                              │
 │                                                                            │
 │   ┌──────────────┐         ┌──────────────┐         ┌──────────────┐       │
 │   │              │         │              │         │              │       │
 │   │   HAPI CLI   │◄───────►│  HAPI Hub    │◄───────►│   Web App    │       │
-│   │              │ Socket  │              │   SSE   │  (embedded)  │       │
-│   │  + AI Agent  │   .IO   │  + SQLite    │         │              │       │
+│   │              │ Socket  │              │   SSE   │  (内嵌)      │       │
+│   │  + AI 代理   │   .IO   │  + SQLite    │         │              │       │
 │   │              │         │  + REST API  │         │              │       │
 │   └──────────────┘         └──────┬───────┘         └──────────────┘       │
 │                                   │                                        │
@@ -20,204 +20,204 @@ HAPI consists of three interconnected components that work together to provide r
 └───────────────────────────────────┼────────────────────────────────────────┘
                                     │
                           ┌─────────▼─────────┐
-                          │  Tunnel (Optional)│
+                          │  隧道（可选）      │
                           │  Cloudflare/ngrok │
                           └─────────┬─────────┘
                                     │
 ┌───────────────────────────────────┼────────────────────────────────────────┐
-│                           Public Internet                                  │
+│                           公共互联网                                        │
 │                                   │                                        │
 │         ┌─────────────────────────┼─────────────────────────┐              │
 │         │                         ▼                         │              │
 │         │    ┌──────────────┐           ┌──────────────┐    │              │
 │         │    │              │           │              │    │              │
 │         │    │  Telegram    │           │    PWA /     │    │              │
-│         │    │  Mini App    │           │   Browser    │    │              │
+│         │    │  Mini App    │           │   浏览器     │    │              │
 │         │    │              │           │              │    │              │
 │         │    └──────────────┘           └──────────────┘    │              │
 │         │                                                   │              │
 │         └───────────────────────────────────────────────────┘              │
-│                            Your Phone                                      │
+│                            你的手机                                         │
 └────────────────────────────────────────────────────────────────────────────┘
 ```
 
-> **Note:** The hub can run on your local desktop or a remote host (VPS, cloud, etc.). If deployed on a host with a public IP, tunneling is not required.
+> **注意：** Hub 可以运行在你的本地桌面或远程主机（VPS、云等）。如果部署在有公网 IP 的主机上，则不需要隧道。
 
-## Components
+## 组件
 
 ### HAPI CLI
 
-The CLI is a wrapper around AI coding agents (Claude Code, Codex, Cursor Agent, Gemini, OpenCode). It:
+CLI 是 AI 编程代理（Claude Code、Codex、Cursor Agent、Gemini、OpenCode）的包装器。它：
 
-- Starts and manages coding sessions
-- Registers sessions with the HAPI hub
-- Relays messages and permission requests
-- Provides MCP (Model Context Protocol) tools
+- 启动和管理编程会话
+- 向 HAPI hub 注册会话
+- 转发消息和权限请求
+- 提供 MCP（模型上下文协议）工具
 
-**Key Commands:**
+**主要命令：**
 ```bash
-hapi              # Start Claude Code session
-hapi codex       # Start OpenAI Codex session
-hapi cursor      # Start Cursor Agent session
-hapi gemini      # Start Google Gemini session
-hapi opencode    # Start OpenCode session
-hapi runner start # Run background service for remote session spawning
+hapi              # 启动 Claude Code 会话
+hapi codex       # 启动 OpenAI Codex 会话
+hapi cursor      # 启动 Cursor Agent 会话
+hapi gemini      # 启动 Google Gemini 会话
+hapi opencode    # 启动 OpenCode 会话
+hapi runner start # 运行后台服务以远程启动会话
 ```
 
 ### HAPI Hub
 
-The hub is the central service that connects everything:
+Hub 是连接所有组件的中心服务：
 
-- **HTTP API** - RESTful endpoints for sessions, messages, permissions
-- **Socket.IO** - Real-time bidirectional communication with CLI
-- **SSE (Server-Sent Events)** - Live updates pushed to web clients
-- **SQLite Database** - Persistent storage for sessions and messages
-- **Telegram Bot** - Notifications and Mini App integration
+- **HTTP API** - 用于会话、消息、权限的 RESTful 端点
+- **Socket.IO** - 与 CLI 的实时双向通信
+- **SSE（服务器发送事件）** - 向 Web 客户端推送实时更新
+- **SQLite 数据库** - 持久存储会话和消息
+- **Telegram 机器人** - 通知和 Mini App 集成
 
 ### Web App
 
-A React-based PWA that provides the mobile interface:
+基于 React 的 PWA，提供移动界面：
 
-- **Session List** - View all active and past sessions
-- **Chat Interface** - Send messages and view agent responses
-- **Permission Management** - Approve or deny tool access
-- **File Browser** - Browse project files and view git diffs
-- **Remote Spawn** - Start new sessions on any connected machine
+- **会话列表** - 查看所有活跃和历史会话
+- **聊天界面** - 发送消息并查看代理响应
+- **权限管理** - 批准或拒绝工具访问
+- **文件浏览器** - 浏览项目文件并查看 git diff
+- **远程启动** - 在任何连接的机器上启动新会话
 
-## Data Flow
+## 数据流
 
-### Starting a Session
-
-```
-1. User runs `hapi` in terminal
-         │
-         ▼
-2. CLI starts Claude Code (or other agent)
-         │
-         ▼
-3. CLI connects to hub via Socket.IO
-         │
-         ▼
-4. Hub creates session in database
-         │
-         ▼
-5. Web clients receive SSE update
-         │
-         ▼
-6. Session appears in mobile app
-```
-
-### Permission Request Flow
+### 启动会话
 
 ```
-1. AI agent requests tool permission (e.g., file edit)
+1. 用户在终端运行 `hapi`
          │
          ▼
-2. CLI sends permission request to hub
+2. CLI 启动 Claude Code（或其他代理）
          │
          ▼
-3. Hub stores request and notifies via SSE + Telegram
+3. CLI 通过 Socket.IO 连接到 hub
          │
          ▼
-4. User receives notification on phone
+4. Hub 在数据库中创建会话
          │
          ▼
-5. User approves/denies in web app or Telegram
+5. Web 客户端收到 SSE 更新
          │
          ▼
-6. Hub relays decision to CLI via Socket.IO
-         │
-         ▼
-7. CLI informs AI agent, execution continues
+6. 会话出现在移动应用中
 ```
 
-### Message Flow
+### 权限请求流程
 
 ```
-User (Phone)                 Hub                     CLI
+1. AI 代理请求工具权限（例如文件编辑）
+         │
+         ▼
+2. CLI 向 hub 发送权限请求
+         │
+         ▼
+3. Hub 存储请求并通过 SSE + Telegram 通知
+         │
+         ▼
+4. 用户在手机上收到通知
+         │
+         ▼
+5. 用户在 Web 应用或 Telegram 中批准/拒绝
+         │
+         ▼
+6. Hub 通过 Socket.IO 将决定转发给 CLI
+         │
+         ▼
+7. CLI 通知 AI 代理，继续执行
+```
+
+### 消息流
+
+```
+用户（手机）                Hub                     CLI
      │                         │                       │
-     │──── Send message ──────►│                       │
-     │                         │─── Socket.IO emit ───►│
+     │──── 发送消息 ──────────►│                       │
+     │                         │─── Socket.IO 发送 ───►│
      │                         │                       │
-     │                         │                       ├── AI processes
+     │                         │                       ├── AI 处理
      │                         │                       │
-     │                         │◄── Stream response ───│
+     │                         │◄── 流式响应 ──────────│
      │◄─────── SSE ────────────│                       │
      │                         │                       │
 ```
 
-## Communication Protocols
+## 通信协议
 
 ### CLI ↔ Hub: Socket.IO
 
-Real-time bidirectional communication for:
-- Session registration and heartbeat
-- Message relay (user input → agent)
-- Permission requests and responses
-- Metadata and state updates
-- RPC method invocation
+用于以下的实时双向通信：
+- 会话注册和心跳
+- 消息转发（用户输入 → 代理）
+- 权限请求和响应
+- 元数据和状态更新
+- RPC 方法调用
 
 ### Hub ↔ Web: REST + SSE
 
-- **REST API** for actions (send message, approve permission)
-- **SSE stream** for real-time updates (new messages, status changes)
+- **REST API** 用于操作（发送消息、批准权限）
+- **SSE 流** 用于实时更新（新消息、状态变化）
 
-### External Access: Tunnel
+### 外部访问：隧道
 
-For remote access outside your local network:
-- **Cloudflare Tunnel** (recommended) - Free, secure, reliable
-- **Tailscale** - Mesh VPN for private networks
-- **ngrok** - Quick setup for testing
+用于本地网络外的远程访问：
+- **Cloudflare Tunnel**（推荐）- 免费、安全、可靠
+- **Tailscale** - 用于私有网络的 Mesh VPN
+- **ngrok** - 快速设置用于测试
 
-## Seamless Handoff
+## 无缝切换
 
-HAPI's defining feature is the ability to seamlessly hand off control between local terminal and remote devices without losing session state.
+HAPI 的核心特性是能够在本地终端和远程设备之间无缝切换控制，而不丢失会话状态。
 
-### Local Mode
+### 本地模式
 
-When working in local mode, you have the full terminal experience — it is native Claude Code, Codex, or OpenCode:
+在本地模式下工作时，你拥有完整的终端体验——它就是原生的 Claude Code、Codex 或 OpenCode：
 
-- Direct keyboard input with instant response
-- Full terminal UI with syntax highlighting
-- Best for focused, uninterrupted coding sessions
-- All AI processing happens locally on your machine
+- 直接键盘输入，即时响应
+- 完整的终端 UI 和语法高亮
+- 最适合专注、不间断的编程会话
+- 所有 AI 处理都在本地机器上进行
 
-### Remote Mode
+### 远程模式
 
-Switch to remote mode when you need to step away:
+需要离开时切换到远程模式：
 
-- Control via Web/PWA/Telegram from any device
-- Approve permissions on the go
-- Monitor progress while away from your desk
-- Session continues running on your local machine
+- 通过任何设备的 Web/PWA/Telegram 控制
+- 随时随地批准权限
+- 离开桌面时监控进度
+- 会话继续在本地机器上运行
 
-### How Switching Works
+### 切换原理
 
 ```
 ┌─────────────────┐                    ┌─────────────────┐
-│   Local Mode    │◄──────────────────►│   Remote Mode   │
-│   (Terminal)    │                    │   (Phone/Web)   │
+│   本地模式      │◄──────────────────►│   远程模式      │
+│   (终端)        │                    │   (手机/Web)    │
 └─────────────────┘                    └─────────────────┘
         │                                      │
         │  ┌────────────────────────────┐      │
-        └─►│  Same Session, Same State  │◄─────┘
+        └─►│  同一会话，同一状态        │◄─────┘
            └────────────────────────────┘
 ```
 
-**Local → Remote:**
-- Receive a message from phone/web
-- Session automatically switches to remote mode
-- Terminal shows "Remote mode - waiting for input"
+**本地 → 远程：**
+- 从手机/Web 收到消息
+- 会话自动切换到远程模式
+- 终端显示"Remote mode - waiting for input"
 
-**Remote → Local:**
-- Press double-space in terminal
-- Instantly regain local control
-- Continue typing as if you never left
+**远程 → 本地：**
+- 在终端按双空格
+- 立即恢复本地控制
+- 继续打字，就像从未离开
 
-### Use Cases
+### 使用场景
 
-1. **Remote Control While Away** - Start a session at your desk, continue from your phone during commute or coffee break
+1. **离开时远程控制** - 在桌前启动会话，通勤或休息时用手机继续
 
-2. **Permission Approval** - AI requests file access, you get notified on phone, approve with one tap, session continues
+2. **权限审批** - AI 请求文件访问，你在手机上收到通知，一键批准，会话继续
 
-3. **Multi-Device Collaboration** - View session progress on your phone while your desktop does the heavy lifting
+3. **多设备协作** - 在手机上查看会话进度，而桌面机器处理繁重工作

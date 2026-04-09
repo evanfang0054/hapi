@@ -1,128 +1,128 @@
-# Voice Assistant
+# 语音助手
 
-Control your AI coding agent with voice using the built-in voice assistant powered by ElevenLabs Conversational AI.
+使用由 ElevenLabs Conversational AI 驱动的内置语音助手，通过语音控制你的 AI 编程代理。
 
-## Overview
+## 概述
 
-The voice assistant lets you:
+语音助手可以：
 
-- **Talk to your agent** - Ask questions, give instructions, and request code changes hands-free
-- **Approve permissions by voice** - Say "yes" or "no" to approve or deny permission requests
-- **Monitor progress** - Receive spoken updates when tasks complete or errors occur
+- **与代理对话** - 提问、下达指令、请求代码修改，解放双手
+- **语音审批权限** - 说"是"或"否"来批准或拒绝权限请求
+- **监控进度** - 任务完成或发生错误时收到语音更新
 
-The assistant bridges voice communication with your active coding agent (Claude Code, Codex, Gemini, or OpenCode), relaying your requests and summarizing responses in natural speech.
+助手连接语音通信与你的活跃编程代理（Claude Code、Codex、Gemini 或 OpenCode），转发你的请求并用自然语音总结响应。
 
-## Prerequisites
+## 前置条件
 
-An [ElevenLabs](https://elevenlabs.io) account with API access
+需要一个具有 API 访问权限的 [ElevenLabs](https://elevenlabs.io) 账户
 
-## Setup
+## 设置
 
-### 1. Get an API Key
+### 1. 获取 API 密钥
 
-1. Sign up or log in at [elevenlabs.io](https://elevenlabs.io)
-2. Go to [API Keys](https://elevenlabs.io/app/settings/api-keys) in your account settings
-3. Create a new API key and copy it
+1. 在 [elevenlabs.io](https://elevenlabs.io) 注册或登录
+2. 在账户设置中进入 [API Keys](https://elevenlabs.io/app/settings/api-keys)
+3. 创建新的 API 密钥并复制
 
-### 2. Configure the Hub
+### 2. 配置 Hub
 
-Set the environment variable before starting the hub:
+启动 hub 前设置环境变量：
 
 ```bash
 export ELEVENLABS_API_KEY="your-api-key"
 hapi hub --relay
 ```
 
-The hub automatically creates a "Hapi Voice Assistant" agent in your ElevenLabs account on first use.
+Hub 会在首次使用时自动在你的 ElevenLabs 账户中创建一个"Hapi Voice Assistant"代理。
 
-### 3. (Optional) Custom Agent
+### 3.（可选）自定义代理
 
-If you want to use your own ElevenLabs agent instead of the auto-created one:
+如果你想使用自己的 ElevenLabs 代理而不是自动创建的：
 
 ```bash
 export ELEVENLABS_AGENT_ID="your-agent-id"
 ```
 
-## Usage
+## 使用方法
 
-### Starting a Voice Session
+### 启动语音会话
 
-1. Open a session in the web app
-2. Click the **microphone button** in the composer (or the send button when empty)
-3. Grant microphone permission when prompted
-4. Start speaking
+1. 在 Web 应用中打开一个会话
+2. 点击编辑器中的**麦克风按钮**（或空白时的发送按钮）
+3. 出现提示时授予麦克风权限
+4. 开始说话
 
-### Voice Commands
+### 语音命令
 
-| Say this | What happens |
-|----------|--------------|
-| "Ask Claude to..." / "Have it..." | Sends your request to the coding agent |
-| "Refactor the auth module" | Coding requests are forwarded automatically |
-| "Yes" / "Allow" / "Go ahead" | Approves pending permission requests |
-| "No" / "Deny" / "Cancel" | Denies pending permission requests |
-| Direct questions | The voice assistant answers itself if it can |
+| 说这个 | 会发生什么 |
+|--------|------------|
+| "让 Claude..." / "让它..." | 将你的请求发送给编程代理 |
+| "重构认证模块" | 编程请求会自动转发 |
+| "是" / "允许" / "继续" | 批准待处理的权限请求 |
+| "否" / "拒绝" / "取消" | 拒绝待处理的权限请求 |
+| 直接提问 | 语音助手会自己回答（如果能的话） |
 
-## How It Works
+## 工作原理
 
-### Context Synchronization
+### 上下文同步
 
-The voice assistant automatically receives updates when:
+语音助手会在以下情况自动接收更新：
 
-- You focus on a session (full history is loaded)
-- The agent sends messages or uses tools
-- Permission requests arrive
-- Tasks complete
+- 你聚焦一个会话（完整历史被加载）
+- 代理发送消息或使用工具
+- 权限请求到达
+- 任务完成
 
-You don't need to ask for status updates - the assistant proactively summarizes relevant changes.
+你不需要询问状态更新——助手会主动总结相关变化。
 
-### Tools
+### 工具
 
-The voice assistant has two tools to interact with your coding agent:
+语音助手有两个工具与你的编程代理交互：
 
-1. **messageCodingAgent** - Forwards your requests to the active agent
-2. **processPermissionRequest** - Handles permission approvals and denials
+1. **messageCodingAgent** - 将你的请求转发给活跃代理
+2. **processPermissionRequest** - 处理权限批准和拒绝
 
-### Architecture
+### 架构
 
 ```
-Browser → WebRTC → ElevenLabs ConvAI → Voice Assistant → HAPI Hub → Coding Agent
+浏览器 → WebRTC → ElevenLabs ConvAI → 语音助手 → HAPI Hub → 编程代理
 ```
 
-The voice connection uses WebRTC for low-latency audio streaming. The HAPI hub provides conversation tokens and handles authentication.
+语音连接使用 WebRTC 进行低延迟音频流。HAPI hub 提供会话令牌并处理认证。
 
-## Tips
+## 技巧
 
-- **Be specific** - Clear, complete requests get better results
-- **Wait for completion** - The assistant stays silent while the agent works, then summarizes results
-- **Use natural language** - No special command syntax needed
-- **Keep sessions focused** - One active session at a time for clearest context
+- **具体一点** - 清晰、完整的请求效果更好
+- **等待完成** - 代理工作时助手保持安静，然后总结结果
+- **使用自然语言** - 不需要特殊的命令语法
+- **保持会话专注** - 一次一个活跃会话，上下文最清晰
 
-## Troubleshooting
+## 故障排除
 
 ### "ElevenLabs API key not configured"
 
-Set `ELEVENLABS_API_KEY` in your environment and restart the hub.
+在环境中设置 `ELEVENLABS_API_KEY` 并重启 hub。
 
 ### "Failed to get microphone permission"
 
-- Check browser permissions for microphone access
-- Ensure no other app is using the microphone
-- Try refreshing the page
+- 检查浏览器的麦克风访问权限
+- 确保没有其他应用在使用麦克风
+- 尝试刷新页面
 
-### Voice not responding
+### 语音无响应
 
-- Verify the session is connected (green dot in status bar)
-- Check that voice status shows "connecting" or connected state
-- Ensure you have a stable internet connection
+- 验证会话已连接（状态栏有绿点）
+- 检查语音状态显示"connecting"或已连接状态
+- 确保网络连接稳定
 
 ### "Failed to create ElevenLabs agent automatically"
 
-- Verify your API key is valid
-- Check your ElevenLabs account has available quota
-- Try setting a custom `ELEVENLABS_AGENT_ID`
+- 验证 API 密钥有效
+- 检查 ElevenLabs 账户是否有可用配额
+- 尝试设置自定义 `ELEVENLABS_AGENT_ID`
 
-### Poor audio quality
+### 音频质量差
 
-- Use a headset to avoid echo
-- Reduce background noise
-- Check your internet connection stability
+- 使用耳机避免回声
+- 减少背景噪音
+- 检查网络连接稳定性

@@ -1,200 +1,200 @@
-# Progressive Web App (PWA)
+# 渐进式 Web 应用 (PWA)
 
-HAPI's web interface is a fully-featured PWA that can be installed on your phone for a native app-like experience.
+HAPI 的 Web 界面是一个功能完整的 PWA，可以安装到手机上获得类原生应用的体验。
 
-## What is PWA?
+## 什么是 PWA？
 
-A Progressive Web App (PWA) is a web application that can be installed on your device and works like a native app:
+渐进式 Web 应用 (PWA) 是一种可以安装到设备上并像原生应用一样工作的 Web 应用：
 
-- **Home screen icon** - Launch HAPI like any other app
-- **Full screen mode** - No browser chrome, immersive experience
-- **Offline support** - Basic functionality works without internet
-- **Auto-updates** - Always get the latest version
+- **主屏幕图标** - 像其他应用一样启动 HAPI
+- **全屏模式** - 无浏览器边框，沉浸式体验
+- **离线支持** - 基本功能在无网络时也能使用
+- **自动更新** - 始终获取最新版本
 
-## Installing HAPI PWA
+## 安装 HAPI PWA
 
 ### Android (Chrome/Edge)
 
-1. Open HAPI in Chrome or Edge browser
-2. Look for the **"Install HAPI"** banner at the bottom
-3. Tap **"Install"**
-4. HAPI appears on your home screen
+1. 在 Chrome 或 Edge 浏览器中打开 HAPI
+2. 查看底部的 **"安装 HAPI"** 横幅
+3. 点击 **"安装"**
+4. HAPI 出现在主屏幕上
 
 ::: tip
-If you don't see the install banner, tap the three-dot menu and select **"Add to Home screen"** or **"Install app"**.
+如果没看到安装横幅，点击右上角三点菜单，选择 **"添加到主屏幕"** 或 **"安装应用"**。
 :::
 
 ### iOS (Safari)
 
-1. Open HAPI in Safari browser
-2. Tap the **Share** button (square with arrow)
-3. Scroll down and tap **"Add to Home Screen"**
-4. Tap **"Add"** in the top right corner
+1. 在 Safari 浏览器中打开 HAPI
+2. 点击 **分享** 按钮（带箭头的方框）
+3. 向下滚动并点击 **"添加到主屏幕"**
+4. 点击右上角的 **"添加"**
 
 ::: warning
-iOS requires Safari for PWA installation. Chrome/Firefox on iOS don't support the "Add to Home Screen" feature.
+iOS 需要使用 Safari 才能安装 PWA。iOS 上的 Chrome/Firefox 不支持"添加到主屏幕"功能。
 :::
 
-### Desktop (Chrome/Edge)
+### 桌面 (Chrome/Edge)
 
-1. Open HAPI in your browser
-2. Click the install icon in the address bar (⊕)
-3. Or use the menu: **"Install HAPI..."**
-4. HAPI opens as a standalone window
+1. 在浏览器中打开 HAPI
+2. 点击地址栏中的安装图标 (⊕)
+3. 或使用菜单：**"安装 HAPI..."**
+4. HAPI 以独立窗口打开
 
-## PWA Features
+## PWA 功能
 
-### Offline Mode
+### 离线模式
 
-When offline, HAPI can:
+离线时，HAPI 可以：
 
-- Display cached session lists
-- Show previously loaded messages
-- Queue actions for when you're back online
+- 显示缓存的会话列表
+- 显示之前加载的消息
+- 将操作排队，等待重新联网后执行
 
-An offline indicator appears when you lose connection.
+断网时会显示离线指示器。
 
-### Auto-Update
+### 自动更新
 
-HAPI automatically checks for updates:
+HAPI 自动检查更新：
 
-- Updates are checked hourly in the background
-- When a new version is available, you'll see a prompt
-- Click "Reload" to get the latest version
+- 后台每小时检查更新
+- 有新版本时会显示提示
+- 点击"重新加载"获取最新版本
 
-### Background Sync
+### 后台同步
 
-Actions taken offline are synced when reconnected:
+离线时的操作会在重新联网后同步：
 
-- Pending messages are sent
-- Permission decisions are relayed
-- Session state is refreshed
+- 发送待处理的消息
+- 传递权限决定
+- 刷新会话状态
 
-## Caching Strategy
+## 缓存策略
 
-HAPI uses intelligent caching:
+HAPI 使用智能缓存：
 
-| Content | Strategy | Duration |
-|---------|----------|----------|
-| App shell | Cache first | Until update |
-| Sessions API | Network first | 5 minutes |
-| Machines API | Network first | 10 minutes |
-| Static assets | Cache first | Forever |
+| 内容 | 策略 | 时长 |
+|------|------|------|
+| 应用外壳 | 优先缓存 | 直到更新 |
+| 会话 API | 优先网络 | 5 分钟 |
+| 机器 API | 优先网络 | 10 分钟 |
+| 静态资源 | 优先缓存 | 永久 |
 
-## Notifications
+## 通知
 
-HAPI supports push notifications to alert you when agents need attention.
+HAPI 支持推送通知，在代理需要关注时提醒你。
 
-### Enable Notifications
+### 启用通知
 
-1. Open HAPI - a permission popup appears automatically
-2. Tap **Allow** to enable notifications
-3. If you missed the popup, go to system settings to grant permission
+1. 打开 HAPI - 权限弹窗会自动出现
+2. 点击 **允许** 启用通知
+3. 如果错过了弹窗，去系统设置中授予权限
 
-### Notification Types
+### 通知类型
 
-| Type | When Sent |
-|------|-----------|
-| Permission Request | Agent needs your approval |
-| Ready | Agent finished and awaits input |
+| 类型 | 发送时机 |
+|------|----------|
+| 权限请求 | 代理需要你的批准 |
+| 就绪 | 代理完成并等待输入 |
 
 ::: tip
-If push notifications don't work in your region (e.g., FCM unavailable), use [Telegram integration](./installation.md#telegram-setup) instead.
+如果推送通知在你的地区不可用（例如 FCM 不可用），请使用 [Telegram 集成](./installation.md#telegram-设置) 代替。
 :::
 
-## Managing Your PWA
+## 管理你的 PWA
 
-### Check Install Status
+### 检查安装状态
 
-HAPI shows different UI based on install status:
+HAPI 根据安装状态显示不同 UI：
 
-- **Not installed** - Shows install prompt
-- **Installing** - Shows progress indicator
-- **Installed** - No prompt shown
+- **未安装** - 显示安装提示
+- **安装中** - 显示进度指示器
+- **已安装** - 不显示提示
 
-### Uninstalling
+### 卸载
 
 **Android:**
-1. Long-press the HAPI icon
-2. Drag to "Uninstall" or tap the X
+1. 长按 HAPI 图标
+2. 拖到"卸载"或点击 X
 
 **iOS:**
-1. Long-press the HAPI icon
-2. Tap "Remove App" → "Delete App"
+1. 长按 HAPI 图标
+2. 点击"移除 App" → "删除 App"
 
-**Desktop:**
-1. Open HAPI
-2. Click the three-dot menu
-3. Select "Uninstall HAPI"
+**桌面:**
+1. 打开 HAPI
+2. 点击三点菜单
+3. 选择"卸载 HAPI"
 
-### Clearing Cache
+### 清除缓存
 
-If you experience issues:
+如果遇到问题：
 
-1. Open HAPI in browser (not installed version)
-2. Open Developer Tools (F12)
-3. Go to Application → Storage
-4. Click "Clear site data"
+1. 在浏览器中打开 HAPI（非安装版本）
+2. 打开开发者工具 (F12)
+3. 进入 Application → Storage
+4. 点击"Clear site data"
 
-## Best Practices
+## 最佳实践
 
-### Battery Optimization
+### 电池优化
 
-On Android, disable battery optimization for HAPI to ensure:
-- Background sync works reliably
-- Notifications arrive promptly
+在 Android 上，为 HAPI 禁用电池优化以确保：
+- 后台同步可靠工作
+- 通知及时送达
 
-Settings → Apps → HAPI → Battery → Unrestricted
+设置 → 应用 → HAPI → 电池 → 不受限制
 
-### Data Usage
+### 数据使用
 
-HAPI uses minimal data:
+HAPI 使用的数据量很小：
 
-- Initial load: ~500KB
-- Cached after first load
-- Only syncs changed data
+- 首次加载：约 500KB
+- 首次加载后缓存
+- 只同步变化的数据
 
-### Multiple Devices
+### 多设备
 
-You can install HAPI on multiple devices:
+你可以在多个设备上安装 HAPI：
 
-- All devices use the same server
-- Sessions sync across devices
-- Same access token works everywhere
+- 所有设备使用同一服务器
+- 会话跨设备同步
+- 同一访问令牌在任何地方都可用
 
-## Troubleshooting
+## 故障排除
 
-### Install Button Not Showing
+### 安装按钮不显示
 
-- Ensure you're using HTTPS (required for PWA)
-- Try refreshing the page
-- Check if already installed
+- 确保使用 HTTPS（PWA 必需）
+- 尝试刷新页面
+- 检查是否已安装
 
-### App Not Updating
+### 应用不更新
 
-1. Close the app completely
-2. Reopen and wait for update prompt
-3. If stuck, clear cache and reinstall
+1. 完全关闭应用
+2. 重新打开并等待更新提示
+3. 如果卡住，清除缓存并重新安装
 
-### Offline Mode Not Working
+### 离线模式不工作
 
-- Ensure you've loaded the app at least once online
-- Check if ServiceWorker is registered (DevTools → Application)
-- Clear cache and reload
+- 确保至少在线加载过一次应用
+- 检查 ServiceWorker 是否已注册（DevTools → Application）
+- 清除缓存并重新加载
 
-### iOS-Specific Issues
+### iOS 特定问题
 
-- Must use Safari for installation
-- No background sync on iOS
-- Limited offline capabilities
+- 必须使用 Safari 安装
+- iOS 不支持后台同步
+- 离线功能有限
 
-## Telegram Mini App Alternative
+## Telegram Mini App 替代方案
 
-If PWA doesn't suit your needs, consider the Telegram Mini App:
+如果 PWA 不适合你的需求，可以考虑 Telegram Mini App：
 
-- Works inside Telegram
-- No separate installation
-- Same features as PWA
-- Integrated notifications
+- 在 Telegram 内运行
+- 无需单独安装
+- 与 PWA 功能相同
+- 集成通知
 
-See [Installation Guide](./installation.md#telegram-setup) for Telegram setup.
+详见 [安装指南](./installation.md#telegram-设置) 了解 Telegram 设置。

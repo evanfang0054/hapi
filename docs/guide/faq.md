@@ -1,143 +1,143 @@
-# FAQ
+# 常见问题
 
-## General
+## 基础问题
 
-### What is HAPI?
+### 什么是 HAPI？
 
-HAPI is a local-first, self-hosted platform for running and controlling AI coding agents (Claude Code, Codex, Gemini, OpenCode) remotely. It lets you start coding sessions on your computer and monitor/control them from your phone.
+HAPI 是一个本地优先、自托管的平台，用于远程运行和控制 AI 编程代理（Claude Code、Codex、Gemini、OpenCode）。它让你可以在电脑上启动编程会话，并通过手机进行监控和操作。
 
-### What does HAPI stand for?
+### HAPI 是什么意思？
 
-HAPI (哈皮) is a Chinese transliteration of "Happy", reflecting the project's goal of making AI coding assistance a happier experience by freeing you from the terminal.
+HAPI（哈皮）是 "Happy" 的中文音译，体现了项目的目标：让你从终端中解放出来，享受更愉快的 AI 编程辅助体验。
 
-### Is HAPI free?
+### HAPI 免费吗？
 
-Yes, HAPI is open source and free to use under the AGPL-3.0-only license.
+是的，HAPI 是开源项目，采用 AGPL-3.0-only 许可证，可免费使用。
 
-### What AI agents does HAPI support?
+### HAPI 支持哪些 AI 代理？
 
-- **Claude Code** (recommended)
+- **Claude Code**（推荐）
 - **OpenAI Codex**
 - **Cursor Agent**
 - **Google Gemini**
 - **OpenCode**
 
-## Setup & Installation
+## 安装与配置
 
-### Do I need a hub?
+### 我需要单独部署 hub 吗？
 
-HAPI includes an embedded hub. Just run `hapi hub` on your machine - no external hub required.
+HAPI 内置了 hub。只需在你的电脑上运行 `hapi hub` 即可，无需外部 hub。
 
-`hapi server` remains supported as an alias.
+`hapi server` 作为别名仍然可用。
 
-### How do I access HAPI from my phone?
+### 如何从手机访问 HAPI？
 
-For local network access:
+局域网访问：
 ```
-http://<your-computer-ip>:3006
+http://<你的电脑IP>:3006
 ```
 
-If your phone cannot connect, make sure the hub is not only listening on `127.0.0.1`. For LAN access, set `listenHost` to `0.0.0.0` in `~/.hapi/settings.json` or set `HAPI_LISTEN_HOST=0.0.0.0`, then restart `hapi hub`.
+如果手机无法连接，请确保 hub 不是只监听 `127.0.0.1`。要支持局域网访问，在 `~/.hapi/settings.json` 中设置 `listenHost` 为 `0.0.0.0`，或设置环境变量 `HAPI_LISTEN_HOST=0.0.0.0`，然后重启 `hapi hub`。
 
-For internet access:
-- If the hub has a public IP, access it directly (use HTTPS via reverse proxy for production)
-- If behind NAT, set up a tunnel (Cloudflare Tunnel, Tailscale, or ngrok)
+外网访问：
+- 如果 hub 有公网 IP，可直接访问（生产环境建议通过反向代理使用 HTTPS）
+- 如果在 NAT 后面，可设置隧道（Cloudflare Tunnel、Tailscale 或 ngrok）
 
-### What's the access token for?
+### 访问令牌是做什么用的？
 
-The `CLI_API_TOKEN` is a shared secret that authenticates:
-- CLI connections to the hub
-- Web app logins
-- Telegram account binding
+`CLI_API_TOKEN` 是一个共享密钥，用于验证：
+- CLI 连接到 hub
+- Web 应用登录
+- Telegram 账号绑定
 
-It's auto-generated on first hub start and saved to `~/.hapi/settings.json`.
+它在 hub 首次启动时自动生成，保存在 `~/.hapi/settings.json` 中。
 
-### Do you support multiple accounts?
+### 支持多账户吗？
 
-Yes. We support lightweight multi-account access via namespaces for shared team hubs. See [Namespace (Advanced)](./namespace.md).
+支持。我们通过命名空间提供轻量级的多账户访问，适用于团队共享 hub 的场景。详见 [命名空间（高级）](./namespace.md)。
 
-### Can I use HAPI without Telegram?
+### 可以不用 Telegram 吗？
 
-Yes. Telegram is optional. You can use the web app directly in any browser or install it as a PWA.
+可以。Telegram 是可选的。你可以直接在任何浏览器中使用 Web 应用，或将其安装为 PWA。
 
-## Usage
+## 使用指南
 
-### How do I approve permissions remotely?
+### 如何远程审批权限？
 
-1. When your AI agent requests permission (e.g., to edit a file), you'll see a notification
-2. Open HAPI on your phone
-3. Navigate to the active session
-4. Approve or deny the pending permission
+1. 当 AI 代理请求权限时（例如编辑文件），你会收到通知
+2. 在手机上打开 HAPI
+3. 进入活跃的会话
+4. 批准或拒绝待处理的权限请求
 
-### How do I receive notifications?
+### 如何接收通知？
 
-HAPI supports two methods:
+HAPI 支持两种方式：
 
-1. **PWA Push Notifications** - Enable when prompted, works even when app is closed
-2. **Telegram Bot** - See [Telegram Setup](./installation.md#telegram-setup)
+1. **PWA 推送通知** - 按提示启用，即使应用关闭也能收到
+2. **Telegram Bot** - 详见 [Telegram 设置](./installation.md#telegram-setup)
 
-### Can I start sessions remotely?
+### 可以远程启动会话吗？
 
-Yes, with runner mode:
+可以，使用 runner 模式：
 
-1. Run `hapi runner start` on your computer
-2. Your machine appears in the "Machines" list in the web app
-3. Tap to spawn new sessions from anywhere
+1. 在电脑上运行 `hapi runner start`
+2. 你的机器会出现在 Web 应用的「机器」列表中
+3. 点击即可从任何地方创建新会话
 
-### How do I see what files were changed?
+### 如何查看文件变更？
 
-In the session view, tap the "Files" tab to:
-- Browse project files
-- View git status
-- See diffs of changed files
+在会话视图中，点击「文件」标签页可以：
+- 浏览项目文件
+- 查看 git 状态
+- 查看已修改文件的 diff
 
-### Can I send messages to the AI from my phone?
+### 可以从手机向 AI 发送消息吗？
 
-Yes. Open any session and use the chat interface to send messages directly to the AI agent.
+可以。打开任意会话，使用聊天界面直接向 AI 代理发送消息。
 
-### Can I access a terminal remotely?
+### 可以远程访问终端吗？
 
-Yes, on Linux and macOS hosts. Open a session in the web app and tap the Terminal tab for a remote shell.
+可以，支持 Linux 和 macOS 主机。在 Web 应用中打开会话，点击「终端」标签页即可使用远程 shell。
 
-Windows hosts do not support the remote Terminal yet because the Bun PTY API used by HAPI is currently POSIX-only.
+Windows 主机暂不支持远程终端，因为 HAPI 使用的 Bun PTY API 目前仅支持 POSIX 系统。
 
-### How do I use voice control?
+### 如何使用语音控制？
 
-Set `ELEVENLABS_API_KEY`, open a session in the web app, and click the microphone button. See [Voice Assistant](./voice-assistant.md).
+设置 `ELEVENLABS_API_KEY`，在 Web 应用中打开会话，点击麦克风按钮。详见 [语音助手](./voice-assistant.md)。
 
-## Security
+## 安全性
 
-### Is my data safe?
+### 我的数据安全吗？
 
-Yes. HAPI is local-first:
-- All data stays on your machine
-- Nothing is uploaded to external servers
-- The database is stored locally in `~/.hapi/`
+安全。HAPI 采用本地优先设计：
+- 所有数据都保存在你的机器上
+- 不会上传到任何外部服务器
+- 数据库存储在本地 `~/.hapi/` 目录
 
-### How secure is the token authentication?
+### 令牌认证有多安全？
 
-The auto-generated token is 256-bit (cryptographically secure). For external access, always use HTTPS via a tunnel.
+自动生成的令牌是 256 位（加密安全）。外网访问时，请务必通过隧道使用 HTTPS。
 
-### Can others access my HAPI instance?
+### 其他人能访问我的 HAPI 实例吗？
 
-Only if they have your access token. For additional security:
-- Use a strong, unique token
-- Always use HTTPS for external access
-- Consider Tailscale for private networking
+只有拥有你的访问令牌才能访问。为了更高的安全性：
+- 使用强密码且唯一的令牌
+- 外网访问时始终使用 HTTPS
+- 考虑使用 Tailscale 进行私有网络连接
 
-## Troubleshooting
+## 故障排查
 
-### "Connection refused" error
+### "Connection refused" 错误
 
-- Ensure hub is running: `hapi hub`
-- Check firewall allows port 3006
-- Verify `HAPI_API_URL` is correct
+- 确保 hub 正在运行：`hapi hub`
+- 检查防火墙是否允许 3006 端口
+- 验证 `HAPI_API_URL` 是否正确
 
-### My phone cannot access HAPI on the local network
+### 手机无法在局域网访问 HAPI
 
-If HAPI works on your computer but not from another device on the same LAN, check the hub bind address first. By default, HAPI listens on `127.0.0.1`, which only accepts localhost connections.
+如果 HAPI 在电脑上正常工作，但同一局域网的其他设备无法访问，请先检查 hub 绑定地址。默认情况下，HAPI 监听 `127.0.0.1`，只接受本机连接。
 
-Use one of these:
+使用以下方法之一：
 
 ```json
 {
@@ -149,45 +149,45 @@ Use one of these:
 export HAPI_LISTEN_HOST=0.0.0.0
 ```
 
-Then restart `hapi hub` and open:
+然后重启 `hapi hub` 并打开：
 
 ```bash
-http://<your-computer-ip>:3006
+http://<你的电脑IP>:3006
 ```
 
-Also verify your OS firewall allows inbound connections on port `3006`.
+同时确认操作系统防火墙允许 `3006` 端口的入站连接。
 
-### "Invalid token" error
+### "Invalid token" 错误
 
-- Re-run `hapi auth login`
-- Check token matches in CLI and hub
-- Verify `~/.hapi/settings.json` has correct `cliApiToken`
+- 重新运行 `hapi auth login`
+- 检查 CLI 和 hub 中的令牌是否一致
+- 验证 `~/.hapi/settings.json` 中的 `cliApiToken` 是否正确
 
-### Runner won't start
+### Runner 无法启动
 
 ```bash
-# Check status
+# 检查状态
 hapi runner status
 
-# Clear stale lock file
+# 清除过期的锁文件
 rm ~/.hapi/runner.state.json.lock
 
-# Check logs
+# 查看日志
 hapi runner logs
 ```
 
-### Claude Code not found
+### 找不到 Claude Code
 
-Install Claude Code or set custom path:
+安装 Claude Code 或设置自定义路径：
 ```bash
 npm install -g @anthropic-ai/claude-code
-# or
+# 或
 export HAPI_CLAUDE_PATH=/path/to/claude
 ```
 
-### Cursor Agent not found
+### 找不到 Cursor Agent
 
-Install Cursor Agent CLI:
+安装 Cursor Agent CLI：
 ```bash
 # macOS/Linux
 curl https://cursor.com/install -fsS | bash
@@ -196,48 +196,48 @@ curl https://cursor.com/install -fsS | bash
 irm 'https://cursor.com/install?win32=true' | iex
 ```
 
-Ensure `agent` is on your PATH.
+确保 `agent` 在你的 PATH 中。
 
-### How do I run diagnostics?
+### 如何运行诊断？
 
 ```bash
 hapi doctor
 ```
 
-This checks hub connectivity, token validity, agent availability, and more.
+这会检查 hub 连接性、令牌有效性、代理可用性等。
 
-## Comparison
+## 对比
 
 ### HAPI vs Happy
 
-| Aspect | Happy | HAPI |
+| 方面 | Happy | HAPI |
 |--------|-------|------|
-| Design | Cloud-first | Local-first |
-| Users | Multi-user | Single user |
-| Deployment | Multiple services | Single binary |
-| Data | Encrypted on server | Never leaves your machine |
+| 设计理念 | 云优先 | 本地优先 |
+| 用户 | 多用户 | 单用户 |
+| 部署 | 多个服务 | 单一二进制 |
+| 数据 | 服务器加密存储 | 永不离开你的机器 |
 
-See [Why HAPI](./why-hapi.md) for detailed comparison.
+详见 [为什么选择 HAPI](./why-hapi.md)。
 
-### HAPI vs running Claude Code directly
+### HAPI vs 直接使用 Claude Code
 
-| Feature | Claude Code | HAPI + Claude Code |
+| 功能 | Claude Code | HAPI + Claude Code |
 |---------|-------------|-------------------|
-| Remote access | No | Yes |
-| Mobile control | No | Yes |
-| Permission approval | Terminal only | Phone/web |
-| Session persistence | No | Yes |
-| Multi-machine | Manual | Built-in |
+| 远程访问 | 否 | 是 |
+| 移动端控制 | 否 | 是 |
+| 权限审批 | 仅终端 | 手机/Web |
+| 会话持久化 | 否 | 是 |
+| 多机器管理 | 手动 | 内置 |
 
-## Contributing
+## 贡献
 
-### How can I contribute?
+### 如何参与贡献？
 
-Visit our [GitHub repository](https://github.com/tiann/hapi) to:
-- Report issues
-- Submit pull requests
-- Suggest features
+访问我们的 [GitHub 仓库](https://github.com/tiann/hapi)：
+- 报告问题
+- 提交 PR
+- 建议新功能
 
-### Where do I report bugs?
+### 在哪里报告 Bug？
 
-Open an issue on [GitHub Issues](https://github.com/tiann/hapi/issues).
+请在 [GitHub Issues](https://github.com/tiann/hapi/issues) 上提交。

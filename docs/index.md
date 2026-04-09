@@ -1,6 +1,6 @@
 ---
 layout: home
-title: HAPI Documentation
+title: HAPI 文档
 ---
 
 <script setup>

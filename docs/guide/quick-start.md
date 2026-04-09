@@ -1,8 +1,8 @@
-# Quick Start
+# 快速开始
 
 <Steps>
 
-## Install HAPI
+## 安装 HAPI
 
 ::: code-group
 
@@ -14,49 +14,49 @@ npm install -g @twsxtd/hapi --registry=https://registry.npmjs.org
 brew install tiann/tap/hapi
 ```
 
-```bash [npx (one-off)]
+```bash [npx (一次性)]
 npx @twsxtd/hapi
 ```
 
 :::
 
-> Recommendation: use the official npm registry for global install. Some mirrors may not sync platform packages in time.
+> 建议：全局安装时使用官方 npm 源。部分镜像可能无法及时同步平台包。
 
-Other install options: [Installation](./installation.md)
+其他安装方式：[安装指南](./installation.md)
 
-## Start the hub
+## 启动 Hub
 
 ```bash
 hapi hub --relay
 ```
 
-On first run, HAPI prints an access token and saves it to `~/.hapi/settings.json`.
+首次运行时，HAPI 会打印访问令牌并保存到 `~/.hapi/settings.json`。
 
-`hapi server` remains supported as an alias.
+`hapi server` 仍作为别名支持。
 
-The terminal will display a URL and QR code for remote access.
+终端会显示远程访问的 URL 和二维码。
 
-> End-to-end encrypted with WireGuard + TLS.
+> 使用 WireGuard + TLS 进行端到端加密。
 
-## Start a coding session
+## 启动编程会话
 
 ```bash
 hapi
 ```
 
-This starts Claude Code wrapped with HAPI. The session appears in the web UI.
+这会启动由 HAPI 包装的 Claude Code。会话会出现在 Web UI 中。
 
-## Open the UI
+## 打开界面
 
-Open the URL shown in the terminal, or scan the QR code with your phone.
+打开终端显示的 URL，或用手机扫描二维码。
 
-Enter your access token to log in.
+输入访问令牌登录。
 
 </Steps>
 
-## Next steps
+## 下一步
 
-- [Seamless Handoff](./how-it-works.md#seamless-handoff) - Switch between terminal and phone seamlessly
-- [Hub setup](./installation.md#hub-setup) - Access HAPI from anywhere
-- [Notifications](./installation.md#telegram-setup) - Set up Telegram notifications
-- [Install the App](./pwa.md) - Add HAPI to your home screen
+- [无缝切换](./how-it-works.md#无缝切换) - 在终端和手机间无缝切换
+- [Hub 设置](./installation.md#hub-设置) - 从任何地方访问 HAPI
+- [通知](./installation.md#telegram-设置) - 设置 Telegram 通知
+- [安装应用](./pwa.md) - 将 HAPI 添加到主屏幕
