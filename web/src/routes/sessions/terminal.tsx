@@ -11,6 +11,7 @@ import { useTranslation } from '@/lib/use-translation'
 import { TerminalView } from '@/components/Terminal/TerminalView'
 import { LoadingState } from '@/components/LoadingState'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { isRemoteTerminalSupported } from '@/utils/terminalSupport'
 import {
     Dialog,
@@ -37,10 +38,10 @@ function BackIcon() {
     )
 }
 
-function ConnectionIndicator(props: { status: 'idle' | 'connecting' | 'connected' | 'error' }) {
+function ConnectionIndicator(props: { status: 'idle' | 'connecting' | 'connected' | 'error'; label: string }) {
     const isConnected = props.status === 'connected'
     const isConnecting = props.status === 'connecting'
-    const label = isConnected ? 'Connected' : isConnecting ? 'Connecting' : 'Offline'
+    const label = props.label
     const colorClass = isConnected
         ? 'bg-emerald-500'
         : isConnecting
@@ -395,13 +396,18 @@ export default function TerminalPage() {
     if (!session) {
         return (
             <div className="flex h-full items-center justify-center">
-                <LoadingState label="Loading session…" className="text-sm" />
+                <LoadingState label={t('loading.session')} className="text-sm" />
             </div>
         )
     }
 
     const subtitle = session.metadata?.path ?? sessionId
     const status = terminalState.status
+    const connectionLabel = status === 'connected'
+        ? t('terminal.connection.connected')
+        : status === 'connecting'
+          ? t('terminal.connection.connecting')
+          : t('terminal.connection.offline')
     const errorMessage = !terminalSupported
         ? t('terminal.unsupportedWindows')
         : terminalState.status === 'error'
@@ -409,98 +415,136 @@ export default function TerminalPage() {
           : null
 
     return (
-        <div className="flex h-full min-h-0 flex-col">
-            <div className="bg-[var(--app-bg)] pt-[env(safe-area-inset-top)]">
-                <div className="mx-auto w-full max-w-content flex items-center gap-2 p-3 border-b border-[var(--app-border)]">
-                    <button
-                        type="button"
-                        onClick={goBack}
-                        className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--app-hint)] transition-colors hover:bg-[var(--app-secondary-bg)] hover:text-[var(--app-fg)]"
-                    >
-                        <BackIcon />
-                    </button>
-                    <div className="min-w-0 flex-1">
-                        <div className="truncate font-semibold">Terminal</div>
-                        <div className="truncate text-xs text-[var(--app-hint)]">{subtitle}</div>
-                    </div>
-                    <ConnectionIndicator status={status} />
-                </div>
-            </div>
+        <div className="flex h-full min-h-0 flex-col bg-[var(--app-bg)]">
+            <div className="app-scroll-y flex-1 min-h-0">
+                <div className="mx-auto flex h-full w-full max-w-content flex-col px-3 py-4 md:px-5 md:py-6">
+                    <Card className="flex h-full min-h-0 flex-col overflow-hidden border-[var(--app-border)] bg-[var(--app-panel-bg)] shadow-[var(--app-shadow-sm)]">
+                        <CardHeader className="gap-4 border-b border-[var(--app-border)] px-5 py-5 sm:px-6">
+                            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                                <div className="min-w-0 flex-1 space-y-3">
+                                    <div className="flex items-center gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={goBack}
+                                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] text-[var(--app-hint)] transition-colors hover:bg-[var(--app-panel-muted-bg)] hover:text-[var(--app-fg)]"
+                                        >
+                                            <BackIcon />
+                                        </button>
+                                        <div className="min-w-0">
+                                            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--app-hint)]">
+                                                {t('terminal.page.eyebrow')}
+                                            </p>
+                                            <CardTitle className="mt-2 truncate text-3xl leading-none" data-ui-heading="serif">
+                                                {t('terminal.page.title')}
+                                            </CardTitle>
+                                        </div>
+                                    </div>
+                                    <CardDescription className="max-w-3xl text-sm leading-6 text-[var(--app-hint)]">
+                                        {t('terminal.page.description')}
+                                    </CardDescription>
+                                    <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--app-hint)]">
+                                        <span className="inline-flex max-w-[min(65vw,40rem)] items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-3 py-1 text-[var(--app-fg)]">
+                                            <span className="truncate">{subtitle}</span>
+                                        </span>
+                                        <span className="inline-flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-3 py-1 text-[var(--app-fg)]">
+                                            <ConnectionIndicator status={status} label={connectionLabel} />
+                                            <span>{connectionLabel}</span>
+                                        </span>
+                                        {!session.active ? (
+                                            <span className="inline-flex items-center rounded-full border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-3 py-1 text-[var(--app-hint)]">
+                                                {t('terminal.sessionInactiveBadge')}
+                                            </span>
+                                        ) : null}
+                                    </div>
+                                </div>
 
-            {session.active ? null : (
-                <div className="px-3 pt-3">
-                    <div className="mx-auto w-full max-w-content rounded-md bg-[var(--app-subtle-bg)] p-3 text-sm text-[var(--app-hint)]">
-                        Session is inactive. Terminal is unavailable.
-                    </div>
-                </div>
-            )}
-
-            {errorMessage ? (
-                <div className="mx-auto w-full max-w-content px-3 pt-3">
-                    <div className="rounded-md border border-[var(--app-badge-error-border)] bg-[var(--app-badge-error-bg)] p-3 text-xs text-[var(--app-badge-error-text)]">
-                        {errorMessage}
-                    </div>
-                </div>
-            ) : null}
-
-            {exitInfo ? (
-                <div className="mx-auto w-full max-w-content px-3 pt-3">
-                    <div className="rounded-md border border-[var(--app-border)] bg-[var(--app-subtle-bg)] p-3 text-xs text-[var(--app-hint)]">
-                        Terminal exited{exitInfo.code !== null ? ` with code ${exitInfo.code}` : ''}
-                        {exitInfo.signal ? ` (${exitInfo.signal})` : ''}.
-                    </div>
-                </div>
-            ) : null}
-
-            <div className="flex-1 min-h-0 overflow-hidden bg-[var(--app-bg)]">
-                <div className="mx-auto h-full w-full max-w-content p-3">
-                    {terminalSupported ? (
-                        <TerminalView onMount={handleTerminalMount} onResize={handleResize} className="h-full w-full" />
-                    ) : (
-                        <div className="flex h-full items-center justify-center rounded-md border border-[var(--app-border)] bg-[var(--app-subtle-bg)] p-4 text-sm text-[var(--app-hint)]">
-                            {t('terminal.unsupportedWindows')}
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            <div className="bg-[var(--app-bg)] border-t border-[var(--app-border)] pb-[env(safe-area-inset-bottom)]">
-                <div className="mx-auto w-full max-w-content px-3">
-                    <div className="flex flex-col gap-2 py-2">
-                        <button
-                            type="button"
-                            onClick={() => {
-                                void handlePasteAction()
-                            }}
-                            disabled={quickInputDisabled}
-                            className="w-full rounded-md border border-[var(--app-border)] bg-[var(--app-secondary-bg)] px-3 py-2 text-sm font-medium text-[var(--app-fg)] transition-colors hover:bg-[var(--app-subtle-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-button)] disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                            {t('button.paste')}
-                        </button>
-                        {QUICK_INPUT_ROWS.map((row, rowIndex) => (
-                            <div
-                                key={`terminal-quick-row-${rowIndex}`}
-                                className="flex items-stretch overflow-hidden rounded-md bg-[var(--app-secondary-bg)]"
-                            >
-                                {row.map((input) => {
-                                    const modifier = input.modifier
-                                    const isCtrl = modifier === 'ctrl'
-                                    const isAlt = modifier === 'alt'
-                                    const isActive = (isCtrl && ctrlActive) || (isAlt && altActive)
-                                    return (
-                                        <QuickKeyButton
-                                            key={input.label}
-                                            input={input}
-                                            disabled={quickInputDisabled}
-                                            isActive={isActive}
-                                            onPress={handleQuickInput}
-                                            onToggleModifier={handleModifierToggle}
-                                        />
-                                    )
-                                })}
+                                <div className="flex w-full flex-col gap-2 md:max-w-xs md:items-end">
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        onClick={() => {
+                                            void handlePasteAction()
+                                        }}
+                                        disabled={quickInputDisabled}
+                                        className="w-full md:w-auto"
+                                    >
+                                        {t('button.paste')}
+                                    </Button>
+                                    <p className="text-xs leading-5 text-[var(--app-hint)] md:max-w-xs md:text-right">
+                                        {t('terminal.quickInput.hint')}
+                                    </p>
+                                </div>
                             </div>
-                        ))}
-                    </div>
+
+                            {session.active ? null : (
+                                <div className="rounded-[var(--app-radius-control)] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] px-4 py-3 text-sm text-[var(--app-hint)]">
+                                    {t('terminal.sessionInactiveMessage')}
+                                </div>
+                            )}
+
+                            {errorMessage ? (
+                                <div className="rounded-[var(--app-radius-control)] border border-[var(--app-badge-error-border)] bg-[var(--app-badge-error-bg)] px-4 py-3 text-xs leading-5 text-[var(--app-badge-error-text)]">
+                                    {errorMessage}
+                                </div>
+                            ) : null}
+
+                            {exitInfo ? (
+                                <div className="rounded-[var(--app-radius-control)] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] px-4 py-3 text-xs leading-5 text-[var(--app-hint)]">
+                                    {t('terminal.exitInfo', {
+                                        suffix: `${exitInfo.code !== null ? ` ${t('terminal.exitCode', { code: exitInfo.code })}` : ''}${exitInfo.signal ? ` (${exitInfo.signal})` : ''}.`
+                                    })}
+                                </div>
+                            ) : null}
+                        </CardHeader>
+
+                        <CardContent className="flex min-h-0 flex-1 flex-col gap-4 px-5 py-5 sm:px-6">
+                            <div className="min-h-0 flex-1 overflow-hidden rounded-[var(--app-radius-panel)] border border-[var(--app-border)] bg-[var(--app-code-bg)] shadow-[var(--app-shadow-sm)]">
+                                {terminalSupported ? (
+                                    <TerminalView onMount={handleTerminalMount} onResize={handleResize} className="h-full w-full" />
+                                ) : (
+                                    <div className="flex h-full items-center justify-center p-4 text-sm text-[var(--app-hint)]">
+                                        {t('terminal.unsupportedWindows')}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="space-y-3 rounded-[var(--app-radius-panel)] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] p-4 shadow-[var(--app-shadow-sm)]">
+                                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                                    <div>
+                                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--app-hint)]">
+                                            {t('terminal.quickInput.title')}
+                                        </p>
+                                        <p className="mt-1 text-sm text-[var(--app-hint)]">
+                                            {t('terminal.quickInput.description')}
+                                        </p>
+                                    </div>
+                                </div>
+                                {QUICK_INPUT_ROWS.map((row, rowIndex) => (
+                                    <div
+                                        key={`terminal-quick-row-${rowIndex}`}
+                                        className="flex items-stretch overflow-hidden rounded-[var(--app-radius-control)] border border-[var(--app-border)] bg-[var(--app-panel-bg)]"
+                                    >
+                                        {row.map((input) => {
+                                            const modifier = input.modifier
+                                            const isCtrl = modifier === 'ctrl'
+                                            const isAlt = modifier === 'alt'
+                                            const isActive = (isCtrl && ctrlActive) || (isAlt && altActive)
+                                            return (
+                                                <QuickKeyButton
+                                                    key={input.label}
+                                                    input={input}
+                                                    disabled={quickInputDisabled}
+                                                    isActive={isActive}
+                                                    onPress={handleQuickInput}
+                                                    onToggleModifier={handleModifierToggle}
+                                                />
+                                            )
+                                        })}
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
             </div>
 
@@ -524,7 +568,7 @@ export default function TerminalPage() {
                         value={manualPasteText}
                         onChange={(event) => setManualPasteText(event.target.value)}
                         placeholder={t('terminal.paste.placeholder')}
-                        className="mt-2 min-h-32 w-full resize-y rounded-md border border-[var(--app-border)] bg-[var(--app-bg)] p-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--app-link)]"
+                        className="mt-2 min-h-32 w-full resize-y rounded-[var(--app-radius-control)] border border-[var(--app-border)] bg-[var(--app-bg)] p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--app-link)]"
                         autoCapitalize="none"
                         autoCorrect="off"
                     />

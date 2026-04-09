@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearch } from '@tanstack/react-router'
 import type { FileSearchItem, GitFileStatus } from '@/types/api'
 import { FileIcon } from '@/components/FileIcon'
 import { DirectoryTree } from '@/components/SessionFiles/DirectoryTree'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAppContext } from '@/lib/app-context'
 import { useAppGoBack } from '@/hooks/useAppGoBack'
 import { useGitStatusFiles } from '@/hooks/queries/useGitStatusFiles'
@@ -10,6 +11,7 @@ import { useSession } from '@/hooks/queries/useSession'
 import { useSessionFileSearch } from '@/hooks/queries/useSessionFileSearch'
 import { encodeBase64 } from '@/lib/utils'
 import { queryKeys } from '@/lib/query-keys'
+import { useTranslation } from '@/lib/use-translation'
 import { useQueryClient } from '@tanstack/react-query'
 
 function BackIcon(props: { className?: string }) {
@@ -159,8 +161,9 @@ function GitFileRow(props: {
     file: GitFileStatus
     onOpen: () => void
     showDivider: boolean
+    projectRootLabel: string
 }) {
-    const subtitle = props.file.filePath || 'project root'
+    const subtitle = props.file.filePath || props.projectRootLabel
 
     return (
         <button
@@ -185,8 +188,9 @@ function SearchResultRow(props: {
     file: FileSearchItem
     onOpen: () => void
     showDivider: boolean
+    projectRootLabel: string
 }) {
-    const subtitle = props.file.filePath || 'project root'
+    const subtitle = props.file.filePath || props.projectRootLabel
     const icon = props.file.fileType === 'file'
         ? <FileIcon fileName={props.file.fileName} size={22} />
         : <FolderIcon className="text-[var(--app-link)]" />
@@ -228,6 +232,7 @@ function FileListSkeleton(props: { label: string; rows?: number }) {
 }
 
 export default function FilesPage() {
+    const { t } = useTranslation()
     const { api } = useAppContext()
     const navigate = useNavigate()
     const queryClient = useQueryClient()
@@ -268,7 +273,7 @@ export default function FilesPage() {
         })
     }, [activeTab, navigate, sessionId])
 
-    const branchLabel = gitStatus?.branch ?? 'detached'
+    const branchLabel = gitStatus?.branch ?? t('sessionFiles.detached')
     const subtitle = session?.metadata?.path ?? sessionId
     const showGitErrorBanner = Boolean(gitError)
     const rootLabel = useMemo(() => {
@@ -306,174 +311,190 @@ export default function FilesPage() {
     }, [navigate, sessionId])
 
     return (
-        <div className="flex h-full min-h-0 flex-col">
-            <div className="bg-[var(--app-bg)] pt-[env(safe-area-inset-top)]">
-                <div className="mx-auto w-full max-w-content flex items-center gap-2 p-3 border-b border-[var(--app-border)]">
-                    <button
-                        type="button"
-                        onClick={goBack}
-                        className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--app-hint)] transition-colors hover:bg-[var(--app-secondary-bg)] hover:text-[var(--app-fg)]"
-                    >
-                        <BackIcon />
-                    </button>
-                    <div className="min-w-0 flex-1">
-                        <div className="truncate font-semibold">Files</div>
-                        <div className="truncate text-xs text-[var(--app-hint)]">{subtitle}</div>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={handleRefresh}
-                        className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--app-hint)] transition-colors hover:bg-[var(--app-secondary-bg)] hover:text-[var(--app-fg)]"
-                        title="Refresh"
-                    >
-                        <RefreshIcon />
-                    </button>
-                </div>
-            </div>
-
-            <div className="bg-[var(--app-bg)]">
-                <div className="mx-auto w-full max-w-content p-3 border-b border-[var(--app-border)]">
-                    <div className="flex items-center gap-2 rounded-md bg-[var(--app-subtle-bg)] px-3 py-2">
-                        <SearchIcon className="text-[var(--app-hint)]" />
-                        <input
-                            value={searchQuery}
-                            onChange={(event) => setSearchQuery(event.target.value)}
-                            placeholder="Search files"
-                            className="w-full bg-transparent text-sm text-[var(--app-fg)] placeholder:text-[var(--app-hint)] focus:outline-none"
-                            autoCapitalize="none"
-                            autoCorrect="off"
-                        />
-                    </div>
-                </div>
-            </div>
-
-            <div className="bg-[var(--app-bg)] border-b border-[var(--app-divider)]" role="tablist">
-                <div className="mx-auto w-full max-w-content grid grid-cols-2">
-                    <button
-                        type="button"
-                        role="tab"
-                        aria-selected={activeTab === 'changes'}
-                        onClick={() => handleTabChange('changes')}
-                        className={`relative py-3 text-center text-sm font-semibold transition-colors hover:bg-[var(--app-subtle-bg)] ${activeTab === 'changes' ? 'text-[var(--app-fg)]' : 'text-[var(--app-hint)]'}`}
-                    >
-                        Changes
-                        <span
-                            className={`absolute bottom-0 left-1/2 h-0.5 w-10 -translate-x-1/2 rounded-full ${activeTab === 'changes' ? 'bg-[var(--app-link)]' : 'bg-transparent'}`}
-                        />
-                    </button>
-                    <button
-                        type="button"
-                        role="tab"
-                        aria-selected={activeTab === 'directories'}
-                        onClick={() => handleTabChange('directories')}
-                        className={`relative py-3 text-center text-sm font-semibold transition-colors hover:bg-[var(--app-subtle-bg)] ${activeTab === 'directories' ? 'text-[var(--app-fg)]' : 'text-[var(--app-hint)]'}`}
-                    >
-                        Directories
-                        <span
-                            className={`absolute bottom-0 left-1/2 h-0.5 w-10 -translate-x-1/2 rounded-full ${activeTab === 'directories' ? 'bg-[var(--app-link)]' : 'bg-transparent'}`}
-                        />
-                    </button>
-                </div>
-            </div>
-
-            {!gitLoading && gitStatus && !searchQuery && activeTab === 'changes' ? (
-                <div className="bg-[var(--app-bg)]">
-                    <div className="mx-auto w-full max-w-content px-3 py-2 border-b border-[var(--app-divider)]">
-                        <div className="flex items-center gap-2 text-sm">
-                            <GitBranchIcon className="text-[var(--app-hint)]" />
-                            <span className="font-semibold">{branchLabel}</span>
-                        </div>
-                        <div className="text-xs text-[var(--app-hint)]">
-                            {gitStatus.totalStaged} staged, {gitStatus.totalUnstaged} unstaged
-                        </div>
-                    </div>
-                </div>
-            ) : null}
-
+        <div className="flex h-full min-h-0 flex-col bg-[var(--app-bg)]">
             <div className="app-scroll-y flex-1 min-h-0">
-                <div className="mx-auto w-full max-w-content">
-                    {showGitErrorBanner && activeTab === 'changes' ? (
-                        <div className="border-b border-[var(--app-divider)] bg-amber-500/10 px-3 py-2 text-xs text-[var(--app-hint)]">
-                            {gitError}
-                        </div>
-                    ) : null}
-                    {shouldSearch ? (
-                        searchResults.isLoading ? (
-                            <FileListSkeleton label="Loading files…" />
-                        ) : searchResults.error ? (
-                            <div className="p-6 text-sm text-[var(--app-hint)]">{searchResults.error}</div>
-                        ) : searchResults.files.length === 0 ? (
-                            <div className="p-6 text-sm text-[var(--app-hint)]">
-                                {searchQuery ? 'No files match your search.' : 'No files found in this project.'}
-                            </div>
-                        ) : (
-                            <div className="border-t border-[var(--app-divider)]">
-                                {searchResults.files.map((file, index) => (
-                                    <SearchResultRow
-                                        key={`${file.fullPath}-${index}`}
-                                        file={file}
-                                        onOpen={() => handleOpenFile(file.fullPath)}
-                                        showDivider={index < searchResults.files.length - 1}
-                                    />
-                                ))}
-                            </div>
-                        )
-                    ) : activeTab === 'directories' ? (
-                        <DirectoryTree
-                            api={api}
-                            sessionId={sessionId}
-                            rootLabel={rootLabel}
-                            onOpenFile={(path) => handleOpenFile(path)}
-                        />
-                    ) : gitLoading ? (
-                        <FileListSkeleton label="Loading Git status…" />
-                    ) : (
-                        <div>
-                            {gitStatus?.stagedFiles.length ? (
-                                <div>
-                                    <div className="border-b border-[var(--app-divider)] bg-[var(--app-bg)] px-3 py-2 text-xs font-semibold text-[var(--app-git-staged-color)]">
-                                        Staged Changes ({gitStatus.stagedFiles.length})
+                <div className="mx-auto w-full max-w-content px-3 py-4 md:px-5 md:py-6">
+                    <div className="space-y-4">
+                        <Card className="overflow-hidden border-[var(--app-border)] bg-[var(--app-panel-bg)] shadow-[var(--app-shadow-sm)]">
+                            <CardHeader className="gap-4 border-b border-[var(--app-border)] px-5 py-5 sm:px-6">
+                                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                                    <div className="min-w-0 flex-1 space-y-3">
+                                        <div className="flex items-center gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={goBack}
+                                                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] text-[var(--app-hint)] transition-colors hover:bg-[var(--app-panel-muted-bg)] hover:text-[var(--app-fg)]"
+                                            >
+                                                <BackIcon />
+                                            </button>
+                                            <div className="min-w-0">
+                                                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--app-hint)]">
+                                                    {t('sessionFiles.repository')}
+                                                </p>
+                                                <CardTitle className="mt-2 text-3xl leading-none" data-ui-heading="serif">
+                                                    {t('sessionFiles.title')}
+                                                </CardTitle>
+                                            </div>
+                                        </div>
+                                        <CardDescription className="max-w-3xl text-sm leading-6 text-[var(--app-hint)]">
+                                            {t('sessionFiles.description')}
+                                        </CardDescription>
+                                        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-[var(--app-hint)]">
+                                            <span className="truncate">{subtitle}</span>
+                                            <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-3 py-1 text-[var(--app-fg)]">
+                                                <GitBranchIcon className="h-3.5 w-3.5 text-[var(--app-hint)]" />
+                                                <span className="font-medium">{branchLabel}</span>
+                                            </span>
+                                            {!gitLoading && gitStatus && !searchQuery && activeTab === 'changes' ? (
+                                                <span>
+                                                    {t('sessionFiles.stats', { staged: gitStatus.totalStaged, unstaged: gitStatus.totalUnstaged })}
+                                                </span>
+                                            ) : null}
+                                        </div>
                                     </div>
-                                    {gitStatus.stagedFiles.map((file, index) => (
-                                        <GitFileRow
-                                            key={`staged-${file.fullPath}-${index}`}
-                                            file={file}
-                                            onOpen={() => handleOpenFile(file.fullPath, file.isStaged)}
-                                            showDivider={index < gitStatus.stagedFiles.length - 1 || gitStatus.unstagedFiles.length > 0}
-                                        />
-                                    ))}
-                                </div>
-                            ) : null}
 
-                            {gitStatus?.unstagedFiles.length ? (
-                                <div>
-                                    <div className="border-b border-[var(--app-divider)] bg-[var(--app-bg)] px-3 py-2 text-xs font-semibold text-[var(--app-git-unstaged-color)]">
-                                        Unstaged Changes ({gitStatus.unstagedFiles.length})
+                                    <div className="flex w-full flex-col gap-3 md:max-w-sm md:items-end">
+                                        <button
+                                            type="button"
+                                            onClick={handleRefresh}
+                                            className="inline-flex h-10 items-center justify-center gap-2 self-start rounded-full border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-4 text-sm text-[var(--app-fg)] transition-colors hover:bg-[var(--app-panel-muted-bg)] md:self-end"
+                                            title={t('sessionFiles.refresh')}
+                                        >
+                                            <RefreshIcon className="h-4 w-4 text-[var(--app-hint)]" />
+                                            <span>{t('sessionFiles.refresh')}</span>
+                                        </button>
+                                        <div className="flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-4 py-3 shadow-[var(--app-shadow-sm)]">
+                                            <SearchIcon className="shrink-0 text-[var(--app-hint)]" />
+                                            <input
+                                                value={searchQuery}
+                                                onChange={(event) => setSearchQuery(event.target.value)}
+                                                placeholder={t('sessionFiles.searchPlaceholder')}
+                                                className="w-full bg-transparent text-sm text-[var(--app-fg)] placeholder:text-[var(--app-hint)] focus:outline-none"
+                                                autoCapitalize="none"
+                                                autoCorrect="off"
+                                            />
+                                        </div>
                                     </div>
-                                    {gitStatus.unstagedFiles.map((file, index) => (
-                                        <GitFileRow
-                                            key={`unstaged-${file.fullPath}-${index}`}
-                                            file={file}
-                                            onOpen={() => handleOpenFile(file.fullPath, file.isStaged)}
-                                            showDivider={index < gitStatus.unstagedFiles.length - 1}
+                                </div>
+
+                                <div className="flex flex-wrap gap-2" role="tablist">
+                                    <button
+                                        type="button"
+                                        role="tab"
+                                        aria-selected={activeTab === 'changes'}
+                                        onClick={() => handleTabChange('changes')}
+                                        className={`inline-flex min-h-10 items-center rounded-full border px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'changes'
+                                            ? 'border-[var(--app-link)] bg-[color:color-mix(in_srgb,var(--app-link)_12%,transparent)] text-[var(--app-fg)]'
+                                            : 'border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] text-[var(--app-hint)] hover:bg-[var(--app-panel-muted-bg)] hover:text-[var(--app-fg)]'}`}
+                                    >
+                                        {t('sessionFiles.tab.changes')}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        role="tab"
+                                        aria-selected={activeTab === 'directories'}
+                                        onClick={() => handleTabChange('directories')}
+                                        className={`inline-flex min-h-10 items-center rounded-full border px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'directories'
+                                            ? 'border-[var(--app-link)] bg-[color:color-mix(in_srgb,var(--app-link)_12%,transparent)] text-[var(--app-fg)]'
+                                            : 'border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] text-[var(--app-hint)] hover:bg-[var(--app-panel-muted-bg)] hover:text-[var(--app-fg)]'}`}
+                                    >
+                                        {t('sessionFiles.tab.directories')}
+                                    </button>
+                                </div>
+                            </CardHeader>
+
+                            <CardContent className="px-0 py-0">
+                                {showGitErrorBanner && activeTab === 'changes' ? (
+                                    <div className="border-b border-[var(--app-divider)] bg-amber-500/10 px-5 py-3 text-xs text-[var(--app-hint)] sm:px-6">
+                                        {gitError}
+                                    </div>
+                                ) : null}
+
+                                {shouldSearch ? (
+                                    searchResults.isLoading ? (
+                                        <FileListSkeleton label={t('sessionFiles.loadingFiles')} />
+                                    ) : searchResults.error ? (
+                                        <div className="px-5 py-10 text-sm text-[var(--app-hint)] sm:px-6">{searchResults.error}</div>
+                                    ) : searchResults.files.length === 0 ? (
+                                        <div className="px-5 py-10 text-sm text-[var(--app-hint)] sm:px-6">
+                                            {searchQuery ? t('sessionFiles.noSearchResult') : t('sessionFiles.noProjectFiles')}
+                                        </div>
+                                    ) : (
+                                        <div>
+                                            {searchResults.files.map((file, index) => (
+                                                <SearchResultRow
+                                                    key={`${file.fullPath}-${index}`}
+                                                    file={file}
+                                                    onOpen={() => handleOpenFile(file.fullPath)}
+                                                    showDivider={index < searchResults.files.length - 1}
+                                                    projectRootLabel={t('sessionFiles.projectRoot')}
+                                                />
+                                            ))}
+                                        </div>
+                                    )
+                                ) : activeTab === 'directories' ? (
+                                    <div className="px-2 py-2 sm:px-3 sm:py-3">
+                                        <DirectoryTree
+                                            api={api}
+                                            sessionId={sessionId}
+                                            rootLabel={rootLabel}
+                                            onOpenFile={(path) => handleOpenFile(path)}
                                         />
-                                    ))}
-                                </div>
-                            ) : null}
+                                    </div>
+                                ) : gitLoading ? (
+                                    <FileListSkeleton label={t('sessionFiles.loadingGit')} />
+                                ) : (
+                                    <div>
+                                        {gitStatus?.stagedFiles.length ? (
+                                            <div>
+                                                <div className="border-b border-[var(--app-divider)] bg-[var(--app-panel-muted-bg)] px-5 py-3 text-xs font-semibold text-[var(--app-git-staged-color)] sm:px-6">
+                                                    {t('sessionFiles.section.staged', { count: gitStatus.stagedFiles.length })}
+                                                </div>
+                                                {gitStatus.stagedFiles.map((file, index) => (
+                                                    <GitFileRow
+                                                        key={`staged-${file.fullPath}-${index}`}
+                                                        file={file}
+                                                        onOpen={() => handleOpenFile(file.fullPath, file.isStaged)}
+                                                        showDivider={index < gitStatus.stagedFiles.length - 1 || gitStatus.unstagedFiles.length > 0}
+                                                        projectRootLabel={t('sessionFiles.projectRoot')}
+                                                    />
+                                                ))}
+                                            </div>
+                                        ) : null}
 
-                            {!gitStatus ? (
-                                <div className="p-6 text-sm text-[var(--app-hint)]">
-                                    Git status unavailable. Use Directories to browse all files, or search.
-                                </div>
-                            ) : null}
+                                        {gitStatus?.unstagedFiles.length ? (
+                                            <div>
+                                                <div className="border-b border-[var(--app-divider)] bg-[var(--app-panel-muted-bg)] px-5 py-3 text-xs font-semibold text-[var(--app-git-unstaged-color)] sm:px-6">
+                                                    {t('sessionFiles.section.unstaged', { count: gitStatus.unstagedFiles.length })}
+                                                </div>
+                                                {gitStatus.unstagedFiles.map((file, index) => (
+                                                    <GitFileRow
+                                                        key={`unstaged-${file.fullPath}-${index}`}
+                                                        file={file}
+                                                        onOpen={() => handleOpenFile(file.fullPath, file.isStaged)}
+                                                        showDivider={index < gitStatus.unstagedFiles.length - 1}
+                                                        projectRootLabel={t('sessionFiles.projectRoot')}
+                                                    />
+                                                ))}
+                                            </div>
+                                        ) : null}
 
-                            {gitStatus && gitStatus.stagedFiles.length === 0 && gitStatus.unstagedFiles.length === 0 ? (
-                                <div className="p-6 text-sm text-[var(--app-hint)]">
-                                    No changes detected. Use Directories to browse all files, or search.
-                                </div>
-                            ) : null}
-                        </div>
-                    )}
+                                        {!gitStatus ? (
+                                            <div className="px-5 py-10 text-sm text-[var(--app-hint)] sm:px-6">
+                                                {t('sessionFiles.gitUnavailable')}
+                                            </div>
+                                        ) : null}
+
+                                        {gitStatus && gitStatus.stagedFiles.length === 0 && gitStatus.unstagedFiles.length === 0 ? (
+                                            <div className="px-5 py-10 text-sm text-[var(--app-hint)] sm:px-6">
+                                                {t('sessionFiles.noChangesDetected')}
+                                            </div>
+                                        ) : null}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
             </div>
         </div>
