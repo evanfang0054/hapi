@@ -8,12 +8,12 @@ describe('command registry', () => {
         expect(resolved.context.commandArgs).toEqual(['session-1'])
     })
 
-    it('resolves attach alias to adopt handler', () => {
-        const adopt = resolveCommand(['adopt', 'session-1'])
+    it('resolves attach command as standalone entry', () => {
         const attach = resolveCommand(['attach', 'session-1'])
 
         expect(attach.command.name).toBe('attach')
-        expect(attach.command.run).toBe(adopt.command.run)
+        expect(typeof attach.command.run).toBe('function')
+        expect(attach.context.commandArgs).toEqual(['session-1'])
     })
 
     it('falls back to default claude command for unknown subcommand', () => {

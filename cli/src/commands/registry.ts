@@ -1,5 +1,5 @@
 import { authCommand } from './auth'
-import { adoptCommand } from './adopt'
+import { adoptCommand, runAdoptCommand } from './adopt'
 import { claudeCommand } from './claude'
 import { codexCommand } from './codex'
 import { cursorCommand } from './cursor'
@@ -17,7 +17,13 @@ import type { CommandContext, CommandDefinition } from './types'
 const COMMANDS: CommandDefinition[] = [
     authCommand,
     adoptCommand,
-    { ...adoptCommand, name: 'attach' },
+    {
+        name: 'attach',
+        requiresRuntimeAssets: true,
+        run: async ({ commandArgs }) => {
+            await runAdoptCommand(commandArgs, 'foreground')
+        }
+    },
     connectCommand,
     codexCommand,
     cursorCommand,
