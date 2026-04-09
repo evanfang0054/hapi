@@ -1,0 +1,116 @@
+<h2>hapi web 重设计方向</h2>
+<p class="subtitle">基于现有结构做稳妥升级：不改功能，不动路由，只重做视觉系统、页面层级和关键组件表现。</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">A · Claude 式温润工作台</div>
+        <div class="mockup-body" style="background:#f5f1e8;padding:18px;color:#1f1a17;min-height:260px;display:flex;flex-direction:column;gap:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e2d8ca;padding-bottom:10px;">
+            <div style="font-size:22px;font-family:Georgia,serif;">hapi</div>
+            <div style="display:flex;gap:8px;">
+              <div class="mock-button" style="background:#e8dfd1;color:#3f352d;border:none;">New</div>
+              <div class="mock-button" style="background:#c96442;color:#fff;border:none;">Focus</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1.05fr 1.4fr;gap:14px;flex:1;">
+            <div style="background:#fbf8f1;border:1px solid #eadfce;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px;">
+              <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#8d7f70;">Sessions</div>
+              <div style="background:#efe5d8;border-radius:12px;padding:10px;">Active repo / 3 pending</div>
+              <div style="background:#fff;border-radius:12px;padding:10px;">Design sync / thinking</div>
+              <div style="background:#fff;border-radius:12px;padding:10px;">Release prep</div>
+            </div>
+            <div style="background:#fcfaf5;border:1px solid #eadfce;border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:10px;">
+              <div style="font-size:13px;color:#7d6f62;">Session Chat</div>
+              <div style="background:#fff;border-radius:16px;padding:12px;align-self:flex-start;max-width:70%;">用户消息气泡</div>
+              <div style="background:#f1e7da;border-radius:16px;padding:12px;align-self:flex-end;max-width:78%;">assistant 回复 + tool 卡片</div>
+              <div style="margin-top:auto;background:#efe5d8;border-radius:999px;padding:12px 14px;color:#5a4c41;">Ask hapi anything…</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>温润编辑型工作台</h3>
+      <p>暖米白、深墨色、terracotta 点缀。产品感最强，最容易摆脱“内部工具感”。</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">B · 双层混合工作台</div>
+        <div class="mockup-body" style="background:#f6f2ea;padding:18px;color:#1f1a17;min-height:260px;display:flex;flex-direction:column;gap:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div style="font-size:22px;font-family:Georgia,serif;">hapi workspace</div>
+            <div style="display:flex;gap:8px;">
+              <div class="mock-button" style="background:#ece2d4;color:#3f352d;border:none;">Sessions</div>
+              <div class="mock-button" style="background:#1f1c1a;color:#f6f2ea;border:none;">Create</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:300px 1fr;gap:14px;flex:1;">
+            <div style="background:#fbf8f3;border:1px solid #eadfce;border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:10px;">
+              <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#8d7f70;">Workspace</div>
+              <div style="background:#f0e6d8;border-radius:14px;padding:10px;">Repo group</div>
+              <div style="background:#fff;border-radius:12px;padding:10px;">Session list item</div>
+              <div style="background:#fff;border-radius:12px;padding:10px;">Session list item</div>
+            </div>
+            <div style="background:#1d1a18;border-radius:22px;padding:14px;display:flex;flex-direction:column;gap:10px;color:#f3ede4;">
+              <div style="display:flex;justify-content:space-between;color:#b9aea2;font-size:13px;">
+                <span>Chat / Files / Terminal</span><span>active</span>
+              </div>
+              <div style="background:#2a2623;border-radius:16px;padding:12px;align-self:flex-start;max-width:70%;">工具卡、输出块、终端块更清晰</div>
+              <div style="background:#3a312b;border-radius:16px;padding:12px;align-self:flex-end;max-width:78%;">聊天区保留高密度与操作感</div>
+              <div style="margin-top:auto;background:#2d2723;border:1px solid #4a4038;border-radius:18px;padding:12px 14px;color:#bcae9f;">Command / prompt input…</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>外暖内深的混合方案</h3>
+      <p>列表和外框高级温润，核心工作区深色高密度。最适合“外面像产品，里面像工作台”。</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">C · 极简浅色产品化</div>
+        <div class="mockup-body" style="background:#f8f7f3;padding:18px;color:#181818;min-height:260px;display:flex;flex-direction:column;gap:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #ece9e1;padding-bottom:10px;">
+            <div style="font-size:22px;font-weight:600;">hapi</div>
+            <div style="display:flex;gap:8px;">
+              <div class="mock-button" style="background:#fff;color:#222;border:1px solid #e5e0d5;">Open</div>
+              <div class="mock-button" style="background:#d36c4a;color:#fff;border:none;">New session</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:280px 1fr;gap:14px;flex:1;">
+            <div style="background:#fff;border:1px solid #ece7db;border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:10px;">
+              <div style="height:12px;width:70px;background:#e8e2d8;border-radius:999px;"></div>
+              <div style="height:54px;background:#f8f5ef;border-radius:14px;"></div>
+              <div style="height:54px;background:#f8f5ef;border-radius:14px;"></div>
+              <div style="height:54px;background:#f8f5ef;border-radius:14px;"></div>
+            </div>
+            <div style="background:#fff;border:1px solid #ece7db;border-radius:22px;padding:14px;display:flex;flex-direction:column;gap:10px;">
+              <div style="height:18px;width:140px;background:#eee9df;border-radius:999px;"></div>
+              <div style="height:62px;background:#f8f5ef;border-radius:16px;width:68%;"></div>
+              <div style="height:86px;background:#f2ebe0;border-radius:16px;width:82%;align-self:flex-end;"></div>
+              <div style="margin-top:auto;height:46px;background:#f7f3eb;border:1px solid #ece7db;border-radius:18px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>极简浅色产品方案</h3>
+      <p>更现代、更克制，但工作台气质稍弱，容易再次偏普通 SaaS。</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>我的推荐</h3>
+  <p>推荐 <strong>B</strong>：它最符合你前面定下的约束——整个 web 都改、但采取稳妥升级，只动 UI 表现层，同时兼顾清晰、统一、高级。</p>
+</div>
