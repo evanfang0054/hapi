@@ -164,6 +164,18 @@ describe('UpdatePlanView', () => {
 })
 
 describe('ChecklistList', () => {
+    it('renders checklist rows after ui primitive refresh', () => {
+        render(
+            <ChecklistList
+                items={[
+                    { id: 'todo-1', text: 'keep info', status: 'completed' }
+                ]}
+            />
+        )
+
+        expect(screen.getByText(/☑\s*keep info/)).toBeInTheDocument()
+    })
+
     it('renders blank steps as empty placeholders', () => {
         render(
             <ChecklistList
