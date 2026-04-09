@@ -388,9 +388,16 @@ export class ApiSessionClient extends EventEmitter {
             }
         }
 
+        // Extract uuid for deduplication at hub level
+        // This prevents duplicate messages when scanner re-reads the same file
+        const localId = body.type === 'summary'
+            ? `summary:${body.leafUuid}`
+            : body.uuid
+
         this.socket.emit('message', {
             sid: this.sessionId,
-            message: content
+            message: content,
+            localId
         })
 
         if (body.type === 'summary' && 'summary' in body && 'leafUuid' in body) {

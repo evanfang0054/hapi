@@ -92,6 +92,9 @@ ${chalk.bold('Usage:')}
   hapi doctor            System diagnostics & troubleshooting
   hapi adopt <sessionId> Observe external Claude session and
                           take over in remote mode when ready
+  hapi adopt <sessionId> --background
+                          Start adopt observer in background
+  hapi attach <sessionId> Attach foreground observer for adopted session
 
 ${chalk.bold('Examples:')}
   hapi                    Start session (will prompt for token if not set)

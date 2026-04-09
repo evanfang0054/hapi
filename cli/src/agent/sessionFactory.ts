@@ -5,7 +5,7 @@ import { resolve } from 'node:path'
 import { ApiClient } from '@/api/api'
 import type { ApiSessionClient } from '@/api/apiSession'
 import type { AgentState, MachineMetadata, Metadata, Session } from '@/api/types'
-import { notifyRunnerSessionStarted } from '@/runner/controlClient'
+import { notifyRunnerSessionStarted, listRunnerSessions } from '@/runner/controlClient'
 import { readSettings } from '@/persistence'
 import { configuration } from '@/configuration'
 import { logger } from '@/ui/logger'
@@ -93,17 +93,58 @@ async function getMachineIdOrExit(): Promise<string> {
 }
 
 async function reportSessionStarted(sessionId: string, metadata: Metadata): Promise<void> {
-    try {
-        logger.debug(`[START] Reporting session ${sessionId} to runner`)
-        const result = await notifyRunnerSessionStarted(sessionId, metadata)
-        if (result?.error) {
-            logger.debug(`[START] Failed to report to runner (may not be running):`, result.error)
-        } else {
-            logger.debug(`[START] Reported session ${sessionId} to runner`)
+    const hostPid = metadata.hostPid
+    
+    // Retry a few times in case runner is restarting (version mismatch detection)
+    for (let attempt = 0; attempt < 15; attempt++) {
+        try {
+            logger.debug(`[START] Reporting session ${sessionId} to runner (attempt ${attempt + 1})`)
+            const result = await notifyRunnerSessionStarted(sessionId, metadata)
+            if (result?.error) {
+                logger.debug(`[START] Failed to report to runner (may not be running):`, result.error)
+                if (attempt < 14) {
+                    await new Promise(resolve => setTimeout(resolve, 500))
+                }
+                continue
+            }
+            
+            // Verify the session was actually registered by checking the list
+            // Wait a bit first to let any runner restarts settle
+            await new Promise(resolve => setTimeout(resolve, 300))
+            
+            const sessions = await listRunnerSessions()
+            const registered = sessions.some((s: { pid?: number; happySessionId?: string }) => 
+                s.pid === hostPid || s.happySessionId === sessionId
+            )
+            
+            if (registered) {
+                // Double-check after a short delay to ensure runner didn't restart
+                await new Promise(resolve => setTimeout(resolve, 500))
+                const sessionsAfter = await listRunnerSessions()
+                const stillRegistered = sessionsAfter.some((s: { pid?: number; happySessionId?: string }) => 
+                    s.pid === hostPid || s.happySessionId === sessionId
+                )
+                
+                if (stillRegistered) {
+                    logger.debug(`[START] Verified session ${sessionId} is stably registered in runner`)
+                    return
+                }
+                logger.debug(`[START] Session ${sessionId} was registered but runner restarted, retrying...`)
+            } else {
+                logger.debug(`[START] Session ${sessionId} not found in runner list, retrying...`)
+            }
+            
+            if (attempt < 14) {
+                await new Promise(resolve => setTimeout(resolve, 500))
+            }
+        } catch (error) {
+            logger.debug('[START] Failed to report to runner (may not be running):', error)
+            if (attempt < 14) {
+                await new Promise(resolve => setTimeout(resolve, 500))
+            }
         }
-    } catch (error) {
-        logger.debug('[START] Failed to report to runner (may not be running):', error)
     }
+    logger.debug(`[START] Gave up reporting session ${sessionId} to runner after 15 attempts`)
 }
 
 export async function bootstrapSession(options: SessionBootstrapOptions): Promise<SessionBootstrapResult> {

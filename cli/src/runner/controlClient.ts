@@ -96,6 +96,15 @@ export async function listRunnerSessions(): Promise<any[]> {
   return result.children || [];
 }
 
+/**
+ * Check if runner HTTP server is actually responding.
+ * This is more reliable than just checking if the process is alive.
+ */
+export async function isRunnerHttpReady(): Promise<boolean> {
+  const result = await runnerPost('/list');
+  return !result.error;
+}
+
 export async function stopRunnerSession(sessionId: string): Promise<boolean> {
   const result = await runnerPost('/stop-session', { sessionId });
   return result.success || false;
