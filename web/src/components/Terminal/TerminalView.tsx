@@ -5,7 +5,7 @@ import { WebLinksAddon } from '@xterm/addon-web-links'
 import { CanvasAddon } from '@xterm/addon-canvas'
 import '@xterm/xterm/css/xterm.css'
 import { ensureBuiltinFontLoaded, getFontProvider } from '@/lib/terminalFont'
-import { getInitialTerminalFontSize } from '@/hooks/useTerminalFontSize'
+import { getInitialTerminalFontSize, type TerminalFontSize } from '@/hooks/useTerminalFontSize'
 
 function resolveThemeColors(): { background: string; foreground: string; selectionBackground: string } {
     const styles = getComputedStyle(document.documentElement)
@@ -19,8 +19,11 @@ export function TerminalView(props: {
     onMount?: (terminal: Terminal) => void
     onResize?: (cols: number, rows: number) => void
     className?: string
+    fontSize?: TerminalFontSize
 }) {
     const containerRef = useRef<HTMLDivElement | null>(null)
+    const terminalRef = useRef<Terminal | null>(null)
+    const fitAddonRef = useRef<FitAddon | null>(null)
     const onMountRef = useRef(props.onMount)
     const onResizeRef = useRef(props.onResize)
 
@@ -39,7 +42,7 @@ export function TerminalView(props: {
         const abortController = new AbortController()
 
         const fontProvider = getFontProvider()
-        const fontSize = getInitialTerminalFontSize()
+        const fontSize = props.fontSize ?? getInitialTerminalFontSize()
         const { background, foreground, selectionBackground } = resolveThemeColors()
         const terminal = new Terminal({
             cursorBlink: true,
@@ -62,6 +65,9 @@ export function TerminalView(props: {
         terminal.loadAddon(webLinksAddon)
         terminal.loadAddon(canvasAddon)
         terminal.open(container)
+
+        terminalRef.current = terminal
+        fitAddonRef.current = fitAddon
 
         const observer = new ResizeObserver(() => {
             requestAnimationFrame(() => {
@@ -109,6 +115,8 @@ export function TerminalView(props: {
             webLinksAddon.dispose()
             canvasAddon.dispose()
             terminal.dispose()
+            terminalRef.current = null
+            fitAddonRef.current = null
         })
 
         requestAnimationFrame(() => {
@@ -119,6 +127,17 @@ export function TerminalView(props: {
 
         return () => abortController.abort()
     }, [])
+
+    // Respond to fontSize changes
+    useEffect(() => {
+        const terminal = terminalRef.current
+        const fitAddon = fitAddonRef.current
+        if (!terminal || !fitAddon || !props.fontSize) return
+
+        terminal.options.fontSize = props.fontSize
+        fitAddon.fit()
+        onResizeRef.current?.(terminal.cols, terminal.rows)
+    }, [props.fontSize])
 
     return (
         <div

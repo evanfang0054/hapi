@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { I18nProvider } from '@/lib/i18n-context'
 import { SessionHeader } from '@/components/SessionHeader'
 
@@ -55,5 +55,29 @@ describe('SessionHeader', () => {
         expect(screen.getByText('claude')).toBeInTheDocument()
         expect(screen.getByText(/model: sonnet/i)).toBeInTheDocument()
         expect(screen.getByText(/Worktree: feat\/redesign/i)).toBeInTheDocument()
+    })
+
+    it('calls onRefresh when refresh button is clicked', () => {
+        const onRefresh = vi.fn()
+
+        renderWithProviders(
+            <SessionHeader
+                session={{
+                    id: 'sess-1',
+                    active: true,
+                    model: 'sonnet',
+                    metadata: {
+                        name: 'Release prep',
+                        flavor: 'claude',
+                    },
+                } as any}
+                onBack={vi.fn()}
+                onRefresh={onRefresh}
+                api={null}
+            />
+        )
+
+        fireEvent.click(screen.getByRole('button', { name: '刷新' }))
+        expect(onRefresh).toHaveBeenCalledTimes(1)
     })
 })

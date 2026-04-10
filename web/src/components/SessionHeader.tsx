@@ -62,9 +62,32 @@ function MoreVerticalIcon(props: { className?: string }) {
     )
 }
 
+function RefreshIcon(props: { className?: string }) {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={props.className}
+        >
+            <path d="M21 2v6h-6" />
+            <path d="M3 12a9 9 0 0 1 15.3-6.36L21 8" />
+            <path d="M3 22v-6h6" />
+            <path d="M21 12a9 9 0 0 1-15.3 6.36L3 16" />
+        </svg>
+    )
+}
+
 export function SessionHeader(props: {
     session: Session
     onBack: () => void
+    onRefresh?: () => void
     onViewFiles?: () => void
     api: ApiClient | null
     onSessionDeleted?: () => void
@@ -168,6 +191,20 @@ export function SessionHeader(props: {
                                         title={t('session.title')}
                                     >
                                         <FilesIcon className="h-4 w-4 md:h-[18px] md:w-[18px]" />
+                                    </Button>
+                                ) : null}
+
+                                {props.onRefresh ? (
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        size="sm"
+                                        onClick={props.onRefresh}
+                                        className="h-8 w-8 rounded-full p-0 text-[var(--app-hint)] hover:text-[var(--app-fg)] md:h-10 md:w-10"
+                                        title="刷新"
+                                        aria-label="刷新"
+                                    >
+                                        <RefreshIcon className="h-4 w-4 md:h-[18px] md:w-[18px]" />
                                     </Button>
                                 ) : null}
 
