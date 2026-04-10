@@ -8,6 +8,7 @@ import { HappyUserMessage } from '@/components/AssistantChat/messages/UserMessag
 import { HappySystemMessage } from '@/components/AssistantChat/messages/SystemMessage'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/Spinner'
+import { getSessionViewState, saveSessionViewState } from '@/lib/session-view-state'
 import { useTranslation } from '@/lib/use-translation'
 
 function NewMessagesIndicator(props: { count: number; onClick: () => void }) {
@@ -269,6 +270,37 @@ export function HappyThread(props: {
         }
         prevLoadingMoreRef.current = props.isLoadingMoreMessages
     }, [props.isLoadingMoreMessages])
+
+    useEffect(() => {
+        return () => {
+            const viewport = viewportRef.current
+            const atBottom = viewport
+                ? viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight < 120
+                : atBottomRef.current
+
+            saveSessionViewState({
+                sessionId: props.sessionId,
+                atBottom,
+                anchorSeq: atBottom ? null : props.messagesVersion,
+                savedAt: Date.now(),
+            })
+        }
+    }, [props.messagesVersion, props.sessionId])
+
+    useLayoutEffect(() => {
+        const viewport = viewportRef.current
+        if (!viewport) {
+            return
+        }
+
+        const state = getSessionViewState(props.sessionId)
+        if (!state || state.atBottom) {
+            viewport.scrollTop = viewport.scrollHeight
+            return
+        }
+
+        viewport.scrollTop = Math.max(0, viewport.scrollHeight - viewport.clientHeight - 240)
+    }, [props.messagesVersion, props.sessionId])
 
     const showSkeleton = props.isLoadingMessages && props.rawMessagesCount === 0 && props.pendingCount === 0
 

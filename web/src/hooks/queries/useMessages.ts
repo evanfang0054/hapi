@@ -1,16 +1,19 @@
-import { useCallback, useEffect, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
 import type { ApiClient } from '@/api/client'
 import type { DecryptedMessage } from '@/types/api'
 import {
-    clearMessageWindow,
+    clearRuntimeMessageWindow,
     fetchLatestMessages,
     fetchOlderMessages,
     flushPendingMessages,
     getMessageWindowState,
+    getPersistableMessageWindowSnapshot,
+    hydrateMessageWindowFromSnapshot,
     setAtBottom as setMessageWindowAtBottom,
     subscribeMessageWindow,
     type MessageWindowState,
 } from '@/lib/message-window-store'
+import { loadSessionMessageSnapshot, saveSessionMessageSnapshot } from '@/lib/session-message-snapshot'
 
 const EMPTY_STATE: MessageWindowState = {
     sessionId: 'unknown',
@@ -35,11 +38,14 @@ export function useMessages(api: ApiClient | null, sessionId: string | null): {
     hasMore: boolean
     pendingCount: number
     messagesVersion: number
+    isHydratedFromSnapshot: boolean
     loadMore: () => Promise<unknown>
     refetch: () => Promise<unknown>
     flushPending: () => Promise<void>
     setAtBottom: (atBottom: boolean) => void
 } {
+    const [isHydratedFromSnapshot, setIsHydratedFromSnapshot] = useState(false)
+
     const state = useSyncExternalStore(
         useCallback((listener) => {
             if (!sessionId) {
@@ -57,6 +63,19 @@ export function useMessages(api: ApiClient | null, sessionId: string | null): {
     )
 
     useEffect(() => {
+        if (!sessionId) {
+            setIsHydratedFromSnapshot(false)
+            return
+        }
+
+        const snapshot = loadSessionMessageSnapshot(sessionId)
+        setIsHydratedFromSnapshot(Boolean(snapshot))
+        if (snapshot) {
+            hydrateMessageWindowFromSnapshot(snapshot)
+        }
+    }, [sessionId])
+
+    useEffect(() => {
         if (!api || !sessionId) {
             return
         }
@@ -68,7 +87,11 @@ export function useMessages(api: ApiClient | null, sessionId: string | null): {
             return
         }
         return () => {
-            clearMessageWindow(sessionId)
+            const snapshot = getPersistableMessageWindowSnapshot(sessionId)
+            if (snapshot) {
+                saveSessionMessageSnapshot(snapshot)
+            }
+            clearRuntimeMessageWindow(sessionId)
         }
     }, [sessionId])
 
@@ -104,6 +127,7 @@ export function useMessages(api: ApiClient | null, sessionId: string | null): {
         hasMore: state.hasMore,
         pendingCount: state.pendingCount,
         messagesVersion: state.messagesVersion,
+        isHydratedFromSnapshot,
         loadMore,
         refetch,
         flushPending,
