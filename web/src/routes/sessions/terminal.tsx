@@ -8,6 +8,7 @@ import { useSession } from '@/hooks/queries/useSession'
 import { useTerminalSocket } from '@/hooks/useTerminalSocket'
 import { useLongPress } from '@/hooks/useLongPress'
 import { useTranslation } from '@/lib/use-translation'
+import { useTerminalFontSize } from '@/hooks/useTerminalFontSize'
 import { TerminalView } from '@/components/Terminal/TerminalView'
 import { LoadingState } from '@/components/LoadingState'
 import { Button } from '@/components/ui/button'
@@ -182,6 +183,7 @@ function QuickKeyButton(props: {
 
 export default function TerminalPage() {
     const { t } = useTranslation()
+    const { terminalFontSize } = useTerminalFontSize()
     const { sessionId } = useParams({ from: '/sessions/$sessionId/terminal' })
     const { api, token, baseUrl } = useAppContext()
     const goBack = useAppGoBack()
@@ -417,79 +419,84 @@ export default function TerminalPage() {
     return (
         <div className="flex h-full min-h-0 flex-col bg-[var(--app-bg)]">
             <div className="app-scroll-y flex-1 min-h-0">
-                <div className="mx-auto flex h-full w-full max-w-content flex-col px-3 py-4 md:px-5 md:py-6">
+                <div className="mx-auto flex h-full w-full max-w-content flex-col px-2 py-2 md:px-5 md:py-6">
                     <Card className="flex h-full min-h-0 flex-col overflow-hidden border-[var(--app-border)] bg-[var(--app-panel-bg)] shadow-[var(--app-shadow-sm)]">
-                        <CardHeader className="gap-4 border-b border-[var(--app-border)] px-5 py-5 sm:px-6">
-                            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                                <div className="min-w-0 flex-1 space-y-3">
-                                    <div className="flex items-center gap-3">
-                                        <button
-                                            type="button"
-                                            onClick={goBack}
-                                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] text-[var(--app-hint)] transition-colors hover:bg-[var(--app-panel-muted-bg)] hover:text-[var(--app-fg)]"
-                                        >
-                                            <BackIcon />
-                                        </button>
-                                        <div className="min-w-0">
-                                            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--app-hint)]">
-                                                {t('terminal.page.eyebrow')}
-                                            </p>
-                                            <CardTitle className="mt-2 truncate text-3xl leading-none" data-ui-heading="serif">
-                                                {t('terminal.page.title')}
-                                            </CardTitle>
-                                        </div>
+                        <CardHeader className="gap-2 border-b border-[var(--app-border)] px-3 py-2 md:gap-4 md:px-6 md:py-5">
+                            <div className="flex items-center justify-between gap-2">
+                                <div className="flex min-w-0 flex-1 items-center gap-2 md:gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={goBack}
+                                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] text-[var(--app-hint)] transition-colors hover:bg-[var(--app-panel-muted-bg)] hover:text-[var(--app-fg)] md:h-10 md:w-10"
+                                    >
+                                        <BackIcon />
+                                    </button>
+                                    <div className="min-w-0 flex-1">
+                                        <CardTitle className="truncate text-base leading-tight md:text-xl" data-ui-heading="serif">
+                                            {t('terminal.page.title')}
+                                        </CardTitle>
+                                        <p className="mt-0.5 truncate text-xs text-[var(--app-hint)] md:hidden">
+                                            {subtitle}
+                                        </p>
                                     </div>
-                                    <CardDescription className="max-w-3xl text-sm leading-6 text-[var(--app-hint)]">
-                                        {t('terminal.page.description')}
-                                    </CardDescription>
-                                    <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--app-hint)]">
-                                        <span className="inline-flex max-w-[min(65vw,40rem)] items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-3 py-1 text-[var(--app-fg)]">
-                                            <span className="truncate">{subtitle}</span>
-                                        </span>
-                                        <span className="inline-flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-3 py-1 text-[var(--app-fg)]">
-                                            <ConnectionIndicator status={status} label={connectionLabel} />
-                                            <span>{connectionLabel}</span>
-                                        </span>
+                                    <div className="flex shrink-0 items-center gap-1.5">
+                                        <ConnectionIndicator status={status} label={connectionLabel} />
                                         {!session.active ? (
-                                            <span className="inline-flex items-center rounded-full border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-3 py-1 text-[var(--app-hint)]">
+                                            <span className="text-xs text-[var(--app-hint)]">
                                                 {t('terminal.sessionInactiveBadge')}
                                             </span>
                                         ) : null}
                                     </div>
                                 </div>
+                                <Button
+                                    type="button"
+                                    variant="secondary"
+                                    size="sm"
+                                    onClick={() => {
+                                        void handlePasteAction()
+                                    }}
+                                    disabled={quickInputDisabled}
+                                    className="shrink-0"
+                                >
+                                    {t('button.paste')}
+                                </Button>
+                            </div>
 
-                                <div className="flex w-full flex-col gap-2 md:max-w-xs md:items-end">
-                                    <Button
-                                        type="button"
-                                        variant="secondary"
-                                        onClick={() => {
-                                            void handlePasteAction()
-                                        }}
-                                        disabled={quickInputDisabled}
-                                        className="w-full md:w-auto"
-                                    >
-                                        {t('button.paste')}
-                                    </Button>
-                                    <p className="text-xs leading-5 text-[var(--app-hint)] md:max-w-xs md:text-right">
-                                        {t('terminal.quickInput.hint')}
-                                    </p>
+                            {/* Desktop: show full info */}
+                            <div className="hidden md:block">
+                                <CardDescription className="max-w-3xl text-sm leading-6 text-[var(--app-hint)]">
+                                    {t('terminal.page.description')}
+                                </CardDescription>
+                                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[var(--app-hint)]">
+                                    <span className="inline-flex max-w-[min(65vw,40rem)] items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-3 py-1 text-[var(--app-fg)]">
+                                        <span className="truncate">{subtitle}</span>
+                                    </span>
+                                    <span className="inline-flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-3 py-1 text-[var(--app-fg)]">
+                                        <ConnectionIndicator status={status} label={connectionLabel} />
+                                        <span>{connectionLabel}</span>
+                                    </span>
+                                    {!session.active ? (
+                                        <span className="inline-flex items-center rounded-full border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-3 py-1 text-[var(--app-hint)]">
+                                            {t('terminal.sessionInactiveBadge')}
+                                        </span>
+                                    ) : null}
                                 </div>
                             </div>
 
                             {session.active ? null : (
-                                <div className="rounded-[var(--app-radius-control)] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] px-4 py-3 text-sm text-[var(--app-hint)]">
+                                <div className="rounded-[var(--app-radius-control)] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] px-3 py-2 text-xs text-[var(--app-hint)] md:px-4 md:py-3 md:text-sm">
                                     {t('terminal.sessionInactiveMessage')}
                                 </div>
                             )}
 
                             {errorMessage ? (
-                                <div className="rounded-[var(--app-radius-control)] border border-[var(--app-badge-error-border)] bg-[var(--app-badge-error-bg)] px-4 py-3 text-xs leading-5 text-[var(--app-badge-error-text)]">
+                                <div className="rounded-[var(--app-radius-control)] border border-[var(--app-badge-error-border)] bg-[var(--app-badge-error-bg)] px-3 py-2 text-xs leading-5 text-[var(--app-badge-error-text)] md:px-4 md:py-3">
                                     {errorMessage}
                                 </div>
                             ) : null}
 
                             {exitInfo ? (
-                                <div className="rounded-[var(--app-radius-control)] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] px-4 py-3 text-xs leading-5 text-[var(--app-hint)]">
+                                <div className="rounded-[var(--app-radius-control)] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] px-3 py-2 text-xs leading-5 text-[var(--app-hint)] md:px-4 md:py-3">
                                     {t('terminal.exitInfo', {
                                         suffix: `${exitInfo.code !== null ? ` ${t('terminal.exitCode', { code: exitInfo.code })}` : ''}${exitInfo.signal ? ` (${exitInfo.signal})` : ''}.`
                                     })}
@@ -497,10 +504,10 @@ export default function TerminalPage() {
                             ) : null}
                         </CardHeader>
 
-                        <CardContent className="flex min-h-0 flex-1 flex-col gap-4 px-5 py-5 sm:px-6">
-                            <div className="min-h-0 flex-1 overflow-hidden rounded-[var(--app-radius-panel)] border border-[var(--app-border)] bg-[var(--app-code-bg)] shadow-[var(--app-shadow-sm)]">
+                        <CardContent className="flex min-h-0 flex-1 flex-col gap-2 md:gap-4 md:px-6 md:py-5">
+                            <div className="min-h-0 flex-1 overflow-hidden border border-[var(--app-border)] bg-[var(--app-code-bg)]">
                                 {terminalSupported ? (
-                                    <TerminalView onMount={handleTerminalMount} onResize={handleResize} className="h-full w-full" />
+                                    <TerminalView onMount={handleTerminalMount} onResize={handleResize} fontSize={terminalFontSize} className="h-full w-full" />
                                 ) : (
                                     <div className="flex h-full items-center justify-center p-4 text-sm text-[var(--app-hint)]">
                                         {t('terminal.unsupportedWindows')}
@@ -508,16 +515,14 @@ export default function TerminalPage() {
                                 )}
                             </div>
 
-                            <div className="space-y-3 rounded-[var(--app-radius-panel)] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] p-4 shadow-[var(--app-shadow-sm)]">
-                                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                                    <div>
-                                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--app-hint)]">
-                                            {t('terminal.quickInput.title')}
-                                        </p>
-                                        <p className="mt-1 text-sm text-[var(--app-hint)]">
-                                            {t('terminal.quickInput.description')}
-                                        </p>
-                                    </div>
+                            <div className="space-y-1.5 rounded-[var(--app-radius-panel)] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] p-2 shadow-[var(--app-shadow-sm)] md:space-y-3 md:p-4">
+                                <div className="hidden md:block">
+                                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--app-hint)]">
+                                        {t('terminal.quickInput.title')}
+                                    </p>
+                                    <p className="mt-1 text-sm text-[var(--app-hint)]">
+                                        {t('terminal.quickInput.description')}
+                                    </p>
                                 </div>
                                 {QUICK_INPUT_ROWS.map((row, rowIndex) => (
                                     <div

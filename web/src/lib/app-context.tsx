@@ -1,10 +1,13 @@
 import { createContext, useContext, type ReactNode } from 'react'
 import type { ApiClient } from '@/api/client'
 
+export type ConnectionState = 'connected' | 'reconnecting' | 'refresh_failed'
+
 type AppContextValue = {
     api: ApiClient
     token: string
     baseUrl: string
+    connectionState: ConnectionState
 }
 
 const AppContext = createContext<AppContextValue | null>(null)

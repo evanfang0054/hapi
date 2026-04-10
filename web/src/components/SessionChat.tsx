@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { AssistantRuntimeProvider } from '@assistant-ui/react'
+import { Button } from '@/components/ui/button'
 import type { ApiClient } from '@/api/client'
 import type {
     AttachmentMetadata,
@@ -41,6 +42,8 @@ export function SessionChat(props: {
     isSending: boolean
     pendingCount: number
     messagesVersion: number
+    continuityState: 'connected' | 'reconnecting' | 'refresh_failed'
+    hasHydratedMessages: boolean
     onBack: () => void
     onRefresh: () => void
     onLoadMore: () => Promise<unknown>
@@ -327,6 +330,7 @@ export function SessionChat(props: {
             <SessionHeader
                 session={props.session}
                 onBack={props.onBack}
+                onRefresh={props.onRefresh}
                 onViewFiles={props.session.metadata?.path ? handleViewFiles : undefined}
                 api={props.api}
                 onSessionDeleted={props.onBack}
@@ -347,7 +351,27 @@ export function SessionChat(props: {
                             </div>
                         ) : null}
 
+                        {props.continuityState === 'refresh_failed' && props.hasHydratedMessages ? (
+                            <div className="border-b border-amber-500/20 bg-amber-500/8 px-3 py-2.5 text-sm text-[var(--app-fg)] md:px-5 md:py-3">
+                                <div className="flex items-center justify-between gap-3">
+                                    <span>网络恢复失败，当前显示的是缓存内容。</span>
+                                    <Button variant="secondary" size="sm" onClick={props.onRefresh}>重试</Button>
+                                </div>
+                            </div>
+                        ) : null}
+
                         <div className="relative flex min-h-0 flex-1 flex-col">
+                            {props.continuityState === 'refresh_failed' && !props.hasHydratedMessages && props.messages.length === 0 && !props.isLoadingMessages ? (
+                                <div className="flex flex-1 items-center justify-center px-4 py-8 md:px-6">
+                                    <div className="w-full max-w-md rounded-[20px] border border-amber-500/20 bg-amber-500/8 px-5 py-4 text-center shadow-[var(--app-shadow-xs)]">
+                                        <div className="text-sm font-medium text-[var(--app-fg)]">当前无法刷新会话内容</div>
+                                        <div className="mt-1 text-sm text-[var(--app-hint)]">请检查网络后重试。</div>
+                                        <div className="mt-4">
+                                            <Button variant="secondary" size="sm" onClick={props.onRefresh}>重试</Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : null}
                             <HappyThread
                                 key={props.session.id}
                                 api={props.api}
@@ -371,6 +395,7 @@ export function SessionChat(props: {
                             />
 
                             <HappyComposer
+                                sessionId={props.session.id}
                                 disabled={props.isSending}
                                 permissionMode={props.session.permissionMode}
                                 collaborationMode={codexCollaborationModeSupported ? props.session.collaborationMode : undefined}

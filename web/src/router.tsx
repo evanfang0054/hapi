@@ -196,7 +196,7 @@ function SessionsIndexPage() {
 }
 
 function SessionPage() {
-    const { api } = useAppContext()
+    const { api, connectionState } = useAppContext()
     const { t } = useTranslation()
     const goBack = useAppGoBack()
     const navigate = useNavigate()
@@ -217,6 +217,7 @@ function SessionPage() {
         refetch: refetchMessages,
         pendingCount,
         messagesVersion,
+        isHydratedFromSnapshot,
         flushPending,
         setAtBottom,
     } = useMessages(api, sessionId)
@@ -324,6 +325,8 @@ function SessionPage() {
             isSending={isSending}
             pendingCount={pendingCount}
             messagesVersion={messagesVersion}
+            continuityState={connectionState}
+            hasHydratedMessages={isHydratedFromSnapshot}
             onBack={goBack}
             onRefresh={refreshSelectedSession}
             onLoadMore={loadMoreMessages}

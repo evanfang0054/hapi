@@ -118,6 +118,7 @@ function AppInner() {
     const { isSyncing, startSync, endSync } = useSyncingState()
     const [sseDisconnected, setSseDisconnected] = useState(false)
     const [sseDisconnectReason, setSseDisconnectReason] = useState<string | null>(null)
+    const [connectionState, setConnectionState] = useState<'connected' | 'reconnecting' | 'refresh_failed'>('connected')
     const syncTokenRef = useRef(0)
     const isFirstConnectRef = useRef(true)
     const baseUrlRef = useRef(baseUrl)
@@ -183,6 +184,7 @@ function AppInner() {
         // Clear disconnected state on successful connection
         setSseDisconnected(false)
         setSseDisconnectReason(null)
+        setConnectionState('connected')
 
         // Increment token to track this specific connection
         const token = ++syncTokenRef.current
@@ -207,6 +209,7 @@ function AppInner() {
             : Promise.resolve()
         Promise.all([...invalidations, refreshMessages])
             .catch((error) => {
+                setConnectionState(selectedSessionId ? 'refresh_failed' : 'connected')
                 console.error('Failed to invalidate queries on SSE connect:', error)
             })
             .finally(() => {
@@ -222,6 +225,7 @@ function AppInner() {
         if (!isFirstConnectRef.current) {
             setSseDisconnected(true)
             setSseDisconnectReason(reason)
+            setConnectionState('reconnecting')
         }
     }, [])
 
@@ -234,6 +238,12 @@ function AppInner() {
             url: event.data.url
         })
     }, [addToast])
+
+    useEffect(() => {
+        if (!selectedSessionId && connectionState === 'refresh_failed') {
+            setConnectionState('connected')
+        }
+    }, [connectionState, selectedSessionId])
 
     const eventSubscription = useMemo(() => {
         if (selectedSessionId) {
@@ -338,7 +348,7 @@ function AppInner() {
     }
 
     return (
-        <AppContextProvider value={{ api, token, baseUrl }}>
+        <AppContextProvider value={{ api, token, baseUrl, connectionState }}>
             <VoiceProvider>
                 <SyncingBanner isSyncing={isSyncing} />
                 <ReconnectingBanner
