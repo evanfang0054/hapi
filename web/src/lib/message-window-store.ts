@@ -1,4 +1,5 @@
 import type { ApiClient } from '@/api/client'
+import type { SessionMessageSnapshot } from '@/lib/session-message-snapshot'
 import type { DecryptedMessage, MessageStatus } from '@/types/api'
 import { normalizeDecryptedMessage } from '@/chat/normalize'
 import { isUserMessage, mergeMessages } from '@/lib/messages'
@@ -334,7 +335,6 @@ export function subscribeMessageWindow(sessionId: string, listener: () => void):
         current.delete(listener)
         if (current.size === 0) {
             listeners.delete(sessionId)
-            states.delete(sessionId)
             clearPendingVisibilityCache(sessionId)
         }
     }
@@ -346,6 +346,46 @@ export function clearMessageWindow(sessionId: string): void {
         return
     }
     setState(sessionId, createState(sessionId), true)
+}
+
+export function clearRuntimeMessageWindow(sessionId: string): void {
+    listeners.delete(sessionId)
+    states.delete(sessionId)
+    clearPendingVisibilityCache(sessionId)
+}
+
+export function getPersistableMessageWindowSnapshot(sessionId: string): SessionMessageSnapshot | null {
+    const state = states.get(sessionId)
+    if (!state || state.messages.length === 0) {
+        return null
+    }
+
+    return {
+        sessionId,
+        messages: state.messages,
+        oldestSeq: state.oldestSeq,
+        newestSeq: state.newestSeq,
+        hasMore: state.hasMore,
+        atBottom: state.atBottom,
+        savedAt: Date.now(),
+    }
+}
+
+export function hydrateMessageWindowFromSnapshot(snapshot: SessionMessageSnapshot): void {
+    clearPendingVisibilityCache(snapshot.sessionId)
+    const next = buildState(createState(snapshot.sessionId), {
+        messages: snapshot.messages,
+        pending: [],
+        pendingOverflowCount: 0,
+        pendingVisibleCount: 0,
+        pendingOverflowVisibleCount: 0,
+        hasMore: snapshot.hasMore,
+        isLoading: false,
+        isLoadingMore: false,
+        warning: null,
+        atBottom: snapshot.atBottom,
+    })
+    states.set(snapshot.sessionId, next)
 }
 
 export function seedMessageWindowFromSession(fromSessionId: string, toSessionId: string): void {
