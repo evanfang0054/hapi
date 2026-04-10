@@ -37,6 +37,7 @@ import {
 import { useTranslation } from '@/lib/use-translation'
 import { getModelOptionsForFlavor, getNextModelForFlavor } from './modelOptions'
 import { getClaudeComposerEffortOptions } from './claudeEffortOptions'
+import { clearSessionDraft, getSessionDraft, setSessionDraft } from '@/lib/session-draft-store'
 
 export interface TextInputState {
     text: string
@@ -46,6 +47,7 @@ export interface TextInputState {
 const defaultSuggestionHandler = async (): Promise<Suggestion[]> => []
 
 export function HappyComposer(props: {
+    sessionId: string
     disabled?: boolean
     permissionMode?: PermissionMode
     collaborationMode?: CodexCollaborationMode
@@ -75,6 +77,7 @@ export function HappyComposer(props: {
 }) {
     const { t } = useTranslation()
     const {
+        sessionId,
         disabled = false,
         permissionMode: rawPermissionMode,
         collaborationMode: rawCollaborationMode,
@@ -143,6 +146,7 @@ export function HappyComposer(props: {
     const textareaRef = useRef<HTMLTextAreaElement>(null)
     const fullscreenTextareaRef = useRef<HTMLTextAreaElement>(null)
     const prevControlledByUser = useRef(controlledByUser)
+    const pendingHydrationRef = useRef<{ sessionId: string; text: string } | null>(null)
 
     useEffect(() => {
         setInputState((prev) => {
@@ -153,6 +157,36 @@ export function HappyComposer(props: {
             return { text: composerText, selection: { start: newPos, end: newPos } }
         })
     }, [composerText])
+
+    useEffect(() => {
+        const savedDraft = getSessionDraft(sessionId)
+        pendingHydrationRef.current = { sessionId, text: savedDraft }
+        api.composer().setText(savedDraft)
+        setInputState({
+            text: savedDraft,
+            selection: { start: savedDraft.length, end: savedDraft.length }
+        })
+    }, [api, sessionId])
+
+    useEffect(() => {
+        const pendingHydration = pendingHydrationRef.current
+        if (pendingHydration?.sessionId === sessionId) {
+            if (composerText !== pendingHydration.text) {
+                return
+            }
+            pendingHydrationRef.current = null
+        }
+
+        if (typeof window === 'undefined') {
+            return
+        }
+
+        const timer = window.setTimeout(() => {
+            setSessionDraft(sessionId, composerText)
+        }, 150)
+
+        return () => window.clearTimeout(timer)
+    }, [composerText, sessionId])
 
     // Track one-time "continue" hint after switching from local to remote.
     useEffect(() => {
@@ -300,6 +334,7 @@ export function HappyComposer(props: {
             e.preventDefault()
             if (!canSend) return
             api.composer().send()
+            clearSessionDraft(sessionId)
             setShowContinueHint(false)
             return
         }
@@ -356,7 +391,8 @@ export function HappyComposer(props: {
         permissionModes,
         canSend,
         api,
-        haptic
+        haptic,
+        sessionId
     ])
 
     useEffect(() => {
@@ -467,7 +503,8 @@ export function HappyComposer(props: {
 
     const handleSend = useCallback(() => {
         api.composer().send()
-    }, [api])
+        clearSessionDraft(sessionId)
+    }, [api, sessionId])
 
     const overlays = useMemo(() => {
         if (showSettings && (showCollaborationSettings || showPermissionSettings || showModelSettings || showEffortSettings)) {
