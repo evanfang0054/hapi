@@ -44,3 +44,4 @@ cli/npm/main/
 *.bun-build
 !CLAUDE.md
 !docs
+deploy-local.sh
