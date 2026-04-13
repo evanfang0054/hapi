@@ -18,27 +18,42 @@ export function useMachinePathsExists(
     useEffect(() => {
         let cancelled = false
 
-        if (!machineId || paths.length === 0) {
+        if (!machineId) {
             setPathExistence({})
             return () => {
                 cancelled = true
             }
         }
 
-        void api.checkMachinePathsExists(machineId, paths)
+        if (paths.length === 0) {
+            return () => {
+                cancelled = true
+            }
+        }
+
+        const uniquePaths = Array.from(new Set(paths.map((path) => path.trim()).filter(Boolean)))
+        const pendingPaths = uniquePaths.filter((path) => pathExistence[path] === undefined)
+
+        if (pendingPaths.length === 0) {
+            return () => {
+                cancelled = true
+            }
+        }
+
+        void api.checkMachinePathsExists(machineId, pendingPaths)
             .then((result) => {
                 if (cancelled) return
-                setPathExistence(result.exists ?? {})
+                const exists = result.exists ?? {}
+                setPathExistence((current) => ({ ...current, ...exists }))
             })
             .catch(() => {
                 if (cancelled) return
-                setPathExistence({})
             })
 
         return () => {
             cancelled = true
         }
-    }, [api, machineId, paths])
+    }, [api, machineId, pathExistence, paths])
 
     const checkPathsExists = useCallback(async (pathsToCheck: string[]) => {
         if (!machineId || pathsToCheck.length === 0) {
