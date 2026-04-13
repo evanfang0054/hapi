@@ -19,6 +19,10 @@ const pathsExistsSchema = z.object({
     paths: z.array(z.string().min(1)).max(1000)
 })
 
+const listDirectoryQuerySchema = z.object({
+    path: z.string().optional()
+})
+
 export function createMachinesRoutes(getSyncEngine: () => SyncEngine | null): Hono<WebAppEnv> {
     const app = new Hono<WebAppEnv>()
 
@@ -64,6 +68,35 @@ export function createMachinesRoutes(getSyncEngine: () => SyncEngine | null): Ho
             parsed.data.effort
         )
         return c.json(result)
+    })
+
+    app.get('/machines/:id/directory', async (c) => {
+        const engine = getSyncEngine()
+        if (!engine) {
+            return c.json({ error: 'Not connected' }, 503)
+        }
+
+        const machineId = c.req.param('id')
+        const machine = requireMachine(c, engine, machineId)
+        if (machine instanceof Response) {
+            return machine
+        }
+
+        const parsed = listDirectoryQuerySchema.safeParse({
+            path: c.req.query('path')
+        })
+        if (!parsed.success) {
+            return c.json({ error: 'Invalid query' }, 400)
+        }
+
+        const targetPath = parsed.data.path?.trim() || '.'
+
+        try {
+            const result = await engine.listMachineDirectory(machineId, targetPath)
+            return c.json(result)
+        } catch (error) {
+            return c.json({ error: error instanceof Error ? error.message : 'Failed to list directory' }, 500)
+        }
     })
 
     app.post('/machines/:id/paths/exists', async (c) => {

@@ -178,6 +178,10 @@ export class RpcGateway {
         return exists
     }
 
+    async listMachineDirectory(machineId: string, path: string): Promise<RpcListDirectoryResponse> {
+        return await this.machineRpc(machineId, 'listDirectory', { path }) as RpcListDirectoryResponse
+    }
+
     async getGitStatus(sessionId: string, cwd?: string): Promise<RpcCommandResponse> {
         return await this.sessionRpc(sessionId, 'git-status', { cwd }) as RpcCommandResponse
     }

@@ -28,6 +28,51 @@ import { SessionTypeSelector } from './SessionTypeSelector'
 import { YoloToggle } from './YoloToggle'
 import { formatRunnerSpawnError } from '../../utils/formatRunnerSpawnError'
 
+const WINDOWS_DRIVE_PATTERN = /^[A-Za-z]:$/
+
+function splitDirectoryInput(input: string): { parentPath: string; fragment: string; separator: '/' | '\\' } {
+    const trimmed = input.trim()
+    if (trimmed === '') {
+        return { parentPath: '.', fragment: '', separator: '/' }
+    }
+
+    const slashIndex = Math.max(trimmed.lastIndexOf('/'), trimmed.lastIndexOf('\\'))
+    if (slashIndex < 0) {
+        return { parentPath: '.', fragment: trimmed, separator: '/' }
+    }
+
+    const separator = trimmed[slashIndex] === '\\' ? '\\' : '/'
+
+    if (slashIndex === 0) {
+        return {
+            parentPath: trimmed[0],
+            fragment: trimmed.slice(1),
+            separator
+        }
+    }
+
+    const parentPath = trimmed.slice(0, slashIndex) || '.'
+    const fragment = trimmed.slice(slashIndex + 1)
+    return { parentPath, fragment, separator }
+}
+
+function buildSuggestionPath(parentPath: string, name: string, separator: '/' | '\\'): string {
+    if (parentPath === '.' || parentPath === '') {
+        return name
+    }
+
+    if (parentPath === '/' || parentPath === '\\') {
+        return `${parentPath}${name}`
+    }
+
+    const normalizedParent = parentPath.replace(/[\\/]$/, '')
+    if (WINDOWS_DRIVE_PATTERN.test(normalizedParent)) {
+        return `${normalizedParent}${separator}${name}`
+    }
+
+    return `${normalizedParent}${separator}${name}`
+}
+
 export function NewSession(props: {
     api: ApiClient
     machines: Machine[]
@@ -56,6 +101,7 @@ export function NewSession(props: {
     const [directoryCreationConfirmed, setDirectoryCreationConfirmed] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const worktreeInputRef = useRef<HTMLInputElement>(null)
+    const directoryEntriesCacheRef = useRef<Map<string, string[]>>(new Map())
 
     useEffect(() => {
         if (sessionType === 'worktree') {
@@ -92,6 +138,10 @@ export function NewSession(props: {
         }
     }, [props.machines, machineId, getLastUsedMachineId, getRecentPaths])
 
+    useEffect(() => {
+        directoryEntriesCacheRef.current.clear()
+    }, [machineId])
+
     const selectedMachine = useMemo(
         () => (machineId ? props.machines.find((machine) => machine.id === machineId) ?? null : null),
         [machineId, props.machines]
@@ -108,14 +158,22 @@ export function NewSession(props: {
 
     const trimmedDirectory = directory.trim()
     const deferredDirectory = useDeferredValue(trimmedDirectory)
+    const [debouncedDirectory, setDebouncedDirectory] = useState('')
     const allPaths = useDirectorySuggestions(machineId, sessions, recentPaths)
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedDirectory(deferredDirectory)
+        }, 250)
+        return () => clearTimeout(timer)
+    }, [deferredDirectory])
 
     const pathsToCheck = useMemo(
         () => Array.from(new Set([
-            ...(deferredDirectory ? [deferredDirectory] : []),
+            ...(debouncedDirectory ? [debouncedDirectory] : []),
             ...allPaths
         ])).slice(0, 1000),
-        [allPaths, deferredDirectory]
+        [allPaths, debouncedDirectory]
     )
 
     const { pathExistence, checkPathsExists } = useMachinePathsExists(props.api, machineId, pathsToCheck)
@@ -147,16 +205,57 @@ export function NewSession(props: {
     }, [machineId, sessionType, trimmedDirectory])
 
     const getSuggestions = useCallback(async (query: string): Promise<Suggestion[]> => {
-        const lowered = query.toLowerCase()
-        return verifiedPaths
-            .filter((path) => path.toLowerCase().includes(lowered))
-            .slice(0, 8)
-            .map((path) => ({
-                key: path,
-                text: path,
-                label: path
-            }))
-    }, [verifiedPaths])
+        const normalizedQuery = query.trim()
+        const loweredQuery = normalizedQuery.toLowerCase()
+        const suggestionMap = new Map<string, Suggestion>()
+
+        for (const path of verifiedPaths) {
+            if (path.toLowerCase().includes(loweredQuery)) {
+                suggestionMap.set(path, {
+                    key: path,
+                    text: path,
+                    label: path
+                })
+            }
+        }
+
+        if (!machineId) {
+            return Array.from(suggestionMap.values()).slice(0, 8)
+        }
+
+        const { parentPath, fragment, separator } = splitDirectoryInput(normalizedQuery)
+        const cacheKey = `${machineId}:${parentPath}`
+        let directoryNames = directoryEntriesCacheRef.current.get(cacheKey)
+
+        if (!directoryNames) {
+            try {
+                const result = await props.api.listMachineDirectory(machineId, parentPath)
+                if (result.success) {
+                    directoryNames = (result.entries ?? [])
+                        .filter((entry) => entry.type === 'directory')
+                        .map((entry) => entry.name)
+                    directoryEntriesCacheRef.current.set(cacheKey, directoryNames)
+                }
+            } catch {
+                // Ignore autocomplete fetch failures and keep local suggestions only.
+            }
+        }
+
+        const loweredFragment = fragment.toLowerCase()
+        for (const name of directoryNames ?? []) {
+            if (loweredFragment !== '' && !name.toLowerCase().startsWith(loweredFragment)) {
+                continue
+            }
+            const fullPath = buildSuggestionPath(parentPath, name, separator)
+            suggestionMap.set(fullPath, {
+                key: fullPath,
+                text: fullPath,
+                label: fullPath
+            })
+        }
+
+        return Array.from(suggestionMap.values()).slice(0, 8)
+    }, [verifiedPaths, machineId, props.api])
 
     const activeQuery = (!isDirectoryFocused || suppressSuggestions) ? null : directory
 
