@@ -23,11 +23,12 @@ export class PushNotificationChannel implements NotificationChannel {
             ? Object.values(session.agentState.requests)[0]
             : null
         const toolName = request?.tool ? ` (${request.tool})` : ''
+        const notificationKey = `permission-${session.id}`
 
         const payload: PushPayload = {
             title: 'Permission Request',
             body: `${name}${toolName}`,
-            tag: `permission-${session.id}`,
+            tag: notificationKey,
             data: {
                 type: 'permission-request',
                 sessionId: session.id,
@@ -35,20 +36,8 @@ export class PushNotificationChannel implements NotificationChannel {
             }
         }
 
-        const url = payload.data?.url ?? this.buildSessionPath(session.id)
-        if (this.visibilityTracker.hasVisibleConnection(session.namespace)) {
-            const delivered = await this.sseManager.sendToast(session.namespace, {
-                type: 'toast',
-                data: {
-                    title: payload.title,
-                    body: payload.body,
-                    sessionId: session.id,
-                    url
-                }
-            })
-            if (delivered > 0) {
-                return
-            }
+        if (await this.sendToastIfFocused(session, payload, notificationKey)) {
+            return
         }
 
         await this.pushService.sendToNamespace(session.namespace, payload)
@@ -61,11 +50,12 @@ export class PushNotificationChannel implements NotificationChannel {
 
         const agentName = getAgentName(session)
         const name = getSessionName(session)
+        const notificationKey = `ready-${session.id}`
 
         const payload: PushPayload = {
             title: 'Ready for input',
             body: `${agentName} is waiting in ${name}`,
-            tag: `ready-${session.id}`,
+            tag: notificationKey,
             data: {
                 type: 'ready',
                 sessionId: session.id,
@@ -73,23 +63,35 @@ export class PushNotificationChannel implements NotificationChannel {
             }
         }
 
-        const url = payload.data?.url ?? this.buildSessionPath(session.id)
-        if (this.visibilityTracker.hasVisibleConnection(session.namespace)) {
-            const delivered = await this.sseManager.sendToast(session.namespace, {
-                type: 'toast',
-                data: {
-                    title: payload.title,
-                    body: payload.body,
-                    sessionId: session.id,
-                    url
-                }
-            })
-            if (delivered > 0) {
-                return
-            }
+        if (await this.sendToastIfFocused(session, payload, notificationKey)) {
+            return
         }
 
         await this.pushService.sendToNamespace(session.namespace, payload)
+    }
+
+    private async sendToastIfFocused(
+        session: Session,
+        payload: PushPayload,
+        notificationKey: string
+    ): Promise<boolean> {
+        if (!this.visibilityTracker.hasVisibleConnectionForSession(session.namespace, session.id)) {
+            return false
+        }
+
+        const url = payload.data?.url ?? this.buildSessionPath(session.id)
+        const delivered = await this.sseManager.sendToast(session.namespace, {
+            type: 'toast',
+            data: {
+                title: payload.title,
+                body: payload.body,
+                sessionId: session.id,
+                url,
+                notificationKey
+            }
+        })
+
+        return delivered > 0
     }
 
     private buildSessionPath(sessionId: string): string {
