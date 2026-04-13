@@ -23,6 +23,19 @@ const mockState = {
         isDisabled: false,
     },
 }
+const mockAssistantApi = {
+    composer: () => ({
+        setText: (text: string) => {
+            mockSetText(text)
+            mockState.composer.text = text
+        },
+        send: mockSend,
+        addAttachment: mockAddAttachment,
+    }),
+    thread: () => ({
+        cancelRun: mockCancelRun,
+    }),
+}
 
 function MockComposerRoot(props: { children: ReactNode; onSubmit?: (event?: FormEvent<HTMLFormElement>) => void; className?: string }) {
     return (
@@ -49,19 +62,7 @@ vi.mock('@assistant-ui/react', () => ({
         Input: MockComposerInput,
         Attachments: () => null,
     },
-    useAssistantApi: () => ({
-        composer: () => ({
-            setText: (text: string) => {
-                mockSetText(text)
-                mockState.composer.text = text
-            },
-            send: mockSend,
-            addAttachment: mockAddAttachment,
-        }),
-        thread: () => ({
-            cancelRun: mockCancelRun,
-        }),
-    }),
+    useAssistantApi: () => mockAssistantApi,
     useAssistantState: (selector: (state: typeof mockState) => unknown) => selector(mockState),
 }))
 
@@ -149,6 +150,11 @@ vi.mock('./modelOptions', () => ({
 vi.mock('./claudeEffortOptions', () => ({
     getClaudeComposerEffortOptions: () => [],
 }))
+
+function getActiveComposerTextarea() {
+    const textareas = screen.getAllByRole('textbox')
+    return textareas[textareas.length - 1] as HTMLTextAreaElement
+}
 
 function resetComposerState() {
     mockState.composer.text = ''
@@ -246,16 +252,58 @@ describe('HappyComposer draft persistence', () => {
         expect(mockSend).toHaveBeenCalledTimes(1)
         expect(getSessionDraft('session-1')).toBe('')
     })
+})
 
-    it('clears the stored draft when submitting with Shift+Enter', () => {
-        setSessionDraft('session-1', 'keyboard send')
-        mockState.composer.text = 'keyboard send'
+describe('HappyComposer keyboard behavior', () => {
+    beforeEach(() => {
+        vi.useFakeTimers()
+        localStorage.clear()
+        __resetSessionDraftStoreForTests()
+        clearSessionDraft('session-1')
+        resetComposerState()
+        mockSetText.mockReset()
+        mockSend.mockReset()
+        mockCancelRun.mockReset()
+        mockAddAttachment.mockReset()
+    })
+
+    afterEach(() => {
+        cleanup()
+        vi.runOnlyPendingTimers()
+        vi.useRealTimers()
+    })
+
+    it('sends on Enter', () => {
+        setSessionDraft('session-1', 'hello')
+        mockState.composer.text = 'hello'
 
         render(<HappyComposer sessionId="session-1" />)
-        const textarea = screen.getAllByRole('textbox')[0]
-        fireEvent.keyDown(textarea, { key: 'Enter', shiftKey: true })
+        const textarea = getActiveComposerTextarea()
+        fireEvent.keyDown(textarea, { key: 'Enter' })
 
         expect(mockSend).toHaveBeenCalledTimes(1)
-        expect(getSessionDraft('session-1')).toBe('')
+    })
+
+    it('inserts newline on Shift+Enter', () => {
+        setSessionDraft('session-1', 'hello')
+        mockState.composer.text = 'hello'
+
+        render(<HappyComposer sessionId="session-1" />)
+        const textarea = getActiveComposerTextarea()
+        const event = fireEvent.keyDown(textarea, { key: 'Enter', shiftKey: true })
+
+        expect(event).toBe(true)
+        expect(mockSend).not.toHaveBeenCalled()
+    })
+
+    it('preserves draft persistence while agent is running', () => {
+        const { rerender } = render(<HappyComposer sessionId="session-1" />)
+
+        mockState.composer.text = 'draft while running'
+        mockState.thread.isRunning = true
+        rerender(<HappyComposer sessionId="session-1" thinking />)
+
+        vi.advanceTimersByTime(150)
+        expect(getSessionDraft('session-1')).toBe('draft while running')
     })
 })

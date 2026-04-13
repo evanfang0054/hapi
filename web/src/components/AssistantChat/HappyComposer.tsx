@@ -58,6 +58,7 @@ export function HappyComposer(props: {
     thinking?: boolean
     agentState?: AgentState | null
     contextSize?: number
+    backgroundTaskCount?: number
     controlledByUser?: boolean
     agentFlavor?: string | null
     onCollaborationModeChange?: (mode: CodexCollaborationMode) => void
@@ -89,6 +90,7 @@ export function HappyComposer(props: {
         agentState,
         contextSize,
         controlledByUser = false,
+        backgroundTaskCount = 0,
         agentFlavor,
         onCollaborationModeChange,
         onPermissionModeChange,
@@ -329,8 +331,8 @@ export function HappyComposer(props: {
             return
         }
 
-        // Shift+Enter sends the message (works on all platforms including iPadOS with keyboard)
-        if (key === 'Enter' && e.shiftKey) {
+        // Enter sends the message; modifier+Enter inserts a newline.
+        if (key === 'Enter' && !e.shiftKey && !e.metaKey && !e.ctrlKey && !e.altKey) {
             e.preventDefault()
             if (!canSend) return
             api.composer().send()
@@ -792,6 +794,7 @@ export function HappyComposer(props: {
                             collaborationMode={collaborationMode}
                             agentFlavor={agentFlavor}
                             voiceStatus={voiceStatus}
+                            backgroundTaskCount={backgroundTaskCount}
                         />
 
                         {attachments.length > 0 ? (
