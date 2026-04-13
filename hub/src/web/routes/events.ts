@@ -29,7 +29,8 @@ function parseVisibility(value: string | undefined): VisibilityState {
 
 const visibilitySchema = z.object({
     subscriptionId: z.string().min(1),
-    visibility: z.enum(['visible', 'hidden'])
+    visibility: z.enum(['visible', 'hidden']),
+    activeSessionId: z.string().min(1).nullable().optional()
 })
 
 export function createEventsRoutes(
@@ -85,6 +86,7 @@ export function createEventsRoutes(
                 sessionId: resolvedSessionId,
                 machineId,
                 visibility,
+                activeSessionId: resolvedSessionId,
                 send: (event) => stream.writeSSE({ data: JSON.stringify(event) }),
                 sendHeartbeat: async () => {
                     await stream.writeSSE({
@@ -132,7 +134,12 @@ export function createEventsRoutes(
         }
 
         const namespace = c.get('namespace')
-        const updated = tracker.setVisibility(parsed.data.subscriptionId, namespace, parsed.data.visibility)
+        const updated = tracker.setVisibility(
+            parsed.data.subscriptionId,
+            namespace,
+            parsed.data.visibility,
+            parsed.data.activeSessionId ?? null
+        )
         if (!updated) {
             return c.json({ error: 'Subscription not found' }, 404)
         }

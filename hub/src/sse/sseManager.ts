@@ -8,6 +8,7 @@ export type SSESubscription = {
     all: boolean
     sessionId: string | null
     machineId: string | null
+    activeSessionId: string | null
 }
 
 type SSEConnection = SSESubscription & {
@@ -33,6 +34,7 @@ export class SSEManager {
         sessionId?: string | null
         machineId?: string | null
         visibility?: VisibilityState
+        activeSessionId?: string | null
         send: (event: SyncEvent) => void | Promise<void>
         sendHeartbeat: () => void | Promise<void>
     }): SSESubscription {
@@ -42,6 +44,7 @@ export class SSEManager {
             all: Boolean(options.all),
             sessionId: options.sessionId ?? null,
             machineId: options.machineId ?? null,
+            activeSessionId: options.activeSessionId ?? options.sessionId ?? null,
             send: options.send,
             sendHeartbeat: options.sendHeartbeat
         }
@@ -50,7 +53,8 @@ export class SSEManager {
         this.visibilityTracker.registerConnection(
             subscription.id,
             subscription.namespace,
-            options.visibility ?? 'hidden'
+            options.visibility ?? 'hidden',
+            subscription.activeSessionId
         )
         this.ensureHeartbeat()
         return {
@@ -58,7 +62,8 @@ export class SSEManager {
             namespace: subscription.namespace,
             all: subscription.all,
             sessionId: subscription.sessionId,
-            machineId: subscription.machineId
+            machineId: subscription.machineId,
+            activeSessionId: subscription.activeSessionId
         }
     }
 

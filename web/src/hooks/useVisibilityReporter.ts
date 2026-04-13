@@ -14,10 +14,13 @@ export function useVisibilityReporter(options: {
     api: ApiClient | null
     subscriptionId: string | null
     enabled?: boolean
+    activeSessionId?: string | null
 }): void {
     const lastStateRef = useRef<VisibilityState | null>(null)
+    const lastActiveSessionIdRef = useRef<string | null>(null)
     const lastSubscriptionRef = useRef<string | null>(null)
     const pendingStateRef = useRef<VisibilityState | null>(null)
+    const pendingActiveSessionIdRef = useRef<string | null>(null)
     const inFlightRef = useRef(false)
     const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -35,8 +38,10 @@ export function useVisibilityReporter(options: {
         }
         if (!options.api || !options.subscriptionId) {
             lastStateRef.current = null
+            lastActiveSessionIdRef.current = null
             lastSubscriptionRef.current = options.subscriptionId ?? null
             pendingStateRef.current = null
+            pendingActiveSessionIdRef.current = null
             clearRetry()
             return
         }
@@ -46,7 +51,9 @@ export function useVisibilityReporter(options: {
         if (lastSubscriptionRef.current !== subscriptionId) {
             lastSubscriptionRef.current = subscriptionId
             lastStateRef.current = null
+            lastActiveSessionIdRef.current = null
             pendingStateRef.current = null
+            pendingActiveSessionIdRef.current = null
             clearRetry()
         }
 
@@ -55,6 +62,7 @@ export function useVisibilityReporter(options: {
                 return
             }
             const desired = pendingStateRef.current
+            const desiredActiveSessionId = pendingActiveSessionIdRef.current ?? null
             if (!desired) {
                 return
             }
@@ -64,8 +72,12 @@ export function useVisibilityReporter(options: {
             if (retryTimerRef.current) {
                 return
             }
-            if (lastStateRef.current === desired) {
+            if (
+                lastStateRef.current === desired &&
+                lastActiveSessionIdRef.current === desiredActiveSessionId
+            ) {
                 pendingStateRef.current = null
+                pendingActiveSessionIdRef.current = null
                 return
             }
 
@@ -74,13 +86,16 @@ export function useVisibilityReporter(options: {
             const activeSubscription = subscriptionId
             void api.setVisibility({
                 subscriptionId,
-                visibility: desired
+                visibility: desired,
+                activeSessionId: desiredActiveSessionId
             }).then(() => {
                 if (lastSubscriptionRef.current !== activeSubscription) {
                     return
                 }
                 lastStateRef.current = desired
+                lastActiveSessionIdRef.current = desiredActiveSessionId
                 pendingStateRef.current = null
+                pendingActiveSessionIdRef.current = null
                 clearRetry()
             }).catch((error) => {
                 if (lastSubscriptionRef.current !== activeSubscription) {
@@ -99,7 +114,13 @@ export function useVisibilityReporter(options: {
                 if (hadError || retryTimerRef.current) {
                     return
                 }
-                if (pendingStateRef.current && pendingStateRef.current !== lastStateRef.current) {
+                if (
+                    pendingStateRef.current &&
+                    (
+                        pendingStateRef.current !== lastStateRef.current ||
+                        (pendingActiveSessionIdRef.current ?? null) !== lastActiveSessionIdRef.current
+                    )
+                ) {
                     flush()
                 }
             })
@@ -108,6 +129,7 @@ export function useVisibilityReporter(options: {
         const report = () => {
             const state = getVisibilityState()
             pendingStateRef.current = state
+            pendingActiveSessionIdRef.current = options.activeSessionId ?? null
             flush()
         }
 
@@ -118,5 +140,5 @@ export function useVisibilityReporter(options: {
             clearRetry()
             inFlightRef.current = false
         }
-    }, [options.api, options.enabled, options.subscriptionId])
+    }, [options.api, options.enabled, options.subscriptionId, options.activeSessionId])
 }
