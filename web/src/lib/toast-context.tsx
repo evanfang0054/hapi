@@ -10,7 +10,7 @@ export type Toast = {
 
 export type ToastContextValue = {
     toasts: Toast[]
-    addToast: (toast: Omit<Toast, 'id'>) => void
+    addToast: (toast: Omit<Toast, 'id'> & { id?: string }) => void
     removeToast: (id: string) => void
 }
 
@@ -46,9 +46,17 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         }
     }, [])
 
-    const addToast = useCallback((toast: Omit<Toast, 'id'>) => {
-        const id = createToastId()
-        setToasts((prev) => [...prev, { id, ...toast }])
+    const addToast = useCallback((toast: Omit<Toast, 'id'> & { id?: string }) => {
+        const id = toast.id ?? createToastId()
+        setToasts((prev) => {
+            if (prev.some((item) => item.id === id)) {
+                return prev
+            }
+            return [...prev, { ...toast, id }]
+        })
+        if (timersRef.current.has(id)) {
+            return
+        }
         const timer = setTimeout(() => {
             removeToast(id)
         }, TOAST_DURATION_MS)
