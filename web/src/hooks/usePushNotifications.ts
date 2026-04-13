@@ -77,7 +77,7 @@ export function usePushNotifications(api: ApiClient | null) {
             const registration = await navigator.serviceWorker.ready
             const existing = await registration.pushManager.getSubscription()
             const { publicKey } = await api.getPushVapidPublicKey()
-            const applicationServerKey = base64UrlToUint8Array(publicKey).buffer as ArrayBuffer
+            const applicationServerKey = new Uint8Array(base64UrlToUint8Array(publicKey))
             const subscription = existing ?? await registration.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey

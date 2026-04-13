@@ -119,5 +119,22 @@ self.addEventListener('notificationclick', (event) => {
     event.notification.close()
     const data = event.notification.data as { url?: string } | undefined
     const url = data?.url ?? '/'
-    event.waitUntil(self.clients.openWindow(url))
+
+    event.waitUntil((async () => {
+        const windowClients = await self.clients.matchAll({
+            type: 'window',
+            includeUncontrolled: true
+        })
+        const targetPath = new URL(url, self.location.origin).pathname
+
+        for (const client of windowClients) {
+            const clientPath = new URL(client.url).pathname
+            if (clientPath === targetPath && 'focus' in client) {
+                await client.focus()
+                return
+            }
+        }
+
+        await self.clients.openWindow(url)
+    })())
 })
