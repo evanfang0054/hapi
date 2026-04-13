@@ -435,7 +435,7 @@ Expected: 本地开发服务可用。然后手动上传一个明显大于之前�
 
 实际结果：复用当前本地 dev 环境，对会话 `9416a887-7bb5-44f3-a015-8b19e1b9302b` 先通过 `/api/auth` 换取 JWT，再向 `/api/sessions/:id/upload` 成功上传 11MB 文件；随后在会话页通过前端 paste image 链路添加 `task4-paste-large.png`，渲染出的附件节点仍保持 `AttachmentItem.tsx` 的既有结构与类名（`flex items-center gap-2 rounded-lg bg-[var(--app-subtle-bg)] px-3 py-2 text-base text-[var(--app-fg)]`），未出现额外 UI 回退；上传后会话保持可交互，未观察到 continuity / toast / push 回归迹象。
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add hub/src/web/server.ts web/src/components/AssistantChat/AttachmentItem.tsx
