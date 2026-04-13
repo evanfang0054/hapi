@@ -26,6 +26,7 @@ import { VoiceErrorBanner } from '@/components/VoiceErrorBanner'
 import { LoadingState } from '@/components/LoadingState'
 import { ToastContainer } from '@/components/ToastContainer'
 import { ToastProvider, useToast } from '@/lib/toast-context'
+import { markNotificationSeen, shouldShowNotification } from '@/lib/notification-dedupe'
 import type { SyncEvent } from '@/types/api'
 
 type ToastEvent = Extract<SyncEvent, { type: 'toast' }>
@@ -123,7 +124,15 @@ function AppInner() {
     const isFirstConnectRef = useRef(true)
     const baseUrlRef = useRef(baseUrl)
     const pushPromptedRef = useRef(false)
-    const { isSupported: isPushSupported, permission: pushPermission, requestPermission, subscribe } = usePushNotifications(api)
+    const pushRetryAttemptedRef = useRef(false)
+    const [pushRetryNonce, setPushRetryNonce] = useState(0)
+    const {
+        isSupported: isPushSupported,
+        permission: pushPermission,
+        isSubscribed,
+        requestPermission,
+        subscribe
+    } = usePushNotifications(api)
 
     useEffect(() => {
         if (baseUrlRef.current === baseUrl) {
@@ -154,31 +163,56 @@ function AppInner() {
     useEffect(() => {
         if (!api || !token) {
             pushPromptedRef.current = false
+            pushRetryAttemptedRef.current = false
+            setPushRetryNonce(0)
             return
         }
-        if (isTelegramApp() || !isPushSupported) {
+        if (isTelegramApp() || !isPushSupported || isSubscribed) {
+            if (isSubscribed) {
+                pushRetryAttemptedRef.current = false
+            }
             return
         }
-        if (pushPromptedRef.current) {
-            return
+
+        const queueRetry = () => {
+            if (pushRetryAttemptedRef.current) {
+                return
+            }
+            pushRetryAttemptedRef.current = true
+            setPushRetryNonce((value) => value + 1)
         }
-        pushPromptedRef.current = true
 
         const run = async () => {
             if (pushPermission === 'granted') {
-                await subscribe()
+                const subscribed = await subscribe()
+                if (!subscribed) {
+                    queueRetry()
+                }
                 return
             }
-            if (pushPermission === 'default') {
+            if (pushPermission === 'default' && !pushPromptedRef.current) {
+                pushPromptedRef.current = true
                 const granted = await requestPermission()
                 if (granted) {
-                    await subscribe()
+                    const subscribed = await subscribe()
+                    if (!subscribed) {
+                        queueRetry()
+                    }
                 }
             }
         }
 
         void run()
-    }, [api, isPushSupported, pushPermission, requestPermission, subscribe, token])
+    }, [
+        api,
+        isPushSupported,
+        isSubscribed,
+        pushPermission,
+        pushRetryNonce,
+        requestPermission,
+        subscribe,
+        token
+    ])
 
     const handleSseConnect = useCallback(() => {
         // Clear disconnected state on successful connection
@@ -231,7 +265,13 @@ function AppInner() {
 
     const handleSseEvent = useCallback(() => {}, [])
     const handleToast = useCallback((event: ToastEvent) => {
+        const key = event.data.notificationKey
+        if (!shouldShowNotification(key)) {
+            return
+        }
+        markNotificationSeen(key)
         addToast({
+            id: key,
             title: event.data.title,
             body: event.data.body,
             sessionId: event.data.sessionId,
@@ -266,7 +306,8 @@ function AppInner() {
     useVisibilityReporter({
         api,
         subscriptionId,
-        enabled: Boolean(api && token)
+        enabled: Boolean(api && token),
+        activeSessionId: selectedSessionId
     })
 
     // Loading auth source
