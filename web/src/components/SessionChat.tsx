@@ -407,6 +407,7 @@ export function SessionChat(props: {
                                 thinking={props.session.thinking}
                                 agentState={props.session.agentState}
                                 contextSize={reduced.latestUsage?.contextSize}
+                                backgroundTaskCount={props.pendingCount}
                                 controlledByUser={controlledByUser}
                                 onCollaborationModeChange={
                                     codexCollaborationModeSupported && props.session.active && !controlledByUser

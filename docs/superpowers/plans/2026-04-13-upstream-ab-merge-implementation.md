@@ -694,7 +694,7 @@ Expected: PASS。
 
 已验证 PASS（3/3 tests passed）。随后完成 code review，结论为 ready；唯一建议是未来可再补一条“连接状态未被替换”的显式断言，但不阻塞当前任务。
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add web/src/components/AssistantChat/StatusBar.tsx web/src/components/AssistantChat/StatusBar.test.tsx web/src/components/SessionChat.tsx web/src/lib/locales/en.ts web/src/lib/locales/zh-CN.ts

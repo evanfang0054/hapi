@@ -116,6 +116,7 @@ export function StatusBar(props: {
     collaborationMode?: CodexCollaborationMode
     agentFlavor?: string | null
     voiceStatus?: ConversationStatus
+    backgroundTaskCount?: number
 }) {
     const { t } = useTranslation()
     const connectionStatus = useMemo(
@@ -149,6 +150,9 @@ export function StatusBar(props: {
     const collaborationModeLabel = displayCollaborationMode
         ? getCodexCollaborationModeLabel(displayCollaborationMode)
         : null
+    const backgroundTaskLabel = props.backgroundTaskCount && props.backgroundTaskCount > 0
+        ? t('status.backgroundTasks', { count: props.backgroundTaskCount })
+        : null
 
     return (
         <div className="flex items-center justify-between px-6 py-1">
@@ -169,6 +173,11 @@ export function StatusBar(props: {
             </div>
 
             <div className="flex items-center gap-2">
+                {backgroundTaskLabel ? (
+                    <span className="text-xs text-[var(--app-hint)]">
+                        {backgroundTaskLabel}
+                    </span>
+                ) : null}
                 {collaborationModeLabel ? (
                     <span className="text-xs text-blue-500">
                         {collaborationModeLabel}
