@@ -532,7 +532,7 @@ Expected: PASS。
 
 实际结果：`cd web && bunx vitest run --config vitest.config.ts src/components/assistant-ui/markdown-text.test.tsx` 通过，覆盖 inline math、block math 与 fenced code 保持 code；`cd web && bun run typecheck` 通过。
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add web/package.json web/src/components/assistant-ui/markdown-text.tsx web/src/components/assistant-ui/markdown-text.test.tsx

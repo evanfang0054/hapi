@@ -5,13 +5,17 @@ import {
     useIsMarkdownCodeBlock,
     type CodeHeaderProps,
 } from '@assistant-ui/react-markdown'
+import rehypeKatex from 'rehype-katex'
 import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import 'katex/dist/katex.min.css'
 import { cn } from '@/lib/utils'
 import { SyntaxHighlighter } from '@/components/assistant-ui/shiki-highlighter'
 import { useCopyToClipboard } from '@/hooks/useCopyToClipboard'
 import { CopyIcon, CheckIcon } from '@/components/icons'
 
-export const MARKDOWN_PLUGINS = [remarkGfm]
+export const MARKDOWN_PLUGINS = [remarkGfm, remarkMath]
+export const REHYPE_PLUGINS = [rehypeKatex]
 
 function CodeHeader(props: CodeHeaderProps) {
     const { copied, copy } = useCopyToClipboard()
@@ -224,6 +228,7 @@ export function MarkdownText() {
     return (
         <MarkdownTextPrimitive
             remarkPlugins={MARKDOWN_PLUGINS}
+            rehypePlugins={REHYPE_PLUGINS}
             components={defaultComponents}
             className={cn('aui-md min-w-0 max-w-full break-words text-base')}
         />
