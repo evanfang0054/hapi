@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
-import type { Session, SyncEvent, SyncEventListener, SyncEngine } from '../sync/syncEngine'
-import type { NotificationChannel } from './notificationTypes'
+import { SyncEngine, type Session, type SyncEvent, type SyncEventListener } from '../sync/syncEngine'
+import { Store } from '../store'
+import { RpcRegistry } from '../socket/rpcRegistry'
 import { NotificationHub } from './notificationHub'
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -29,7 +30,7 @@ class FakeSyncEngine {
     }
 }
 
-class StubChannel implements NotificationChannel {
+class StubChannel {
     readonly readySessions: Session[] = []
     readonly permissionSessions: Session[] = []
 
@@ -154,5 +155,56 @@ describe('NotificationHub', () => {
         expect(channel.readySessions).toHaveLength(2)
 
         hub.stop()
+    })
+
+    it('receives permission notifications from syncEngine realtime session updates', async () => {
+        const store = new Store(':memory:')
+        const engine = new SyncEngine(
+            store,
+            { of: () => ({ to: () => ({ emit() {} }) }) } as never,
+            new RpcRegistry(),
+            { broadcast() {} } as never
+        )
+        const channel = new StubChannel()
+        const hub = new NotificationHub(engine, [channel], {
+            permissionDebounceMs: 5,
+            readyCooldownMs: 5
+        })
+
+        try {
+            const stored = store.sessions.getOrCreateSession('tag-1', {}, {}, 'default')
+            engine.handleSessionAlive({
+                sid: stored.id,
+                time: Date.now(),
+                thinking: false,
+                mode: 'remote'
+            })
+            const activeSession = engine.getSession(stored.id)
+            expect(activeSession?.active).toBe(true)
+
+            const updated = store.sessions.updateSessionAgentState(
+                stored.id,
+                {
+                    requests: {
+                        req1: { tool: 'Edit', arguments: {}, createdAt: 1 }
+                    }
+                },
+                activeSession?.agentStateVersion ?? stored.agentStateVersion,
+                stored.namespace
+            )
+
+            expect(updated.result).toBe('success')
+
+            engine.handleRealtimeEvent({
+                type: 'session-updated',
+                sessionId: stored.id
+            })
+
+            await sleep(25)
+            expect(channel.permissionSessions).toHaveLength(1)
+        } finally {
+            hub.stop()
+            engine.stop()
+        }
     })
 })

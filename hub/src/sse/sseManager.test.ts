@@ -65,6 +65,24 @@ describe('SSEManager namespace filtering', () => {
         expect(received.map((entry) => entry.id).sort()).toEqual(['alpha', 'beta'])
     })
 
+    it('tracks the active session for a visible subscription', () => {
+        const tracker = new VisibilityTracker()
+        tracker.registerConnection('sub-1', 'ns-1', 'visible', 'session-1')
+
+        expect(tracker.hasVisibleConnectionForSession('ns-1', 'session-1')).toBe(true)
+        expect(tracker.hasVisibleConnectionForSession('ns-1', 'session-2')).toBe(false)
+    })
+
+    it('updates the tracked session when visibility payload changes', () => {
+        const tracker = new VisibilityTracker()
+        tracker.registerConnection('sub-1', 'ns-1', 'visible', 'session-1')
+
+        tracker.setVisibility('sub-1', 'ns-1', 'visible', 'session-2')
+
+        expect(tracker.hasVisibleConnectionForSession('ns-1', 'session-1')).toBe(false)
+        expect(tracker.hasVisibleConnectionForSession('ns-1', 'session-2')).toBe(true)
+    })
+
     it('sends toast only to visible connections in a namespace', async () => {
         const manager = new SSEManager(0, new VisibilityTracker())
         const received: Array<{ id: string; event: SyncEvent }> = []
@@ -108,7 +126,8 @@ describe('SSEManager namespace filtering', () => {
                 title: 'Test',
                 body: 'Toast body',
                 sessionId: 'session-1',
-                url: '/sessions/session-1'
+                url: '/sessions/session-1',
+                notificationKey: 'toast-session-1'
             }
         }
 
