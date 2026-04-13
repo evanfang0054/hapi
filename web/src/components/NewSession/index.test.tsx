@@ -72,7 +72,7 @@ describe('NewSession', () => {
                         metadata: {
                             host: 'arwen.local',
                             platform: 'darwin',
-                            happyCliVersion: '0.16.9-beta.2',
+                            happyCliVersion: '0.16.9-beta.3',
                             displayName: 'Arwen Mac',
                         },
                     } satisfies Machine,
