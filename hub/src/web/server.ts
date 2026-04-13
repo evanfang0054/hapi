@@ -54,7 +54,7 @@ function serveEmbeddedAsset(asset: EmbeddedWebAsset): Response {
     })
 }
 
-function createWebApp(options: {
+export function createWebApp(options: {
     getSyncEngine: () => SyncEngine | null
     getSseManager: () => SSEManager | null
     getVisibilityTracker: () => VisibilityTracker | null
