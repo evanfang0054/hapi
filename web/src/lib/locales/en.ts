@@ -87,6 +87,7 @@ export default {
   'button.close': 'Close',
   'button.dismiss': 'Dismiss',
   'button.copy': 'Copy',
+  'assistant.copy': 'Copy assistant message',
   'button.paste': 'Paste',
 
   // New session form

@@ -89,6 +89,7 @@ export default {
   'button.close': '关闭',
   'button.dismiss': '忽略',
   'button.copy': '复制',
+  'assistant.copy': '复制助手消息',
   'button.paste': '粘贴',
 
   // New session form

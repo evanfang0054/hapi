@@ -634,7 +634,7 @@ Expected: PASS。
 
 已验证 PASS（4/4 tests passed）。随后基于当前实际文件内容完成 code review，结论为 ready，无阻塞问题。
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add web/src/components/AssistantChat/messages/AssistantMessage.tsx web/src/components/AssistantChat/messages/AssistantMessage.test.tsx web/src/lib/locales/en.ts web/src/lib/locales/zh-CN.ts

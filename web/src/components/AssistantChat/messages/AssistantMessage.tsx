@@ -3,7 +3,10 @@ import { MarkdownText } from '@/components/assistant-ui/markdown-text'
 import { Reasoning, ReasoningGroup } from '@/components/assistant-ui/reasoning'
 import { HappyToolMessage } from '@/components/AssistantChat/messages/ToolMessage'
 import { CliOutputBlock } from '@/components/CliOutputBlock'
+import { CheckIcon, CopyIcon } from '@/components/icons'
+import { useCopyToClipboard } from '@/hooks/useCopyToClipboard'
 import type { HappyChatMessageMetadata } from '@/lib/assistant-runtime'
+import { useTranslation } from '@/lib/use-translation'
 
 const TOOL_COMPONENTS = {
     Fallback: HappyToolMessage
@@ -17,6 +20,8 @@ const MESSAGE_PART_COMPONENTS = {
 } as const
 
 export function HappyAssistantMessage() {
+    const { t } = useTranslation()
+    const { copied, copy } = useCopyToClipboard()
     const isCliOutput = useAssistantState(({ message }) => {
         const custom = message.metadata.custom as Partial<HappyChatMessageMetadata> | undefined
         return custom?.kind === 'cli-output'
@@ -30,6 +35,13 @@ export function HappyAssistantMessage() {
         if (message.role !== 'assistant') return false
         const parts = message.content
         return parts.length > 0 && parts.every((part) => part.type === 'tool-call')
+    })
+    const copyableText = useAssistantState(({ message }) => {
+        if (message.role !== 'assistant') return ''
+        return message.content
+            .filter((part) => part.type === 'text')
+            .map((part) => part.text)
+            .join('\n\n')
     })
     const rootClass = toolOnly
         ? 'py-1 min-w-0 max-w-full overflow-x-hidden'
@@ -47,7 +59,18 @@ export function HappyAssistantMessage() {
 
     return (
         <MessagePrimitive.Root className={rootClass}>
-            <div className="w-full max-w-[min(82ch,100%)] rounded-[24px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-4 py-3 shadow-[var(--app-shadow-sm)]">
+            <div className="relative w-full max-w-[min(82ch,100%)] rounded-[24px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-4 py-3 shadow-[var(--app-shadow-sm)]">
+                {copyableText ? (
+                    <button
+                        type="button"
+                        className="absolute right-3 top-3 rounded p-1 text-[var(--app-hint)] hover:bg-[var(--app-subtle-bg)] hover:text-[var(--app-fg)] transition-colors"
+                        onClick={() => copy(copyableText)}
+                        aria-label={t('assistant.copy')}
+                        title={t('assistant.copy')}
+                    >
+                        {copied ? <CheckIcon className="h-3.5 w-3.5" /> : <CopyIcon className="h-3.5 w-3.5" />}
+                    </button>
+                ) : null}
                 <MessagePrimitive.Content components={MESSAGE_PART_COMPONENTS} />
             </div>
         </MessagePrimitive.Root>
