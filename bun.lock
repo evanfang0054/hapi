@@ -12,7 +12,7 @@
     },
     "cli": {
       "name": "@twsxtd/hapi",
-      "version": "0.16.9",
+      "version": "0.16.9-beta.2",
       "bin": {
         "hapi": "bin/hapi.cjs",
       },
@@ -43,11 +43,11 @@
         "vitest": "^4.0.16",
       },
       "optionalDependencies": {
-        "@twsxtd/hapi-darwin-arm64": "0.16.9",
-        "@twsxtd/hapi-darwin-x64": "0.16.9",
-        "@twsxtd/hapi-linux-arm64": "0.16.9",
-        "@twsxtd/hapi-linux-x64": "0.16.9",
-        "@twsxtd/hapi-win32-x64": "0.16.9",
+        "@twsxtd/hapi-darwin-arm64": "0.16.9-beta.2",
+        "@twsxtd/hapi-darwin-x64": "0.16.9-beta.2",
+        "@twsxtd/hapi-linux-arm64": "0.16.9-beta.2",
+        "@twsxtd/hapi-linux-x64": "0.16.9-beta.2",
+        "@twsxtd/hapi-win32-x64": "0.16.9-beta.2",
       },
     },
     "docs": {
@@ -978,7 +978,7 @@
 
     "@types/http-errors": ["@types/http-errors@2.0.5", "", {}, "sha512-r8Tayk8HJnX0FztbZN7oVqGccWgw98T/0neJphO91KkmOzug1KkofZURD4UaD5uH8AqcFLfdPErnBod0u71/qg=="],
 
-    "@types/katex": ["@types/katex@0.16.9", "", {}, "sha512-HMwFiRujE5PjrgwHQ25+bsLJgowjGjm5Z8FVSf0N6PwgJrwxH0QxzHYDcKsTfV3wva0vzrpqMTJS2jXPr5BMEQ=="],
+    "@types/katex": ["@types/katex@0.16.9-beta.2", "", {}, "sha512-HMwFiRujE5PjrgwHQ25+bsLJgowjGjm5Z8FVSf0N6PwgJrwxH0QxzHYDcKsTfV3wva0vzrpqMTJS2jXPr5BMEQ=="],
 
     "@types/linkify-it": ["@types/linkify-it@5.0.0", "", {}, "sha512-sVDA58zAw4eWAffKOaQH5/5j3XeayukzDk+ewSsnv3p4yJEZHCCzMDiZM8e0OUrRvmpGZ85jf4yDHkHsgBNr9Q=="],
 
