@@ -379,7 +379,7 @@ Expected: PASS，并覆盖以下恢复路径：
 4. 定时重连后创建新的 `EventSource`；
 5. 新连接 URL 带 `visibility=visible`，以此替代手工前后台切换验证。
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add hub/src/web/routes/auth.ts hub/src/web/routes/bind.ts web/src/hooks/useAuth.ts web/src/hooks/useSSE.ts web/src/hooks/useSSE.test.ts web/src/components/ReconnectingBanner.tsx web/src/lib/locales/en.ts web/src/lib/locales/zh-CN.ts

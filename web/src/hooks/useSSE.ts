@@ -596,7 +596,23 @@ export function useSSE(options: {
             requestReconnect('heartbeat-timeout')
         }, HEARTBEAT_WATCHDOG_INTERVAL_MS)
 
+        const handleVisibilityChange = () => {
+            if (eventSourceRef.current !== eventSource) {
+                return
+            }
+            if (getVisibilityState() !== 'visible') {
+                return
+            }
+            if (Date.now() - lastActivityAtRef.current < HEARTBEAT_STALE_MS) {
+                return
+            }
+            requestReconnect('visibility-recovery')
+        }
+
+        document.addEventListener('visibilitychange', handleVisibilityChange)
+
         return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange)
             clearInterval(watchdogTimer)
             if (invalidationTimerRef.current) {
                 clearTimeout(invalidationTimerRef.current)

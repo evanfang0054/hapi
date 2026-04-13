@@ -306,6 +306,8 @@ export default {
   'reconnecting.reason.error': 'stream error',
   'reconnecting.reason.closed': 'stream closed',
   'reconnecting.reason.heartbeatTimeout': 'heartbeat timeout',
+  'reconnecting.reason.visibilityRecovery': 'recovered after returning to the page',
+  'status.backgroundTasks': '{count} tasks',
 
   // Send blocked
   'send.blocked.title': 'Cannot send message',
