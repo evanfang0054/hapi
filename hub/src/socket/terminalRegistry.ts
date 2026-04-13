@@ -25,8 +25,17 @@ export class TerminalRegistry {
     }
 
     register(terminalId: string, sessionId: string, socketId: string, cliSocketId: string): TerminalRegistryEntry | null {
-        if (this.terminals.has(terminalId)) {
-            return null
+        const existing = this.terminals.get(terminalId)
+        if (existing) {
+            if (existing.socketId === socketId) {
+                this.scheduleIdle(existing)
+                return existing
+            }
+            if (existing.sessionId === sessionId) {
+                this.remove(terminalId)
+            } else {
+                return null
+            }
         }
 
         const entry: TerminalRegistryEntry = {

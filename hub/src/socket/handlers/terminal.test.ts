@@ -103,6 +103,76 @@ function lastEmit(socket: FakeSocket, event: string): EmittedEvent | undefined {
 }
 
 describe('terminal socket handlers', () => {
+    it('re-registers a terminal when same session reconnects with a new socket', () => {
+        const registry = new TerminalRegistry({ idleTimeoutMs: 0 })
+
+        const first = registry.register('terminal-1', 'session-1', 'socket-1', 'cli-1')
+        expect(first).not.toBeNull()
+
+        const second = registry.register('terminal-1', 'session-1', 'socket-2', 'cli-1')
+        expect(second?.socketId).toBe('socket-2')
+        expect(registry.get('terminal-1')?.socketId).toBe('socket-2')
+    })
+
+    it('keeps rejecting terminal reuse across different sessions', () => {
+        const registry = new TerminalRegistry({ idleTimeoutMs: 0 })
+        registry.register('terminal-1', 'session-1', 'socket-1', 'cli-1')
+
+        const second = registry.register('terminal-1', 'session-2', 'socket-2', 'cli-1')
+        expect(second).toBeNull()
+    })
+
+    it('allows same-session reconnect replace even when terminal limits are full', () => {
+        const io = new FakeServer()
+        const terminalRegistry = new TerminalRegistry({ idleTimeoutMs: 0 })
+        const cliNamespace = io.of('/cli')
+        const cliSocket = new FakeSocket('cli-socket-1')
+        connectCliSocket(cliNamespace, cliSocket, 'session-1')
+
+        const firstTerminalSocket = new FakeSocket('terminal-socket-1')
+        firstTerminalSocket.data.namespace = 'default'
+        registerTerminalHandlers(firstTerminalSocket as unknown as SocketWithData, {
+            io: io as unknown as SocketServer,
+            getSession: () => ({ active: true, namespace: 'default' }),
+            terminalRegistry,
+            maxTerminalsPerSocket: 1,
+            maxTerminalsPerSession: 1
+        })
+
+        firstTerminalSocket.trigger('terminal:create', {
+            sessionId: 'session-1',
+            terminalId: 'terminal-1',
+            cols: 80,
+            rows: 24
+        })
+
+        const secondTerminalSocket = new FakeSocket('terminal-socket-2')
+        secondTerminalSocket.data.namespace = 'default'
+        registerTerminalHandlers(secondTerminalSocket as unknown as SocketWithData, {
+            io: io as unknown as SocketServer,
+            getSession: () => ({ active: true, namespace: 'default' }),
+            terminalRegistry,
+            maxTerminalsPerSocket: 1,
+            maxTerminalsPerSession: 1
+        })
+
+        secondTerminalSocket.trigger('terminal:create', {
+            sessionId: 'session-1',
+            terminalId: 'terminal-1',
+            cols: 120,
+            rows: 40
+        })
+
+        expect(lastEmit(secondTerminalSocket, 'terminal:error')).toBeUndefined()
+        expect(terminalRegistry.get('terminal-1')?.socketId).toBe('terminal-socket-2')
+        expect(lastEmit(cliSocket, 'terminal:open')?.data).toEqual({
+            sessionId: 'session-1',
+            terminalId: 'terminal-1',
+            cols: 120,
+            rows: 40
+        })
+    })
+
     it('rejects terminal creation when session is inactive', () => {
         const { terminalSocket, terminalRegistry } = createHarness({ sessionActive: false })
 

@@ -258,7 +258,7 @@ const socket = manager.socket('/terminal', {
 Run: `bun test hub/src/socket/handlers/terminal.test.ts && bunx vitest run web/src/hooks/useTerminalSocket.test.ts`
 Expected: PASS。
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add hub/src/socket/terminalRegistry.ts hub/src/socket/handlers/terminal.ts hub/src/socket/handlers/terminal.test.ts web/src/hooks/useTerminalSocket.ts web/src/hooks/useTerminalSocket.test.ts
@@ -779,7 +779,7 @@ Expected: PASS。
 - `HappyComposer.tsx` 当前已按 spec 切换为 Enter 发送、modifier+Enter 保留为换行路径；定向测试与 `bun run typecheck:web` 已通过。
 - 代码审查结论：实现基本达标；测试证据补强后可继续下一步。
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add web/src/components/AssistantChat/HappyComposer.tsx web/src/components/AssistantChat/HappyComposer.test.tsx web/src/components/SessionChat.tsx
