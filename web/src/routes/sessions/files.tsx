@@ -4,6 +4,7 @@ import type { FileSearchItem, GitFileStatus } from '@/types/api'
 import { FileIcon } from '@/components/FileIcon'
 import { DirectoryTree } from '@/components/SessionFiles/DirectoryTree'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { useAppContext } from '@/lib/app-context'
 import { useAppGoBack } from '@/hooks/useAppGoBack'
 import { useGitStatusFiles } from '@/hooks/queries/useGitStatusFiles'
@@ -95,6 +96,65 @@ function GitBranchIcon(props: { className?: string }) {
     )
 }
 
+function PlusIcon(props: { className?: string }) {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={props.className}
+        >
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+    )
+}
+
+function MinusIcon(props: { className?: string }) {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={props.className}
+        >
+            <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+    )
+}
+
+function UndoIcon(props: { className?: string }) {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={props.className}
+        >
+            <path d="M3 7v6h6" />
+            <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13" />
+        </svg>
+    )
+}
+
 function FolderIcon(props: { className?: string }) {
     return (
         <svg
@@ -160,27 +220,92 @@ function LineChanges(props: { added: number; removed: number }) {
 function GitFileRow(props: {
     file: GitFileStatus
     onOpen: () => void
+    onStage?: () => void
+    onUnstage?: () => void
+    onDiscard?: () => void
+    onClean?: () => void
+    onRequestConfirm?: (action: () => void, type: 'discard' | 'delete') => void
     showDivider: boolean
     projectRootLabel: string
+    actionLoading?: boolean
 }) {
+    const { t } = useTranslation()
     const subtitle = props.file.filePath || props.projectRootLabel
 
+    const handleAction = (e: React.MouseEvent, action: (() => void) | undefined, confirmType?: 'discard' | 'delete') => {
+        e.stopPropagation()
+        if (!action) return
+        if (confirmType && props.onRequestConfirm) {
+            props.onRequestConfirm(action, confirmType)
+            return
+        }
+        action()
+    }
+
     return (
-        <button
-            type="button"
-            onClick={props.onOpen}
-            className={`flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-[var(--app-subtle-bg)] transition-colors ${props.showDivider ? 'border-b border-[var(--app-divider)]' : ''}`}
+        <div
+            className={`flex w-full items-center gap-3 px-3 py-2 hover:bg-[var(--app-subtle-bg)] transition-colors ${props.showDivider ? 'border-b border-[var(--app-divider)]' : ''}`}
         >
-            <FileIcon fileName={props.file.fileName} size={22} />
-            <div className="min-w-0 flex-1">
-                <div className="truncate font-medium">{props.file.fileName}</div>
-                <div className="truncate text-xs text-[var(--app-hint)]">{subtitle}</div>
-            </div>
-            <div className="flex items-center gap-2">
+            <button
+                type="button"
+                onClick={props.onOpen}
+                className="flex flex-1 items-center gap-3 text-left min-w-0"
+            >
+                <FileIcon fileName={props.file.fileName} size={22} />
+                <div className="min-w-0 flex-1">
+                    <div className="truncate font-medium">{props.file.fileName}</div>
+                    <div className="truncate text-xs text-[var(--app-hint)]">{subtitle}</div>
+                </div>
+            </button>
+            <div className="flex items-center gap-2 shrink-0">
                 <LineChanges added={props.file.linesAdded} removed={props.file.linesRemoved} />
                 <StatusBadge status={props.file.status} />
+                <div className="flex items-center gap-1 ml-2">
+                    {props.file.isStaged ? (
+                        <button
+                            type="button"
+                            onClick={(e) => handleAction(e, props.onUnstage)}
+                            disabled={props.actionLoading}
+                            className="p-1.5 rounded hover:bg-[var(--app-panel-muted-bg)] text-[var(--app-hint)] hover:text-[var(--app-fg)] transition-colors disabled:opacity-50"
+                            title={t('sessionFiles.action.unstage')}
+                        >
+                            <MinusIcon />
+                        </button>
+                    ) : (
+                        <>
+                            <button
+                                type="button"
+                                onClick={(e) => handleAction(e, props.onStage)}
+                                disabled={props.actionLoading}
+                                className="p-1.5 rounded hover:bg-[var(--app-panel-muted-bg)] text-[var(--app-hint)] hover:text-[var(--app-fg)] transition-colors disabled:opacity-50"
+                                title={t('sessionFiles.action.stage')}
+                            >
+                                <PlusIcon />
+                            </button>
+                            {props.file.status === 'untracked' ? (
+                                <button
+                                    type="button"
+                                    onClick={(e) => handleAction(e, props.onClean, 'delete')}
+                                    disabled={props.actionLoading}
+                                    className="p-1.5 rounded hover:bg-[var(--app-panel-muted-bg)] text-[var(--app-hint)] hover:text-[var(--app-git-deleted-color)] transition-colors disabled:opacity-50"
+                                >
+                                    <UndoIcon />
+                                </button>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={(e) => handleAction(e, props.onDiscard, 'discard')}
+                                    disabled={props.actionLoading}
+                                    className="p-1.5 rounded hover:bg-[var(--app-panel-muted-bg)] text-[var(--app-hint)] hover:text-[var(--app-git-deleted-color)] transition-colors disabled:opacity-50"
+                                >
+                                    <UndoIcon />
+                                </button>
+                            )}
+                        </>
+                    )}
+                </div>
             </div>
-        </button>
+        </div>
     )
 }
 
@@ -231,6 +356,8 @@ function FileListSkeleton(props: { label: string; rows?: number }) {
     )
 }
 
+
+
 export default function FilesPage() {
     const { t } = useTranslation()
     const { api } = useAppContext()
@@ -241,6 +368,12 @@ export default function FilesPage() {
     const search = useSearch({ from: '/sessions/$sessionId/files' })
     const { session } = useSession(api, sessionId)
     const [searchQuery, setSearchQuery] = useState('')
+    const [actionLoading, setActionLoading] = useState(false)
+    const [confirmDialog, setConfirmDialog] = useState<{
+        isOpen: boolean
+        type: 'discard' | 'delete' | 'discardAll'
+        onConfirm: () => Promise<void>
+    }>({ isOpen: false, type: 'discard', onConfirm: async () => {} })
 
     const initialTab = search.tab === 'directories' ? 'directories' : 'changes'
     const [activeTab, setActiveTab] = useState<'changes' | 'directories'>(initialTab)
@@ -309,6 +442,75 @@ export default function FilesPage() {
             replace: true,
         })
     }, [navigate, sessionId])
+
+    const handleGitAction = useCallback(async (action: 'stage' | 'unstage' | 'discard' | 'clean', filePath: string) => {
+        setActionLoading(true)
+        try {
+            let result
+            if (action === 'stage') {
+                result = await api.gitStage(sessionId, filePath)
+            } else if (action === 'unstage') {
+                result = await api.gitUnstage(sessionId, filePath)
+            } else if (action === 'clean') {
+                result = await api.gitCleanFile(sessionId, filePath)
+            } else {
+                result = await api.gitDiscard(sessionId, filePath)
+            }
+            if (!result.success) {
+                console.error('Git action failed:', result.error || result.stderr)
+            }
+            await refetchGit()
+        } catch (err) {
+            console.error('Git action error:', err)
+        } finally {
+            setActionLoading(false)
+        }
+    }, [api, sessionId, refetchGit])
+
+    const handleRequestConfirm = useCallback((action: () => void, type: 'discard' | 'delete') => {
+        setConfirmDialog({
+            isOpen: true,
+            type,
+            onConfirm: async () => {
+                await action()
+            }
+        })
+    }, [])
+
+    const handleGitBulkAction = useCallback(async (action: 'stageAll' | 'unstageAll' | 'discardAll') => {
+        const executeAction = async () => {
+            setActionLoading(true)
+            try {
+                let result
+                if (action === 'stageAll') {
+                    result = await api.gitStageAll(sessionId)
+                } else if (action === 'unstageAll') {
+                    result = await api.gitUnstageAll(sessionId)
+                } else {
+                    result = await api.gitDiscardAll(sessionId)
+                }
+                if (!result.success) {
+                    console.error('Git bulk action failed:', result.error || result.stderr)
+                }
+                await refetchGit()
+            } catch (err) {
+                console.error('Git bulk action error:', err)
+            } finally {
+                setActionLoading(false)
+            }
+        }
+
+        if (action === 'discardAll') {
+            setConfirmDialog({
+                isOpen: true,
+                type: 'discardAll',
+                onConfirm: executeAction
+            })
+            return
+        }
+
+        await executeAction()
+    }, [api, sessionId, refetchGit])
 
     return (
         <div className="flex h-full min-h-0 flex-col bg-[var(--app-bg)]">
@@ -447,16 +649,30 @@ export default function FilesPage() {
                                     <div>
                                         {gitStatus?.stagedFiles.length ? (
                                             <div>
-                                                <div className="border-b border-[var(--app-divider)] bg-[var(--app-panel-muted-bg)] px-5 py-3 text-xs font-semibold text-[var(--app-git-staged-color)] sm:px-6">
-                                                    {t('sessionFiles.section.staged', { count: gitStatus.stagedFiles.length })}
+                                                <div className="flex items-center justify-between border-b border-[var(--app-divider)] bg-[var(--app-panel-muted-bg)] px-5 py-2 sm:px-6">
+                                                    <span className="text-xs font-semibold text-[var(--app-git-staged-color)]">
+                                                        {t('sessionFiles.section.staged', { count: gitStatus.stagedFiles.length })}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleGitBulkAction('unstageAll')}
+                                                        disabled={actionLoading}
+                                                        className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-[var(--app-hint)] hover:bg-[var(--app-panel-elevated-bg)] hover:text-[var(--app-fg)] transition-colors disabled:opacity-50"
+                                                    >
+                                                        <MinusIcon />
+                                                        <span>{t('sessionFiles.action.unstageAll')}</span>
+                                                    </button>
                                                 </div>
                                                 {gitStatus.stagedFiles.map((file, index) => (
                                                     <GitFileRow
                                                         key={`staged-${file.fullPath}-${index}`}
                                                         file={file}
                                                         onOpen={() => handleOpenFile(file.fullPath, file.isStaged)}
+                                                        onUnstage={() => handleGitAction('unstage', file.fullPath)}
+                                                        onRequestConfirm={handleRequestConfirm}
                                                         showDivider={index < gitStatus.stagedFiles.length - 1 || gitStatus.unstagedFiles.length > 0}
                                                         projectRootLabel={t('sessionFiles.projectRoot')}
+                                                        actionLoading={actionLoading}
                                                     />
                                                 ))}
                                             </div>
@@ -464,16 +680,43 @@ export default function FilesPage() {
 
                                         {gitStatus?.unstagedFiles.length ? (
                                             <div>
-                                                <div className="border-b border-[var(--app-divider)] bg-[var(--app-panel-muted-bg)] px-5 py-3 text-xs font-semibold text-[var(--app-git-unstaged-color)] sm:px-6">
-                                                    {t('sessionFiles.section.unstaged', { count: gitStatus.unstagedFiles.length })}
+                                                <div className="flex items-center justify-between border-b border-[var(--app-divider)] bg-[var(--app-panel-muted-bg)] px-5 py-2 sm:px-6">
+                                                    <span className="text-xs font-semibold text-[var(--app-git-unstaged-color)]">
+                                                        {t('sessionFiles.section.unstaged', { count: gitStatus.unstagedFiles.length })}
+                                                    </span>
+                                                    <div className="flex items-center gap-2">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleGitBulkAction('stageAll')}
+                                                            disabled={actionLoading}
+                                                            className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-[var(--app-hint)] hover:bg-[var(--app-panel-elevated-bg)] hover:text-[var(--app-fg)] transition-colors disabled:opacity-50"
+                                                        >
+                                                            <PlusIcon />
+                                                            <span>{t('sessionFiles.action.stageAll')}</span>
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleGitBulkAction('discardAll')}
+                                                            disabled={actionLoading}
+                                                            className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-[var(--app-hint)] hover:bg-[var(--app-panel-elevated-bg)] hover:text-[var(--app-git-deleted-color)] transition-colors disabled:opacity-50"
+                                                        >
+                                                            <UndoIcon />
+                                                            <span>{t('sessionFiles.action.discardAll')}</span>
+                                                        </button>
+                                                    </div>
                                                 </div>
                                                 {gitStatus.unstagedFiles.map((file, index) => (
                                                     <GitFileRow
                                                         key={`unstaged-${file.fullPath}-${index}`}
                                                         file={file}
                                                         onOpen={() => handleOpenFile(file.fullPath, file.isStaged)}
+                                                        onStage={() => handleGitAction('stage', file.fullPath)}
+                                                        onDiscard={() => handleGitAction('discard', file.fullPath)}
+                                                        onClean={() => handleGitAction('clean', file.fullPath)}
+                                                        onRequestConfirm={handleRequestConfirm}
                                                         showDivider={index < gitStatus.unstagedFiles.length - 1}
                                                         projectRootLabel={t('sessionFiles.projectRoot')}
+                                                        actionLoading={actionLoading}
                                                     />
                                                 ))}
                                             </div>
@@ -497,6 +740,28 @@ export default function FilesPage() {
                     </div>
                 </div>
             </div>
+
+            <ConfirmDialog
+                isOpen={confirmDialog.isOpen}
+                onClose={() => setConfirmDialog(prev => ({ ...prev, isOpen: false }))}
+                title={t(confirmDialog.type === 'delete'
+                    ? 'sessionFiles.dialog.delete.title'
+                    : confirmDialog.type === 'discardAll'
+                        ? 'sessionFiles.dialog.discardAll.title'
+                        : 'sessionFiles.dialog.discard.title')}
+                description={t(confirmDialog.type === 'delete'
+                    ? 'sessionFiles.dialog.delete.description'
+                    : confirmDialog.type === 'discardAll'
+                        ? 'sessionFiles.dialog.discardAll.description'
+                        : 'sessionFiles.dialog.discard.description')}
+                confirmLabel={t(confirmDialog.type === 'delete'
+                    ? 'sessionFiles.dialog.delete.confirm'
+                    : 'sessionFiles.dialog.discard.confirm')}
+                confirmingLabel={t('sessionFiles.dialog.confirming')}
+                onConfirm={confirmDialog.onConfirm}
+                isPending={actionLoading}
+                destructive
+            />
         </div>
     )
 }

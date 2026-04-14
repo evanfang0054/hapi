@@ -222,6 +222,55 @@ export class ApiClient {
         return await this.request<GitCommandResponse>(`/api/sessions/${encodeURIComponent(sessionId)}/git-diff-file?${params.toString()}`)
     }
 
+    async gitStage(sessionId: string, path: string): Promise<GitCommandResponse> {
+        return await this.request<GitCommandResponse>(
+            `/api/sessions/${encodeURIComponent(sessionId)}/git-stage`,
+            { method: 'POST', body: JSON.stringify({ path }) }
+        )
+    }
+
+    async gitUnstage(sessionId: string, path: string): Promise<GitCommandResponse> {
+        return await this.request<GitCommandResponse>(
+            `/api/sessions/${encodeURIComponent(sessionId)}/git-unstage`,
+            { method: 'POST', body: JSON.stringify({ path }) }
+        )
+    }
+
+    async gitDiscard(sessionId: string, path: string): Promise<GitCommandResponse> {
+        return await this.request<GitCommandResponse>(
+            `/api/sessions/${encodeURIComponent(sessionId)}/git-discard`,
+            { method: 'POST', body: JSON.stringify({ path }) }
+        )
+    }
+
+    async gitStageAll(sessionId: string): Promise<GitCommandResponse> {
+        return await this.request<GitCommandResponse>(
+            `/api/sessions/${encodeURIComponent(sessionId)}/git-stage-all`,
+            { method: 'POST' }
+        )
+    }
+
+    async gitUnstageAll(sessionId: string): Promise<GitCommandResponse> {
+        return await this.request<GitCommandResponse>(
+            `/api/sessions/${encodeURIComponent(sessionId)}/git-unstage-all`,
+            { method: 'POST' }
+        )
+    }
+
+    async gitDiscardAll(sessionId: string): Promise<GitCommandResponse> {
+        return await this.request<GitCommandResponse>(
+            `/api/sessions/${encodeURIComponent(sessionId)}/git-discard-all`,
+            { method: 'POST' }
+        )
+    }
+
+    async gitCleanFile(sessionId: string, path: string): Promise<GitCommandResponse> {
+        return await this.request<GitCommandResponse>(
+            `/api/sessions/${encodeURIComponent(sessionId)}/git-clean-file`,
+            { method: 'POST', body: JSON.stringify({ path }) }
+        )
+    }
+
     async searchSessionFiles(sessionId: string, query: string, limit?: number): Promise<FileSearchResponse> {
         const params = new URLSearchParams()
         if (query) {
