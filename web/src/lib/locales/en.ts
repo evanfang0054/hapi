@@ -175,6 +175,8 @@ export default {
   'terminal.quickInput.hint': 'Quick keys stay available below the terminal viewport and continue to send the same sequences as before.',
   'terminal.quickInput.title': 'Quick input',
   'terminal.quickInput.description': 'Send navigation keys, modifiers, and paste content without changing the terminal session logic.',
+  'terminal.commandInput.placeholder': 'Type command here...',
+  'terminal.commandInput.send': 'Send',
   'terminal.exitCode': 'with code {code}',
   'terminal.exitInfo': 'Terminal exited{suffix}',
 

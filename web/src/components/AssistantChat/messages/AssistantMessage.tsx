@@ -63,7 +63,7 @@ export function HappyAssistantMessage() {
                 {copyableText ? (
                     <button
                         type="button"
-                        className="absolute right-3 top-3 rounded p-1 text-[var(--app-hint)] hover:bg-[var(--app-subtle-bg)] hover:text-[var(--app-fg)] transition-colors"
+                        className="absolute right-3 bottom-3 rounded p-1 text-[var(--app-hint)] hover:bg-[var(--app-subtle-bg)] hover:text-[var(--app-fg)] transition-colors"
                         onClick={() => copy(copyableText)}
                         aria-label={t('assistant.copy')}
                         title={t('assistant.copy')}

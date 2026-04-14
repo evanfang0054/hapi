@@ -177,6 +177,8 @@ export default {
   'terminal.quickInput.hint': '快捷键区域会一直保留在终端下方，并继续发送与之前相同的按键序列。',
   'terminal.quickInput.title': '快捷输入',
   'terminal.quickInput.description': '无需改变终端会话逻辑，也可发送导航键、修饰键和粘贴内容。',
+  'terminal.commandInput.placeholder': '在此输入命令...',
+  'terminal.commandInput.send': '发送',
   'terminal.exitCode': '退出码 {code}',
   'terminal.exitInfo': '终端已退出{suffix}',
 

@@ -205,6 +205,7 @@ export default function TerminalPage() {
     const [altActive, setAltActive] = useState(false)
     const [pasteDialogOpen, setPasteDialogOpen] = useState(false)
     const [manualPasteText, setManualPasteText] = useState('')
+    const [commandInput, setCommandInput] = useState('')
 
     const {
         state: terminalState,
@@ -395,6 +396,15 @@ export default function TerminalPage() {
         [quickInputDisabled]
     )
 
+    const handleCommandSubmit = useCallback(() => {
+        if (!commandInput || quickInputDisabled) {
+            return
+        }
+        write(commandInput + '\r')
+        setCommandInput('')
+        terminalRef.current?.focus()
+    }, [commandInput, quickInputDisabled, write])
+
     if (!session) {
         return (
             <div className="flex h-full items-center justify-center">
@@ -523,6 +533,34 @@ export default function TerminalPage() {
                                     <p className="mt-1 text-sm text-[var(--app-hint)]">
                                         {t('terminal.quickInput.description')}
                                     </p>
+                                </div>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={commandInput}
+                                        onChange={(e) => setCommandInput(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault()
+                                                handleCommandSubmit()
+                                            }
+                                        }}
+                                        placeholder={t('terminal.commandInput.placeholder')}
+                                        disabled={quickInputDisabled}
+                                        autoComplete="off"
+                                        autoCorrect="off"
+                                        autoCapitalize="off"
+                                        spellCheck={false}
+                                        className="flex-1 rounded-[var(--app-radius-control)] border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-3 py-1.5 text-sm text-[var(--app-fg)] placeholder-[var(--app-hint)] focus:outline-none focus:ring-2 focus:ring-[var(--app-link)] focus:ring-inset disabled:cursor-not-allowed disabled:opacity-50"
+                                    />
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        onClick={handleCommandSubmit}
+                                        disabled={quickInputDisabled || !commandInput}
+                                    >
+                                        {t('terminal.commandInput.send')}
+                                    </Button>
                                 </div>
                                 {QUICK_INPUT_ROWS.map((row, rowIndex) => (
                                     <div
