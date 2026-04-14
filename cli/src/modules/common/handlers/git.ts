@@ -24,6 +24,17 @@ interface GitDiffFileRequest {
     timeout?: number
 }
 
+interface GitFileActionRequest {
+    cwd?: string
+    filePath: string
+    timeout?: number
+}
+
+interface GitBulkActionRequest {
+    cwd?: string
+    timeout?: number
+}
+
 interface GitCommandResponse {
     success: boolean
     stdout?: string
@@ -128,5 +139,77 @@ export function registerGitHandlers(rpcHandlerManager: RpcHandlerManager, workin
             ? ['diff', '--cached', '--no-ext-diff', '--', data.filePath]
             : ['diff', '--no-ext-diff', '--', data.filePath]
         return await runGitCommand(args, resolved.cwd, data.timeout)
+    })
+
+    rpcHandlerManager.registerHandler<GitFileActionRequest, GitCommandResponse>('git-stage', async (data) => {
+        const resolved = resolveCwd(data.cwd, workingDirectory)
+        if (resolved.error) {
+            return rpcError(resolved.error)
+        }
+        const fileError = validateFilePath(data.filePath, resolved.cwd)
+        if (fileError) {
+            return rpcError(fileError)
+        }
+        return await runGitCommand(['add', '--', data.filePath], resolved.cwd, data.timeout)
+    })
+
+    rpcHandlerManager.registerHandler<GitFileActionRequest, GitCommandResponse>('git-unstage', async (data) => {
+        const resolved = resolveCwd(data.cwd, workingDirectory)
+        if (resolved.error) {
+            return rpcError(resolved.error)
+        }
+        const fileError = validateFilePath(data.filePath, resolved.cwd)
+        if (fileError) {
+            return rpcError(fileError)
+        }
+        return await runGitCommand(['restore', '--staged', '--', data.filePath], resolved.cwd, data.timeout)
+    })
+
+    rpcHandlerManager.registerHandler<GitFileActionRequest, GitCommandResponse>('git-discard', async (data) => {
+        const resolved = resolveCwd(data.cwd, workingDirectory)
+        if (resolved.error) {
+            return rpcError(resolved.error)
+        }
+        const fileError = validateFilePath(data.filePath, resolved.cwd)
+        if (fileError) {
+            return rpcError(fileError)
+        }
+        return await runGitCommand(['checkout', '--', data.filePath], resolved.cwd, data.timeout)
+    })
+
+    rpcHandlerManager.registerHandler<GitBulkActionRequest, GitCommandResponse>('git-stage-all', async (data) => {
+        const resolved = resolveCwd(data.cwd, workingDirectory)
+        if (resolved.error) {
+            return rpcError(resolved.error)
+        }
+        return await runGitCommand(['add', '-A'], resolved.cwd, data.timeout)
+    })
+
+    rpcHandlerManager.registerHandler<GitBulkActionRequest, GitCommandResponse>('git-unstage-all', async (data) => {
+        const resolved = resolveCwd(data.cwd, workingDirectory)
+        if (resolved.error) {
+            return rpcError(resolved.error)
+        }
+        return await runGitCommand(['reset', 'HEAD'], resolved.cwd, data.timeout)
+    })
+
+    rpcHandlerManager.registerHandler<GitBulkActionRequest, GitCommandResponse>('git-discard-all', async (data) => {
+        const resolved = resolveCwd(data.cwd, workingDirectory)
+        if (resolved.error) {
+            return rpcError(resolved.error)
+        }
+        return await runGitCommand(['checkout', '--', '.'], resolved.cwd, data.timeout)
+    })
+
+    rpcHandlerManager.registerHandler<GitFileActionRequest, GitCommandResponse>('git-clean-file', async (data) => {
+        const resolved = resolveCwd(data.cwd, workingDirectory)
+        if (resolved.error) {
+            return rpcError(resolved.error)
+        }
+        const fileError = validateFilePath(data.filePath, resolved.cwd)
+        if (fileError) {
+            return rpcError(fileError)
+        }
+        return await runGitCommand(['clean', '-f', '--', data.filePath], resolved.cwd, data.timeout)
     })
 }
