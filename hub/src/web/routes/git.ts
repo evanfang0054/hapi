@@ -184,6 +184,178 @@ export function createGitRoutes(getSyncEngine: () => SyncEngine | null): Hono<We
         return c.json({ success: true, files })
     })
 
+    app.post('/sessions/:id/git-stage', async (c) => {
+        const engine = requireSyncEngine(c, getSyncEngine)
+        if (engine instanceof Response) {
+            return engine
+        }
+
+        const sessionResult = requireSessionFromParam(c, engine)
+        if (sessionResult instanceof Response) {
+            return sessionResult
+        }
+
+        const sessionPath = sessionResult.session.metadata?.path
+        if (!sessionPath) {
+            return c.json({ success: false, error: 'Session path not available' })
+        }
+
+        const parsed = filePathSchema.safeParse(await c.req.json())
+        if (!parsed.success) {
+            return c.json({ error: 'Invalid file path' }, 400)
+        }
+
+        const result = await runRpc(() => engine.gitStage(sessionResult.sessionId, {
+            cwd: sessionPath,
+            filePath: parsed.data.path
+        }))
+        return c.json(result)
+    })
+
+    app.post('/sessions/:id/git-unstage', async (c) => {
+        const engine = requireSyncEngine(c, getSyncEngine)
+        if (engine instanceof Response) {
+            return engine
+        }
+
+        const sessionResult = requireSessionFromParam(c, engine)
+        if (sessionResult instanceof Response) {
+            return sessionResult
+        }
+
+        const sessionPath = sessionResult.session.metadata?.path
+        if (!sessionPath) {
+            return c.json({ success: false, error: 'Session path not available' })
+        }
+
+        const parsed = filePathSchema.safeParse(await c.req.json())
+        if (!parsed.success) {
+            return c.json({ error: 'Invalid file path' }, 400)
+        }
+
+        const result = await runRpc(() => engine.gitUnstage(sessionResult.sessionId, {
+            cwd: sessionPath,
+            filePath: parsed.data.path
+        }))
+        return c.json(result)
+    })
+
+    app.post('/sessions/:id/git-discard', async (c) => {
+        const engine = requireSyncEngine(c, getSyncEngine)
+        if (engine instanceof Response) {
+            return engine
+        }
+
+        const sessionResult = requireSessionFromParam(c, engine)
+        if (sessionResult instanceof Response) {
+            return sessionResult
+        }
+
+        const sessionPath = sessionResult.session.metadata?.path
+        if (!sessionPath) {
+            return c.json({ success: false, error: 'Session path not available' })
+        }
+
+        const parsed = filePathSchema.safeParse(await c.req.json())
+        if (!parsed.success) {
+            return c.json({ error: 'Invalid file path' }, 400)
+        }
+
+        const result = await runRpc(() => engine.gitDiscard(sessionResult.sessionId, {
+            cwd: sessionPath,
+            filePath: parsed.data.path
+        }))
+        return c.json(result)
+    })
+
+    app.post('/sessions/:id/git-stage-all', async (c) => {
+        const engine = requireSyncEngine(c, getSyncEngine)
+        if (engine instanceof Response) {
+            return engine
+        }
+
+        const sessionResult = requireSessionFromParam(c, engine)
+        if (sessionResult instanceof Response) {
+            return sessionResult
+        }
+
+        const sessionPath = sessionResult.session.metadata?.path
+        if (!sessionPath) {
+            return c.json({ success: false, error: 'Session path not available' })
+        }
+
+        const result = await runRpc(() => engine.gitStageAll(sessionResult.sessionId, sessionPath))
+        return c.json(result)
+    })
+
+    app.post('/sessions/:id/git-unstage-all', async (c) => {
+        const engine = requireSyncEngine(c, getSyncEngine)
+        if (engine instanceof Response) {
+            return engine
+        }
+
+        const sessionResult = requireSessionFromParam(c, engine)
+        if (sessionResult instanceof Response) {
+            return sessionResult
+        }
+
+        const sessionPath = sessionResult.session.metadata?.path
+        if (!sessionPath) {
+            return c.json({ success: false, error: 'Session path not available' })
+        }
+
+        const result = await runRpc(() => engine.gitUnstageAll(sessionResult.sessionId, sessionPath))
+        return c.json(result)
+    })
+
+    app.post('/sessions/:id/git-discard-all', async (c) => {
+        const engine = requireSyncEngine(c, getSyncEngine)
+        if (engine instanceof Response) {
+            return engine
+        }
+
+        const sessionResult = requireSessionFromParam(c, engine)
+        if (sessionResult instanceof Response) {
+            return sessionResult
+        }
+
+        const sessionPath = sessionResult.session.metadata?.path
+        if (!sessionPath) {
+            return c.json({ success: false, error: 'Session path not available' })
+        }
+
+        const result = await runRpc(() => engine.gitDiscardAll(sessionResult.sessionId, sessionPath))
+        return c.json(result)
+    })
+
+    app.post('/sessions/:id/git-clean-file', async (c) => {
+        const engine = requireSyncEngine(c, getSyncEngine)
+        if (engine instanceof Response) {
+            return engine
+        }
+
+        const sessionResult = requireSessionFromParam(c, engine)
+        if (sessionResult instanceof Response) {
+            return sessionResult
+        }
+
+        const sessionPath = sessionResult.session.metadata?.path
+        if (!sessionPath) {
+            return c.json({ success: false, error: 'Session path not available' })
+        }
+
+        const parsed = filePathSchema.safeParse(await c.req.json())
+        if (!parsed.success) {
+            return c.json({ error: 'Invalid file path' }, 400)
+        }
+
+        const result = await runRpc(() => engine.gitCleanFile(sessionResult.sessionId, {
+            cwd: sessionPath,
+            filePath: parsed.data.path
+        }))
+        return c.json(result)
+    })
+
     app.get('/sessions/:id/directory', async (c) => {
         const engine = requireSyncEngine(c, getSyncEngine)
         if (engine instanceof Response) {

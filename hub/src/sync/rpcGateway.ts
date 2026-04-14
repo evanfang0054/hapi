@@ -194,6 +194,34 @@ export class RpcGateway {
         return await this.sessionRpc(sessionId, 'git-diff-file', options) as RpcCommandResponse
     }
 
+    async gitStage(sessionId: string, options: { cwd?: string; filePath: string }): Promise<RpcCommandResponse> {
+        return await this.sessionRpc(sessionId, 'git-stage', options) as RpcCommandResponse
+    }
+
+    async gitUnstage(sessionId: string, options: { cwd?: string; filePath: string }): Promise<RpcCommandResponse> {
+        return await this.sessionRpc(sessionId, 'git-unstage', options) as RpcCommandResponse
+    }
+
+    async gitDiscard(sessionId: string, options: { cwd?: string; filePath: string }): Promise<RpcCommandResponse> {
+        return await this.sessionRpc(sessionId, 'git-discard', options) as RpcCommandResponse
+    }
+
+    async gitStageAll(sessionId: string, cwd?: string): Promise<RpcCommandResponse> {
+        return await this.sessionRpc(sessionId, 'git-stage-all', { cwd }) as RpcCommandResponse
+    }
+
+    async gitUnstageAll(sessionId: string, cwd?: string): Promise<RpcCommandResponse> {
+        return await this.sessionRpc(sessionId, 'git-unstage-all', { cwd }) as RpcCommandResponse
+    }
+
+    async gitDiscardAll(sessionId: string, cwd?: string): Promise<RpcCommandResponse> {
+        return await this.sessionRpc(sessionId, 'git-discard-all', { cwd }) as RpcCommandResponse
+    }
+
+    async gitCleanFile(sessionId: string, options: { cwd?: string; filePath: string }): Promise<RpcCommandResponse> {
+        return await this.sessionRpc(sessionId, 'git-clean-file', options) as RpcCommandResponse
+    }
+
     async readSessionFile(sessionId: string, path: string): Promise<RpcReadFileResponse> {
         return await this.sessionRpc(sessionId, 'readFile', { path }) as RpcReadFileResponse
     }

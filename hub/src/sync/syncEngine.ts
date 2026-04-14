@@ -467,6 +467,34 @@ export class SyncEngine {
         return await this.rpcGateway.getGitDiffFile(sessionId, options)
     }
 
+    async gitStage(sessionId: string, options: { cwd?: string; filePath: string }): Promise<RpcCommandResponse> {
+        return await this.rpcGateway.gitStage(sessionId, options)
+    }
+
+    async gitUnstage(sessionId: string, options: { cwd?: string; filePath: string }): Promise<RpcCommandResponse> {
+        return await this.rpcGateway.gitUnstage(sessionId, options)
+    }
+
+    async gitDiscard(sessionId: string, options: { cwd?: string; filePath: string }): Promise<RpcCommandResponse> {
+        return await this.rpcGateway.gitDiscard(sessionId, options)
+    }
+
+    async gitStageAll(sessionId: string, cwd?: string): Promise<RpcCommandResponse> {
+        return await this.rpcGateway.gitStageAll(sessionId, cwd)
+    }
+
+    async gitUnstageAll(sessionId: string, cwd?: string): Promise<RpcCommandResponse> {
+        return await this.rpcGateway.gitUnstageAll(sessionId, cwd)
+    }
+
+    async gitDiscardAll(sessionId: string, cwd?: string): Promise<RpcCommandResponse> {
+        return await this.rpcGateway.gitDiscardAll(sessionId, cwd)
+    }
+
+    async gitCleanFile(sessionId: string, options: { cwd?: string; filePath: string }): Promise<RpcCommandResponse> {
+        return await this.rpcGateway.gitCleanFile(sessionId, options)
+    }
+
     async readSessionFile(sessionId: string, path: string): Promise<RpcReadFileResponse> {
         return await this.rpcGateway.readSessionFile(sessionId, path)
     }
