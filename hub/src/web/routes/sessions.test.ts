@@ -203,4 +203,15 @@ describe('sessions routes', () => {
         expect(await response.json()).toEqual({ error: 'Session is inactive' })
         expect(takeOverCalls).toEqual([])
     })
+
+    it('still rejects deleting active sessions', async () => {
+        const { app } = createApp(createSession({ active: true }))
+
+        const response = await app.request('/api/sessions/session-1', {
+            method: 'DELETE'
+        })
+
+        expect(response.status).toBe(409)
+        expect(await response.json()).toEqual({ error: 'Cannot delete active session. Archive it first.' })
+    })
 })

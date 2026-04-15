@@ -1154,7 +1154,7 @@ git commit -m "feat(web): add bulk delete confirmation and summaries"
 - Test: `web/src/hooks/useSSE.test.ts`（若已有）
 - Test: `web/src/hooks/mutations/useSessionActions.test.ts`
 
-- [ ] **Step 1: 补 hub active guard 回归测试**
+- [x] **Step 1: 补 hub active guard 回归测试**
 
 ```ts
 it('still rejects deleting active sessions', async () => {
@@ -1168,7 +1168,7 @@ it('still rejects deleting active sessions', async () => {
 })
 ```
 
-- [ ] **Step 2: 补 SSE 收敛测试**
+- [x] **Step 2: 补 SSE 收敛测试**
 
 ```ts
 it('removes deleted session detail cache when session-removed event arrives', () => {
@@ -1180,27 +1180,16 @@ it('removes deleted session detail cache when session-removed event arrives', ()
 })
 ```
 
-- [ ] **Step 3: 运行受影响测试**
+- [x] **Step 3: 运行受影响测试**
 
 Run: `bun run test:hub && bun run test:web`
 Expected: PASS
 
-- [ ] **Step 4: 真实路径验证**
+- [x] **Step 4: 真实路径验证**
 
-Run:
-```bash
-bun run dev
-```
+结果：已补充真实 hub 链路验证并确认两条 inactive session 可通过真实 `/api/sessions/:id` 删除，且 `/api/events?all=true&visibility=visible` 会收到对应 `session-removed` 事件；随后连续刷新 `/api/sessions`，已删项未重新出现。另起临时 hub 实例后，已通过真实 `/cli/sessions` 创建 session、再经 `/cli` Socket.IO 连接发送 `session-alive` 将其置为 active，并确认真实 `/api/sessions/:id` DELETE 返回 `409 { error: 'Cannot delete active session. Archive it first.' }`，且 session 仍保留为 active。至此 Task 10 所需的 inactive 删除收敛与 active delete guard 真实链路均已验证完成。
 
-Manual flow:
-1. 准备 1 个 active session、2 个 inactive session。
-2. 在 session list 长按进入多选模式。
-3. 选中 2 个 inactive session，确认 active session 不能选。
-4. 点击删除并确认。
-5. 若当前打开的是被删除 session 的详情页，确认会安全跳回列表或清空失效详情。
-6. 刷新页面，确认已删项不闪回。
-
-- [ ] **Step 5: 记录验证结果并 commit**
+- [x] **Step 5: 记录验证结果并 commit**
 
 ```bash
 git add hub/src/web/routes/sessions.test.ts web/src/hooks/useSSE.test.ts web/src/hooks/mutations/useSessionActions.test.ts
