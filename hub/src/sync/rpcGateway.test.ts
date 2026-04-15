@@ -4,6 +4,8 @@ import { RpcRegistry } from '../socket/rpcRegistry'
 
 class FakeSocket {
     readonly id: string
+    lastPayload: { method: string; params: unknown } | null = null
+
     constructor(id: string) {
         this.id = id
     }
@@ -11,7 +13,11 @@ class FakeSocket {
     timeout(_ms: number) {
         return {
             emitWithAck: async (_event: string, payload: { method: string; params: string }) => {
-                return JSON.stringify({ method: payload.method, params: JSON.parse(payload.params) })
+                this.lastPayload = {
+                    method: payload.method,
+                    params: JSON.parse(payload.params)
+                }
+                return JSON.stringify(this.lastPayload)
             }
         }
     }
@@ -43,8 +49,39 @@ describe('RpcGateway', () => {
         const gateway = new RpcGateway(io as never, rpcRegistry)
         await gateway.takeOverSession('session-1')
 
-        // no throw means successful dispatch through rpcCall
         expect(true).toBe(true)
+    })
+
+    it('includes contextAction in permission RPC payload', async () => {
+        const io = new FakeServer()
+        const rpcRegistry = new RpcRegistry()
+        const socket = new FakeSocket('socket-1')
+        io.addSocket(socket)
+        rpcRegistry.register(socket as never, 'session-1:permission')
+
+        const gateway = new RpcGateway(io as never, rpcRegistry)
+        await gateway.approvePermission(
+            'session-1',
+            'request-1',
+            'default',
+            undefined,
+            'approved',
+            undefined,
+            'clear_context'
+        )
+
+        expect(socket.lastPayload).toEqual({
+            method: 'session-1:permission',
+            params: {
+                id: 'request-1',
+                approved: true,
+                mode: 'default',
+                allowTools: undefined,
+                decision: 'approved',
+                answers: undefined,
+                contextAction: 'clear_context'
+            }
+        })
     })
 
     it('throws when take-over handler is not registered', async () => {

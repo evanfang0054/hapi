@@ -1,4 +1,4 @@
-import type { CodexCollaborationMode, PermissionMode } from '@hapi/protocol/types'
+import type { CodexCollaborationMode, PermissionContextAction, PermissionMode } from '@hapi/protocol/types'
 import type { Server } from 'socket.io'
 import type { RpcRegistry } from '../socket/rpcRegistry'
 
@@ -57,7 +57,8 @@ export class RpcGateway {
         mode?: PermissionMode,
         allowTools?: string[],
         decision?: 'approved' | 'approved_for_session' | 'denied' | 'abort',
-        answers?: Record<string, string[]> | Record<string, { answers: string[] }>
+        answers?: Record<string, string[]> | Record<string, { answers: string[] }>,
+        contextAction?: PermissionContextAction
     ): Promise<void> {
         await this.sessionRpc(sessionId, 'permission', {
             id: requestId,
@@ -65,7 +66,8 @@ export class RpcGateway {
             mode,
             allowTools,
             decision,
-            answers
+            answers,
+            contextAction
         })
     }
 

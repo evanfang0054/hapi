@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { CODEX_COLLABORATION_MODES, PERMISSION_MODES } from './modes'
 
 export const PermissionModeSchema = z.enum(PERMISSION_MODES)
+export const PermissionContextActionSchema = z.enum(['keep_context', 'clear_context'])
 export const CodexCollaborationModeSchema = z.enum(CODEX_COLLABORATION_MODES)
 
 const MetadataSummarySchema = z.object({
@@ -74,7 +75,8 @@ export const AgentStateCompletedRequestSchema = z.object({
     answers: z.union([
         z.record(z.string(), z.array(z.string())),
         z.record(z.string(), z.object({ answers: z.array(z.string()) }))
-    ]).optional()
+    ]).optional(),
+    contextAction: PermissionContextActionSchema.optional()
 })
 
 export type AgentStateCompletedRequest = z.infer<typeof AgentStateCompletedRequestSchema>

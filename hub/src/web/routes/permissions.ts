@@ -1,5 +1,5 @@
 import { isPermissionModeAllowedForFlavor } from '@hapi/protocol'
-import { PermissionModeSchema } from '@hapi/protocol/schemas'
+import { PermissionContextActionSchema, PermissionModeSchema } from '@hapi/protocol/schemas'
 import { Hono } from 'hono'
 import { z } from 'zod'
 import type { SyncEngine } from '../../sync/syncEngine'
@@ -19,7 +19,8 @@ const approveBodySchema = z.object({
     mode: PermissionModeSchema.optional(),
     allowTools: z.array(z.string()).optional(),
     decision: decisionSchema.optional(),
-    answers: answersSchema.optional()
+    answers: answersSchema.optional(),
+    contextAction: PermissionContextActionSchema.optional()
 })
 
 const denyBodySchema = z.object({
@@ -64,7 +65,8 @@ export function createPermissionsRoutes(getSyncEngine: () => SyncEngine | null):
         const allowTools = parsed.data.allowTools
         const decision = parsed.data.decision
         const answers = parsed.data.answers
-        await engine.approvePermission(sessionId, requestId, mode, allowTools, decision, answers)
+        const contextAction = parsed.data.contextAction
+        await engine.approvePermission(sessionId, requestId, mode, allowTools, decision, answers, contextAction)
         return c.json({ ok: true })
     })
 

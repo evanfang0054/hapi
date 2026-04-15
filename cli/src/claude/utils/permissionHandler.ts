@@ -29,6 +29,7 @@ interface PermissionResponse {
     mode?: PermissionMode;
     allowTools?: string[];
     answers?: Record<string, string[]> | Record<string, { answers: string[] }>;
+    contextAction?: 'keep_context' | 'clear_context';
     receivedAt?: number;
 }
 
@@ -175,7 +176,8 @@ export class PermissionHandler extends BasePermissionHandler<PermissionResponse,
             reason: response.reason,
             mode: response.mode,
             allowTools: response.allowTools,
-            answers: response.answers
+            answers: response.answers,
+            contextAction: response.contextAction
         };
 
         // Update allowed tools
@@ -235,11 +237,14 @@ export class PermissionHandler extends BasePermissionHandler<PermissionResponse,
             logger.debug('Plan mode result received', response);
             if (response.approved) {
                 logger.debug('Plan approved - injecting PLAN_FAKE_RESTART');
-                // Inject the approval message at the beginning of the queue
-                if (response.mode && PLAN_EXIT_MODES.includes(response.mode)) {
-                    this.session.queue.unshift(PLAN_FAKE_RESTART, { permissionMode: response.mode });
+                const selectedMode = response.mode && PLAN_EXIT_MODES.includes(response.mode)
+                    ? response.mode
+                    : 'default';
+                const contextAction = response.contextAction ?? 'keep_context';
+                if (contextAction === 'clear_context') {
+                    this.session.queue.pushIsolateAndClear(PLAN_FAKE_RESTART, { permissionMode: selectedMode });
                 } else {
-                    this.session.queue.unshift(PLAN_FAKE_RESTART, { permissionMode: 'default' });
+                    this.session.queue.unshift(PLAN_FAKE_RESTART, { permissionMode: selectedMode });
                 }
                 pending.resolve({ behavior: 'deny', message: PLAN_FAKE_REJECT });
             } else {

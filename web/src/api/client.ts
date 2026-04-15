@@ -398,6 +398,7 @@ export class ApiClient {
             allowTools?: string[]
             decision?: 'approved' | 'approved_for_session' | 'denied' | 'abort'
             answers?: Record<string, string[]> | Record<string, { answers: string[] }>
+            contextAction?: 'keep_context' | 'clear_context'
         }
     ): Promise<void> {
         const body = typeof modeOrOptions === 'string' || modeOrOptions === undefined

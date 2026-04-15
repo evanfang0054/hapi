@@ -8,6 +8,10 @@ import { isCodexFamilyFlavor } from '@/lib/agentFlavorUtils'
 import { getInputStringAny } from '@/lib/toolInputUtils'
 import { useTranslation } from '@/lib/use-translation'
 
+const EXIT_PLAN_TOOL_NAMES = new Set(['exit_plan_mode', 'ExitPlanMode'])
+type PostPlanPermissionMode = 'default' | 'acceptEdits' | 'bypassPermissions'
+type PostPlanContextAction = 'keep_context' | 'clear_context'
+
 function isToolAllowedForSession(toolName: string, toolInput: unknown, allowedTools: string[] | undefined): boolean {
     if (!allowedTools || allowedTools.length === 0) return false
     if (allowedTools.includes(toolName)) return true
@@ -101,6 +105,8 @@ export function PermissionFooter(props: {
     const [loadingAllEdits, setLoadingAllEdits] = useState(false)
     const [loadingForSession, setLoadingForSession] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [postPlanMode, setPostPlanMode] = useState<PostPlanPermissionMode>('default')
+    const [postPlanContextAction, setPostPlanContextAction] = useState<PostPlanContextAction>('keep_context')
 
     const codex = useMemo(() => isCodexSession(props.metadata, props.tool.name), [props.metadata, props.tool.name])
 
@@ -123,6 +129,7 @@ export function PermissionFooter(props: {
     }
 
     const toolName = props.tool.name
+    const isExitPlanApproval = EXIT_PLAN_TOOL_NAMES.has(toolName)
     const isEditTool = toolName === 'Edit'
         || toolName === 'MultiEdit'
         || toolName === 'Write'
@@ -131,8 +138,7 @@ export function PermissionFooter(props: {
         || toolName === 'MultiEdit'
         || toolName === 'Write'
         || toolName === 'NotebookEdit'
-        || toolName === 'exit_plan_mode'
-        || toolName === 'ExitPlanMode'
+        || isExitPlanApproval
 
     const canAllowForSession = !codex && isPending && !hideAllowForSession
     const canAllowAllEdits = !codex && isPending && isEditTool
@@ -140,7 +146,19 @@ export function PermissionFooter(props: {
     const approve = async () => {
         if (!isPending || loading || loadingAllEdits || loadingForSession) return
         setLoading('allow')
-        await run(() => props.api.approvePermission(props.sessionId, permission.id), 'success')
+        await run(
+            () => props.api.approvePermission(
+                props.sessionId,
+                permission.id,
+                isExitPlanApproval
+                    ? {
+                        mode: postPlanMode,
+                        contextAction: postPlanContextAction
+                    }
+                    : undefined
+            ),
+            'success'
+        )
         setLoading(null)
     }
 
@@ -211,6 +229,35 @@ export function PermissionFooter(props: {
             ) : null}
 
             <div className="mt-2 flex flex-col gap-1">
+                {isExitPlanApproval && !codex ? (
+                    <>
+                        <label className="flex flex-col gap-1 text-xs text-[var(--app-hint)]">
+                            <span>Post-plan permission mode</span>
+                            <select
+                                aria-label="Post-plan permission mode"
+                                className="rounded-md border border-[var(--app-border)] bg-[var(--app-bg)] px-2 py-1 text-sm text-[var(--app-fg)]"
+                                value={postPlanMode}
+                                onChange={(event) => setPostPlanMode(event.target.value as PostPlanPermissionMode)}
+                            >
+                                <option value="default">default</option>
+                                <option value="acceptEdits">acceptEdits</option>
+                                <option value="bypassPermissions">bypassPermissions</option>
+                            </select>
+                        </label>
+                        <label className="flex flex-col gap-1 text-xs text-[var(--app-hint)]">
+                            <span>Implementation mode</span>
+                            <select
+                                aria-label="Implementation mode"
+                                className="rounded-md border border-[var(--app-border)] bg-[var(--app-bg)] px-2 py-1 text-sm text-[var(--app-fg)]"
+                                value={postPlanContextAction}
+                                onChange={(event) => setPostPlanContextAction(event.target.value as PostPlanContextAction)}
+                            >
+                                <option value="keep_context">keep_context</option>
+                                <option value="clear_context">clear_context</option>
+                            </select>
+                        </label>
+                    </>
+                ) : null}
                 {codex ? (
                     <>
                         <PermissionRowButton

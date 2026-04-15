@@ -25,4 +25,43 @@ describe('SyncEngine take-over', () => {
             engine.stop()
         }
     })
+
+    it('delegates approval contextAction to rpc gateway', async () => {
+        const store = new Store(':memory:')
+        const engine = new SyncEngine(
+            store,
+            {} as never,
+            new RpcRegistry(),
+            { broadcast() {} } as never
+        )
+
+        try {
+            const calls: unknown[] = []
+            ;(engine as any).rpcGateway.approvePermission = async (...args: unknown[]) => {
+                calls.push(args)
+            }
+
+            await engine.approvePermission(
+                'session-1',
+                'request-1',
+                'default',
+                undefined,
+                'approved',
+                undefined,
+                'clear_context'
+            )
+
+            expect(calls).toEqual([[
+                'session-1',
+                'request-1',
+                'default',
+                undefined,
+                'approved',
+                undefined,
+                'clear_context'
+            ]])
+        } finally {
+            engine.stop()
+        }
+    })
 })

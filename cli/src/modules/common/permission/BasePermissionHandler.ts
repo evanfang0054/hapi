@@ -87,6 +87,7 @@ export type PermissionCompletion = {
     decision?: 'approved' | 'approved_for_session' | 'denied' | 'abort';
     allowTools?: string[];
     answers?: Record<string, string[]> | Record<string, { answers: string[] }>;
+    contextAction?: 'keep_context' | 'clear_context';
 };
 
 export type CancelPendingRequestOptions = {
@@ -168,7 +169,8 @@ export abstract class BasePermissionHandler<TResponse extends { id: string }, TR
                         mode: completion.mode,
                         decision: completion.decision,
                         allowTools: completion.allowTools,
-                        answers: completion.answers
+                        answers: completion.answers,
+                        contextAction: completion.contextAction
                     }
                 }
             };
