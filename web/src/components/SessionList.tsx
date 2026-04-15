@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { SessionSummary } from '@/types/api'
 import type { ApiClient } from '@/api/client'
+import type { BulkDeleteSummary } from '@/hooks/mutations/useSessionActions'
 import { useLongPress } from '@/hooks/useLongPress'
 import { usePlatform } from '@/hooks/usePlatform'
 import { useSessionActions } from '@/hooks/mutations/useSessionActions'
@@ -208,9 +209,23 @@ function SessionItem(props: {
     showPath?: boolean
     api: ApiClient | null
     selected?: boolean
+    selectionMode?: boolean
+    selectionChecked?: boolean
+    onEnterSelectionMode?: (sessionId: string, active: boolean) => void
+    onToggleSelected?: (sessionId: string, active: boolean) => void
 }) {
     const { t } = useTranslation()
-    const { session: s, onSelect, showPath = true, api, selected = false } = props
+    const {
+        session: s,
+        onSelect,
+        showPath = true,
+        api,
+        selected = false,
+        selectionMode = false,
+        selectionChecked = false,
+        onEnterSelectionMode,
+        onToggleSelected
+    } = props
     const { haptic } = usePlatform()
     const [menuOpen, setMenuOpen] = useState(false)
     const [menuAnchorPoint, setMenuAnchorPoint] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
@@ -224,13 +239,23 @@ function SessionItem(props: {
         s.metadata?.flavor ?? null
     )
 
+    const openActionMenu = (point: { x: number; y: number }) => {
+        setMenuAnchorPoint(point)
+        setMenuOpen(true)
+    }
+
     const longPressHandlers = useLongPress({
         onLongPress: (point) => {
             haptic.impact('medium')
             setMenuAnchorPoint(point)
-            setMenuOpen(true)
+            setMenuOpen(false)
+            onEnterSelectionMode?.(s.id, s.active)
         },
         onClick: () => {
+            if (selectionMode) {
+                onToggleSelected?.(s.id, s.active)
+                return
+            }
             if (!menuOpen) {
                 onSelect(s.id)
             }
@@ -244,68 +269,124 @@ function SessionItem(props: {
         ? (s.thinking ? 'bg-[#007AFF]' : 'bg-[var(--app-badge-success-text)]')
         : 'bg-[var(--app-hint)]'
     const todoProgress = getTodoProgress(s)
+    const sessionContent = (
+        <>
+            <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 space-y-1.5">
+                    <div className="flex min-w-0 items-center gap-2">
+                        <div className="truncate text-[15px] font-medium leading-5">
+                            {sessionName}
+                        </div>
+                    </div>
+                    {showPath ? (
+                        <div className="truncate text-xs text-[var(--app-hint)]">
+                            {s.metadata?.path ?? s.id}
+                        </div>
+                    ) : null}
+                </div>
+                <div className="shrink-0 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2.5 py-1 text-[11px] text-[var(--app-hint)]">
+                    {formatRelativeTime(s.updatedAt, t)}
+                </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+                {s.thinking ? (
+                    <span className="rounded-full border border-[var(--app-link)]/20 bg-[var(--app-link)]/10 px-2.5 py-1 text-[var(--app-link)] animate-pulse">
+                        {t('session.item.thinking')}
+                    </span>
+                ) : null}
+                {todoProgress ? (
+                    <span className="flex items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2.5 py-1 text-[var(--app-hint)]">
+                        <BulbIcon className="h-3 w-3" />
+                        {todoProgress.completed}/{todoProgress.total}
+                    </span>
+                ) : null}
+                {s.pendingRequestsCount > 0 ? (
+                    <span className="rounded-full border border-[var(--app-badge-warning-border)] bg-[var(--app-badge-warning-bg)] px-2.5 py-1 text-[var(--app-badge-warning-text)]">
+                        {t('session.item.pending')} {s.pendingRequestsCount}
+                    </span>
+                ) : null}
+            </div>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-[var(--app-hint)]">
+                <span className="inline-flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2.5 py-1">
+                    <span className="flex h-4 w-4 items-center justify-center" aria-hidden="true">
+                        ❖
+                    </span>
+                    {getAgentLabel(s)}
+                </span>
+                {modelLabel ? (
+                    <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2.5 py-1">{t(modelLabel.key)}: {modelLabel.value}</span>
+                ) : null}
+                {s.metadata?.worktree?.branch ? (
+                    <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2.5 py-1">{t('session.item.worktree')}: {s.metadata.worktree.branch}</span>
+                ) : null}
+            </div>
+        </>
+    )
     return (
         <>
-            <button
-                type="button"
-                {...longPressHandlers}
-                className={`session-list-item flex w-full flex-col gap-3 rounded-[var(--app-radius-control)] border px-4 py-4 text-left transition-[background-color,border-color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-link)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--app-panel-bg)] select-none ${selected ? 'border-[var(--app-border)] bg-[var(--app-subtle-bg)] shadow-[var(--app-shadow-sm)]' : 'border-transparent bg-[var(--app-panel-elevated-bg)] hover:border-[var(--app-border)] hover:bg-[var(--app-subtle-bg)]'}`}
-                style={{ WebkitTouchCallout: 'none' }}
-                aria-current={selected ? 'page' : undefined}
-            >
-                <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 space-y-1.5">
-                        <div className="flex min-w-0 items-center gap-2">
-                            <span className="mt-1 flex h-4 w-4 shrink-0 items-center justify-center" aria-hidden="true">
-                                <span className={`h-2 w-2 rounded-full ${statusDotClass}`} />
-                            </span>
-                            <div className="truncate text-[15px] font-medium leading-5">
-                                {sessionName}
-                            </div>
+            <div className={`rounded-[var(--app-radius-control)] border transition-[background-color,border-color,box-shadow,transform] ${selected ? 'border-[var(--app-border)] bg-[var(--app-subtle-bg)] shadow-[var(--app-shadow-sm)]' : 'border-transparent bg-[var(--app-panel-elevated-bg)] hover:border-[var(--app-border)] hover:bg-[var(--app-subtle-bg)]'}`}>
+                <div className="flex items-start gap-3 px-4 py-4">
+                    {selectionMode ? (
+                        <input
+                            type="checkbox"
+                            aria-label={sessionName}
+                            className="mt-1 shrink-0"
+                            checked={selectionChecked}
+                            disabled={s.active}
+                            onClick={(event) => {
+                                event.stopPropagation()
+                            }}
+                            onChange={(event) => {
+                                event.stopPropagation()
+                                onToggleSelected?.(s.id, s.active)
+                            }}
+                        />
+                    ) : (
+                        <span className="mt-1 flex h-4 w-4 shrink-0 items-center justify-center" aria-hidden="true">
+                            <span className={`h-2 w-2 rounded-full ${statusDotClass}`} />
+                        </span>
+                    )}
+
+                    {selectionMode ? (
+                        <div className="session-list-item flex min-w-0 flex-1 flex-col gap-3 select-none">
+                            {sessionContent}
                         </div>
-                        {showPath ? (
-                            <div className="truncate pl-6 text-xs text-[var(--app-hint)]">
-                                {s.metadata?.path ?? s.id}
-                            </div>
-                        ) : null}
-                    </div>
-                    <div className="shrink-0 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2.5 py-1 text-[11px] text-[var(--app-hint)]">
-                        {formatRelativeTime(s.updatedAt, t)}
-                    </div>
-                </div>
-                <div className="flex flex-wrap items-center gap-2 text-xs">
-                    {s.thinking ? (
-                        <span className="rounded-full border border-[var(--app-link)]/20 bg-[var(--app-link)]/10 px-2.5 py-1 text-[var(--app-link)] animate-pulse">
-                            {t('session.item.thinking')}
-                        </span>
-                    ) : null}
-                    {todoProgress ? (
-                        <span className="flex items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2.5 py-1 text-[var(--app-hint)]">
-                            <BulbIcon className="h-3 w-3" />
-                            {todoProgress.completed}/{todoProgress.total}
-                        </span>
-                    ) : null}
-                    {s.pendingRequestsCount > 0 ? (
-                        <span className="rounded-full border border-[var(--app-badge-warning-border)] bg-[var(--app-badge-warning-bg)] px-2.5 py-1 text-[var(--app-badge-warning-text)]">
-                            {t('session.item.pending')} {s.pendingRequestsCount}
-                        </span>
-                    ) : null}
-                </div>
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-[var(--app-hint)]">
-                    <span className="inline-flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2.5 py-1">
-                        <span className="flex h-4 w-4 items-center justify-center" aria-hidden="true">
-                            ❖
-                        </span>
-                        {getAgentLabel(s)}
-                    </span>
-                    {modelLabel ? (
-                        <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2.5 py-1">{t(modelLabel.key)}: {modelLabel.value}</span>
-                    ) : null}
-                    {s.metadata?.worktree?.branch ? (
-                        <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2.5 py-1">{t('session.item.worktree')}: {s.metadata.worktree.branch}</span>
+                    ) : (
+                        <button
+                            type="button"
+                            {...longPressHandlers}
+                            onContextMenu={(event) => {
+                                event.preventDefault()
+                                if (selectionMode) return
+                                openActionMenu({ x: event.clientX, y: event.clientY })
+                            }}
+                            className="session-list-item flex min-w-0 flex-1 flex-col gap-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-link)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--app-panel-bg)] select-none"
+                            style={{ WebkitTouchCallout: 'none' }}
+                            aria-current={selected ? 'page' : undefined}
+                        >
+                            {sessionContent}
+                        </button>
+                    )}
+
+                    {!selectionMode ? (
+                        <button
+                            type="button"
+                            aria-label={t('session.more')}
+                            className="shrink-0 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-3 py-2 text-xs text-[var(--app-hint)] transition-colors hover:bg-[var(--app-subtle-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-link)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--app-panel-bg)]"
+                            onClick={(event) => {
+                                event.stopPropagation()
+                                const rect = event.currentTarget.getBoundingClientRect()
+                                openActionMenu({
+                                    x: rect.left + rect.width / 2,
+                                    y: rect.bottom,
+                                })
+                            }}
+                        >
+                            <span aria-hidden="true">•••</span>
+                        </button>
                     ) : null}
                 </div>
-            </button>
+            </div>
 
             <SessionActionMenu
                 isOpen={menuOpen}
@@ -372,6 +453,12 @@ export function SessionList(props: {
     const [collapseOverrides, setCollapseOverrides] = useState<Map<string, boolean>>(
         () => new Map()
     )
+    const [selectionMode, setSelectionMode] = useState(false)
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
+    const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
+    const [bulkDeleteSummary, setBulkDeleteSummary] = useState<BulkDeleteSummary | null>(null)
+    const { deleteSessions, isPending } = useSessionActions(api, selectedSessionId ?? null)
+    const selectedCount = selectedIds.size
     const isGroupCollapsed = (group: SessionGroup): boolean => {
         const override = collapseOverrides.get(group.key)
         if (override !== undefined) return override
@@ -387,6 +474,45 @@ export function SessionList(props: {
             next.set(groupKey, !isCollapsed)
             return next
         })
+    }
+
+    const enterSelectionMode = (sessionId: string, active: boolean) => {
+        setSelectionMode(true)
+        setSelectedIds(active ? new Set() : new Set([sessionId]))
+        setBulkDeleteOpen(false)
+        setBulkDeleteSummary(null)
+    }
+
+    const toggleSelected = (sessionId: string, active: boolean) => {
+        if (active) return
+        setSelectedIds(prev => {
+            const next = new Set(prev)
+            if (next.has(sessionId)) {
+                next.delete(sessionId)
+            } else {
+                next.add(sessionId)
+            }
+            return next
+        })
+    }
+
+    const cancelSelectionMode = () => {
+        setSelectionMode(false)
+        setSelectedIds(new Set())
+        setBulkDeleteOpen(false)
+    }
+
+    const confirmBulkDelete = async () => {
+        const sessionIds = Array.from(selectedIds)
+        setBulkDeleteOpen(false)
+        try {
+            const summary = await deleteSessions(sessionIds)
+            setSelectionMode(false)
+            setSelectedIds(new Set())
+            setBulkDeleteSummary(summary)
+        } catch {
+            // Keep selection state so the user can retry.
+        }
     }
 
     const resolveMachineLabel = (machineId: string | null): string => {
@@ -411,6 +537,21 @@ export function SessionList(props: {
             return next
         })
     }, [selectedSessionId, groups])
+
+    useEffect(() => {
+        const sessionIds = new Set(props.sessions.map(session => session.id))
+        setSelectedIds(prev => {
+            if (prev.size === 0) return prev
+            const next = new Set(Array.from(prev).filter(sessionId => sessionIds.has(sessionId)))
+            return next.size === prev.size ? prev : next
+        })
+    }, [props.sessions])
+
+    useEffect(() => {
+        if (!selectionMode || props.sessions.length > 0) return
+        setSelectionMode(false)
+        setBulkDeleteOpen(false)
+    }, [selectionMode, props.sessions.length])
 
     useEffect(() => {
         setCollapseOverrides(prev => {
@@ -457,6 +598,36 @@ export function SessionList(props: {
             ) : null}
 
             <div className="flex flex-col gap-4">
+                {bulkDeleteSummary ? (
+                    <div className="rounded-[var(--app-radius-panel)] border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-4 py-3 shadow-[var(--app-shadow-sm)]">
+                        <div className="text-sm font-medium">
+                            Deleted {bulkDeleteSummary.successCount} session{bulkDeleteSummary.successCount === 1 ? '' : 's'}
+                        </div>
+                        {bulkDeleteSummary.failureCount > 0 ? (
+                            <div className="mt-2 space-y-1 text-sm text-[var(--app-hint)]">
+                                <div>{bulkDeleteSummary.failureCount} deletions failed</div>
+                                {bulkDeleteSummary.failures.map((failure) => (
+                                    <div key={`${failure.sessionId}-${failure.reason}`}>{failure.reason}</div>
+                                ))}
+                            </div>
+                        ) : null}
+                    </div>
+                ) : null}
+                {selectionMode && !bulkDeleteOpen ? (
+                    <div className="flex items-center justify-between gap-3 rounded-[var(--app-radius-panel)] border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-4 py-3 shadow-[var(--app-shadow-sm)]">
+                        <Button type="button" variant="secondary" onClick={cancelSelectionMode}>
+                            Cancel selection
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={() => setBulkDeleteOpen(true)}
+                            disabled={selectedIds.size === 0}
+                        >
+                            Delete selected
+                        </Button>
+                    </div>
+                ) : null}
                 {groups.length === 0 ? (
                     <div className="rounded-[var(--app-radius-panel)] border border-dashed border-[var(--app-border)] bg-[var(--app-panel-bg)] px-6 py-10 text-center shadow-[var(--app-shadow-sm)]">
                         <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--app-subtle-bg)] text-[var(--app-link)]">
@@ -521,6 +692,10 @@ export function SessionList(props: {
                                             showPath={false}
                                             api={api}
                                             selected={s.id === selectedSessionId}
+                                            selectionMode={selectionMode}
+                                            selectionChecked={selectedIds.has(s.id)}
+                                            onEnterSelectionMode={enterSelectionMode}
+                                            onToggleSelected={toggleSelected}
                                         />
                                     ))}
                                 </div>
@@ -529,6 +704,18 @@ export function SessionList(props: {
                     )
                 })}
             </div>
+
+            <ConfirmDialog
+                isOpen={bulkDeleteOpen}
+                onClose={() => setBulkDeleteOpen(false)}
+                title={`Delete ${selectedCount} sessions?`}
+                description={`This will permanently delete ${selectedCount} selected session${selectedCount === 1 ? '' : 's'}.`}
+                confirmLabel="Delete selected"
+                confirmingLabel="Deleting selected"
+                onConfirm={confirmBulkDelete}
+                isPending={isPending}
+                destructive
+            />
         </div>
     )
 }

@@ -1,10 +1,16 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient, useIsMutating } from '@tanstack/react-query'
 import { isPermissionModeAllowedForFlavor } from '@hapi/protocol'
 import type { ApiClient } from '@/api/client'
 import type { CodexCollaborationMode, PermissionMode } from '@/types/api'
 import { queryKeys } from '@/lib/query-keys'
 import { clearMessageWindow } from '@/lib/message-window-store'
 import { isKnownFlavor } from '@/lib/agentFlavorUtils'
+
+export type BulkDeleteSummary = {
+    successCount: number
+    failureCount: number
+    failures: Array<{ sessionId: string, reason: string }>
+}
 
 function isTakeOverHandlerMissing(error: unknown): boolean {
     const message = error instanceof Error ? error.message : String(error)
@@ -27,9 +33,12 @@ export function useSessionActions(
     setEffort: (effort: string | null) => Promise<void>
     renameSession: (name: string) => Promise<void>
     deleteSession: () => Promise<void>
+    deleteSessions: (sessionIds: string[]) => Promise<BulkDeleteSummary>
     isPending: boolean
 } {
     const queryClient = useQueryClient()
+    const bulkDeleteMutationKey = ['session-actions', 'bulk-delete', sessionId ?? 'unknown'] as const
+    const bulkDeletePendingCount = useIsMutating({ mutationKey: bulkDeleteMutationKey })
 
     const invalidateSession = async () => {
         if (!sessionId) return
@@ -149,6 +158,40 @@ export function useSessionActions(
         },
     })
 
+    const bulkDeleteMutation = useMutation({
+        mutationKey: bulkDeleteMutationKey,
+        mutationFn: async (sessionIds: string[]): Promise<BulkDeleteSummary> => {
+            if (!api) {
+                throw new Error('Session unavailable')
+            }
+
+            const failures: Array<{ sessionId: string, reason: string }> = []
+            let successCount = 0
+
+            for (const targetSessionId of sessionIds) {
+                try {
+                    await api.deleteSession(targetSessionId)
+                    queryClient.removeQueries({ queryKey: queryKeys.session(targetSessionId) })
+                    clearMessageWindow(targetSessionId)
+                    successCount += 1
+                } catch (error) {
+                    failures.push({
+                        sessionId: targetSessionId,
+                        reason: error instanceof Error ? error.message : 'Failed to delete session',
+                    })
+                }
+            }
+
+            await queryClient.invalidateQueries({ queryKey: queryKeys.sessions })
+
+            return {
+                successCount,
+                failureCount: failures.length,
+                failures,
+            }
+        },
+    })
+
     return {
         abortSession: abortMutation.mutateAsync,
         archiveSession: archiveMutation.mutateAsync,
@@ -159,6 +202,7 @@ export function useSessionActions(
         setEffort: effortMutation.mutateAsync,
         renameSession: renameMutation.mutateAsync,
         deleteSession: deleteMutation.mutateAsync,
+        deleteSessions: bulkDeleteMutation.mutateAsync,
         isPending: abortMutation.isPending
             || archiveMutation.isPending
             || switchMutation.isPending
@@ -167,6 +211,7 @@ export function useSessionActions(
             || modelMutation.isPending
             || effortMutation.isPending
             || renameMutation.isPending
-            || deleteMutation.isPending,
+            || deleteMutation.isPending
+            || bulkDeletePendingCount > 0,
     }
 }

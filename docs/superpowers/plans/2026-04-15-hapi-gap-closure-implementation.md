@@ -769,7 +769,7 @@ git commit -m "test(plan): verify exit plan approval contract end to end"
 - Modify: `web/src/components/SessionActionMenu.tsx`
 - Test: `web/src/components/SessionList.test.tsx`
 
-- [ ] **Step 1: 写多选模式进入与默认选中的失败测试**
+- [x] **Step 1: 写多选模式进入与默认选中的失败测试**
 
 ```tsx
 it('enters selection mode on long press and selects the pressed inactive session', async () => {
@@ -782,7 +782,7 @@ it('enters selection mode on long press and selects the pressed inactive session
 })
 ```
 
-- [ ] **Step 2: 写 active session 禁选测试**
+- [x] **Step 2: 写 active session 禁选测试**
 
 ```tsx
 it('does not allow selecting active sessions in selection mode', async () => {
@@ -795,12 +795,12 @@ it('does not allow selecting active sessions in selection mode', async () => {
 })
 ```
 
-- [ ] **Step 3: 运行 `SessionList` 测试确认失败**
+- [x] **Step 3: 运行 `SessionList` 测试确认失败**
 
 Run: `cd web && bunx vitest run src/components/SessionList.test.tsx`
 Expected: FAIL，多选控件与 selection mode 尚不存在。
 
-- [ ] **Step 4: 给 `SessionList` 增加最小状态**
+- [x] **Step 4: 给 `SessionList` 增加最小状态**
 
 ```ts
 const [selectionMode, setSelectionMode] = useState(false)
@@ -827,7 +827,7 @@ const toggleSelected = (sessionId: string, active: boolean) => {
 }
 ```
 
-- [ ] **Step 5: 复用长按进入多选模式**
+- [x] **Step 5: 复用长按进入多选模式**
 
 ```ts
 const longPressHandlers = useLongPress({
@@ -850,7 +850,7 @@ const longPressHandlers = useLongPress({
 })
 ```
 
-- [ ] **Step 6: 渲染多选 UI 与批量删除入口**
+- [x] **Step 6: 渲染多选 UI 与批量删除入口**
 
 ```tsx
 {selectionMode ? (
@@ -869,7 +869,7 @@ const longPressHandlers = useLongPress({
 ) : null}
 ```
 
-- [ ] **Step 7: 补退出多选模式测试**
+- [x] **Step 7: 补退出多选模式测试**
 
 ```tsx
 it('clears selection state when selection mode is cancelled', async () => {
@@ -882,7 +882,9 @@ it('clears selection state when selection mode is cancelled', async () => {
 })
 ```
 
-- [ ] **Step 8: 再跑 `SessionList` 测试确认通过**
+- [x] **Step 8: 再跑 `SessionList` 测试确认通过**
+
+_Result:_ `web/src/components/SessionList.tsx` 已补 `selectionMode`、`selectedIds`、`bulkDeleteOpen` 与选择态清理逻辑；长按会进入多选模式，inactive session 默认选中，active session 不可选；同时保留右键菜单，并新增显式 `More actions` 按钮以覆盖触屏/PWA/Mini App 菜单入口；session item 结构已拆分，避免 checkbox 嵌套在 button 内。`web/src/components/SessionList.test.tsx` 当前覆盖展示信息、右键菜单、显式按钮入口、多选进入、active 禁选、prune、取消选择等 8 条行为测试。主分支人工 code review 结论：无新的 critical / important 阻塞问题，可继续推进。
 
 Run: `cd web && bunx vitest run src/components/SessionList.test.tsx`
 Expected: PASS
@@ -900,10 +902,10 @@ git commit -m "feat(web): add inactive session multi-select mode"
 
 **Files:**
 - Modify: `web/src/hooks/mutations/useSessionActions.ts`
-- Test: `web/src/hooks/mutations/useSessionActions.test.ts`
+- Test: `web/src/hooks/mutations/useSessionActions.test.tsx`
 - Reuse: `web/src/hooks/useSSE.ts`
 
-- [ ] **Step 1: 写批量删除成功聚合测试**
+- [x] **Step 1: 写批量删除成功聚合测试**
 
 ```ts
 it('deletes multiple inactive sessions and clears detail caches', async () => {
@@ -930,7 +932,7 @@ it('deletes multiple inactive sessions and clears detail caches', async () => {
 })
 ```
 
-- [ ] **Step 2: 写部分失败聚合测试**
+- [x] **Step 2: 写部分失败聚合测试**
 
 ```ts
 it('returns partial failure summary for bulk delete', async () => {
@@ -959,12 +961,12 @@ it('returns partial failure summary for bulk delete', async () => {
 })
 ```
 
-- [ ] **Step 3: 运行 mutation 测试确认失败**
+- [x] **Step 3: 运行 mutation 测试确认失败**
 
 Run: `cd web && bunx vitest run src/hooks/mutations/useSessionActions.test.ts`
 Expected: FAIL，还没有 `deleteSessions(...)` 聚合能力。
 
-- [ ] **Step 4: 新增批量删除最小实现**
+- [x] **Step 4: 新增批量删除最小实现**
 
 ```ts
 const deleteSessions = async (sessionIds: string[]) => {
@@ -997,7 +999,7 @@ const deleteSessions = async (sessionIds: string[]) => {
 
 说明：v1 先串行；若后续确认串行体验不足，再把循环换成受控并发 helper（例如固定并发 2-3），但保持相同返回结构与统一收敛逻辑。
 
-- [ ] **Step 5: 补 detail view 收敛测试**
+- [x] **Step 5: 补 detail view 收敛测试**
 
 ```ts
 it('clears current detail state when the viewed session is deleted in bulk', async () => {
@@ -1016,7 +1018,9 @@ it('clears current detail state when the viewed session is deleted in bulk', asy
 })
 ```
 
-- [ ] **Step 6: 再跑 mutation 测试确认通过**
+- [x] **Step 6: 再跑 mutation 测试确认通过**
+
+_Result:_ 新增 `web/src/hooks/mutations/useSessionActions.test.tsx`，覆盖批量删除全成功、部分失败以及当前 detail session 被批量删除时的缓存收敛；`web/src/hooks/mutations/useSessionActions.ts` 已新增串行 `deleteSessions(...)` 聚合接口，复用现有单删 API，并在每次成功删除后清理 `queryKeys.session(sessionId)` 与 `clearMessageWindow(sessionId)`，最后统一 `invalidateQueries({ queryKey: queryKeys.sessions })`。运行 `bunx vitest run web/src/hooks/mutations/useSessionActions.test.tsx` 已通过。主分支人工 code review 结论：无新的 critical / important 阻塞问题，可继续推进。
 
 Run: `cd web && bunx vitest run src/hooks/mutations/useSessionActions.test.ts`
 Expected: PASS
@@ -1037,7 +1041,7 @@ git commit -m "feat(web): aggregate bulk session deletions"
 - Modify: `web/src/components/ConfirmDialog.tsx`（仅当当前 props 不够）
 - Test: `web/src/components/SessionList.test.tsx`
 
-- [ ] **Step 1: 写批量确认文案失败测试**
+- [x] **Step 1: 写批量确认文案失败测试**
 
 ```tsx
 it('shows bulk delete confirmation with selected count', async () => {
@@ -1051,7 +1055,7 @@ it('shows bulk delete confirmation with selected count', async () => {
 })
 ```
 
-- [ ] **Step 2: 写部分失败摘要展示测试**
+- [x] **Step 2: 写部分失败摘要展示测试**
 
 ```tsx
 it('shows partial failure summary after bulk delete', async () => {
@@ -1079,12 +1083,12 @@ it('shows partial failure summary after bulk delete', async () => {
 })
 ```
 
-- [ ] **Step 3: 运行组件测试确认失败**
+- [x] **Step 3: 运行组件测试确认失败**
 
 Run: `cd web && bunx vitest run src/components/SessionList.test.tsx`
 Expected: FAIL，批量确认文案或结果摘要不存在。
 
-- [ ] **Step 4: 在 `SessionList` 中加入批量确认与结果摘要**
+- [x] **Step 4: 在 `SessionList` 中加入批量确认与结果摘要**
 
 ```tsx
 <ConfirmDialog
@@ -1110,7 +1114,7 @@ const confirmBulkDelete = async () => {
 }
 ```
 
-- [ ] **Step 5: 确认删除后选中态清空**
+- [x] **Step 5: 确认删除后选中态清空**
 
 ```tsx
 it('clears selected ids after bulk delete completes', async () => {
@@ -1127,7 +1131,9 @@ it('clears selected ids after bulk delete completes', async () => {
 })
 ```
 
-- [ ] **Step 6: 再跑组件测试确认通过**
+- [x] **Step 6: 再跑组件测试确认通过**
+
+_Result:_ `web/src/components/SessionList.test.tsx` 现已覆盖批量确认数量、部分失败摘要、删除成功后清空选中态，以及整体删除请求失败时保留多选状态；`web/src/components/SessionList.tsx` 已补批量确认弹窗、结果摘要和失败保留选择态逻辑。主工作区复审结论为 ready。
 
 Run: `cd web && bunx vitest run src/components/SessionList.test.tsx`
 Expected: PASS
