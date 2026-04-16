@@ -1191,6 +1191,8 @@ Expected: PASS
 
 - [x] **Step 5: 记录验证结果并 commit**
 
+_Result:_ 已通过 `bun test hub/src/web/server.test.ts` 为 Task 10 补固 `hub/src/web/server.test.ts` 中的真实 app route 自动化验证，并为 `createWebApp session delete guard` 与 `createWebApp CORS` 两组会改写 `HAPI_HOME` / `CLI_API_TOKEN` 的测试补上对称 `afterAll` 清理；同时在 delete guard 用例内加入恢复断言，确认该组测试不会把进程级环境泄漏到后续用例。后续已补提交 `test(hub): harden web server env cleanup coverage` 记录这次测试卫生修复。
+
 ```bash
 git add hub/src/web/routes/sessions.test.ts web/src/hooks/useSSE.test.ts web/src/hooks/mutations/useSessionActions.test.ts
 git commit -m "test(web): verify bulk delete session convergence"
@@ -1736,10 +1738,12 @@ Expected: 输出至少包含：
 - assessment: 当前输出已满足 shared runtime comparison contract、至少一个 direct-fit flavor 的 host-level runtime selection / validation contract 与 fallback 边界验证；但 RSS 仍是 placeholder snapshot stub，尚不能作为真实多 session memory gain 结论
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
+
+_Result:_ 已提交 `test(cli): measure shared runtime memory behavior`，纳入 shared runtime protocol / host / adapter / baseline / measurement script 与 Task 15 计划记录更新。
 
 ```bash
-git add cli/src/runner/sharedRuntime cli/scripts/measure-shared-runtime.ts docs/superpowers/plans/implementation-artifacts/shared-runtime-baseline.md
+git add cli/src/runner/sharedRuntime cli/scripts/measure-shared-runtime.ts docs/superpowers/plans/2026-04-15-hapi-gap-closure-implementation.md
 git commit -m "test(cli): measure shared runtime memory behavior"
 ```
 
@@ -1747,15 +1751,15 @@ git commit -m "test(cli): measure shared runtime memory behavior"
 
 ## Final verification checklist
 
-- [ ] `#444` shared schema、hub route、web API client、web approval UI、CLI permission handler 都已支持 `contextAction`。
-- [ ] `clear_context` 只清 execution context，不清 session record。
-- [ ] 普通工具审批行为不变。
-- [ ] 批量删除仅允许 inactive session。
-- [ ] 批量删除后列表、详情、query cache、SSE 收敛一致。
-- [ ] partial failure 会返回明确的成功/失败摘要。
-- [ ] `#461` 有可运行的 baseline、shared host / worker / adapter contract、idle reclaim、resume、fallback。
-- [ ] 至少一个 direct-fit flavor 完成 host-level runtime selection / validation contract 验证。
-- [ ] 未迁移 flavor 仍可保持 standalone runtime，不回归。
+- [x] `#444` shared schema、hub route、web API client、web approval UI、CLI permission handler 都已支持 `contextAction`。
+- [x] `clear_context` 只清 execution context，不清 session record。
+- [x] 普通工具审批行为不变。
+- [x] 批量删除仅允许 inactive session。
+- [x] 批量删除后列表、详情、query cache、SSE 收敛一致。
+- [x] partial failure 会返回明确的成功/失败摘要。
+- [x] `#461` 有可运行的 baseline、shared host / worker / adapter contract、idle reclaim、resume、fallback。
+- [x] 至少一个 direct-fit flavor 完成 host-level runtime selection / validation contract 验证。
+- [x] 未迁移 flavor 仍可保持 standalone runtime，不回归。
 
 ## Recommended execution order
 
