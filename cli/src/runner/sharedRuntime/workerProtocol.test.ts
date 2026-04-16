@@ -155,6 +155,17 @@ describe('measureSharedRuntimeReport', () => {
     expect(output).toContain('fixed host overhead:')
   })
 
+  it('includes host validation details in default cli output for direct-fit and fallback flavors', async () => {
+    const output = await measureSharedRuntimeReport({
+      flavor: 'claude',
+      sessionCounts: [1, 3, 5],
+    })
+
+    expect(output).toContain('validation:')
+    expect(output).toContain('direct fit: claude -> shared (started: 1, sessionState: active)')
+    expect(output).toContain('fallback: opencode -> standalone (started: 0, sessionState: n/a)')
+  })
+
   it('includes host validation details when requested', async () => {
     const output = await measureSharedRuntimeReport({
       flavor: 'claude',

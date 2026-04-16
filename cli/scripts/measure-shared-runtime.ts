@@ -9,7 +9,14 @@ export async function measureSharedRuntimeReport(options: {
     fallback: WorkerFlavor
   }
 }) {
-  const report = await compareSharedRuntimePerformance(options)
+  const validationFlavors = options.validationFlavors ?? {
+    directFit: options.flavor,
+    fallback: 'opencode' as WorkerFlavor,
+  }
+  const report = await compareSharedRuntimePerformance({
+    ...options,
+    validationFlavors,
+  })
   const formatSnapshots = (snapshots: Record<string, { rssBytes: number }>) =>
     Object.entries(snapshots)
       .map(([count, snapshot]) => `  - ${count}: ${snapshot.rssBytes}`)
@@ -31,8 +38,8 @@ export async function measureSharedRuntimeReport(options: {
     ...(report.validation
       ? [
           'validation:',
-          `  - direct fit: ${options.validationFlavors?.directFit} -> ${report.validation.directFit.runtimeMode} (started: ${report.validation.directFit.startedSessions}, sessionState: ${report.validation.directFit.sessionState ?? 'n/a'})`,
-          `  - fallback: ${options.validationFlavors?.fallback} -> ${report.validation.fallback.runtimeMode} (started: ${report.validation.fallback.startedSessions}, sessionState: ${report.validation.fallback.sessionState ?? 'n/a'})`,
+          `  - direct fit: ${validationFlavors.directFit} -> ${report.validation.directFit.runtimeMode} (started: ${report.validation.directFit.startedSessions}, sessionState: ${report.validation.directFit.sessionState ?? 'n/a'})`,
+          `  - fallback: ${validationFlavors.fallback} -> ${report.validation.fallback.runtimeMode} (started: ${report.validation.fallback.startedSessions}, sessionState: ${report.validation.fallback.sessionState ?? 'n/a'})`,
         ]
       : []),
   ].join('\n')

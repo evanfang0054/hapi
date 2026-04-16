@@ -170,6 +170,7 @@ export class AcpSdkBackend implements AgentBackend {
             }, { timeoutMs: Infinity });
 
             stopReason = isObject(response) ? asString(response.stopReason) : null;
+            this.lastSessionUpdateAt = Date.now();
         } finally {
             await this.waitForSessionUpdateQuiet(
                 AcpSdkBackend.UPDATE_QUIET_PERIOD_MS,

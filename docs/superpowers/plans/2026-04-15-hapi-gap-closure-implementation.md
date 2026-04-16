@@ -180,6 +180,8 @@ Expected: PASS
 
 - [ ] **Step 6: Commit**
 
+_Result:_ 2026-04-16 基于当前工作树快照复核时，`shared/src/schemas.ts`、`shared/src/types.ts` 与 `shared/src/schemas.test.ts` 当前均无未提交差异；这些文件可见的较新相关历史提交线索包含 `65f3318 test(plan): verify exit plan approval contract end to end`。当前阻塞点是：计划仍要求为 Task 1 单独创建一次 commit，但工作树里没有可供执行该步骤的新增 shared contract 变更，需先确认 Step 6 应如何与现有提交历史对齐。
+
 ```bash
 git add shared/src/schemas.ts shared/src/types.ts shared/src/**/*.test.ts
 git commit -m "feat(shared): add plan approval context action contract"
@@ -302,6 +304,8 @@ Expected: PASS
 
 - [ ] **Step 6: Commit**
 
+_Result:_ 2026-04-16 基于当前工作树快照复核时，`hub/src/web/routes/permissions.ts`、`hub/src/sync/syncEngine.ts`、`hub/src/sync/rpcGateway.ts` 与 `hub/src/web/routes/permissions.test.ts` 当前均无未提交差异；这些文件可见的较新相关历史提交线索包含 `65f3318 test(plan): verify exit plan approval contract end to end`。当前阻塞点是：计划仍要求为 Task 2 单独创建一次 commit，但工作树里没有可供执行该步骤的新增 hub approval relay 变更，需先确认 Step 6 应如何与现有提交历史对齐。
+
 ```bash
 git add hub/src/web/routes/permissions.ts hub/src/sync/syncEngine.ts hub/src/sync/rpcGateway.ts hub/src/web/routes/permissions.test.ts
 git commit -m "feat(hub): relay exit plan context action approvals"
@@ -386,6 +390,8 @@ Run: `cd web && bunx vitest run src/api/client.test.ts`
 Expected: PASS
 
 - [ ] **Step 5: Commit**
+
+_Result:_ 2026-04-16 基于当前工作树快照复核时，`web/src/api/client.ts`、`web/src/api/client.test.ts` 与 `shared/src/types.ts` 当前均无未提交差异；这些文件可见的较新相关历史提交线索包含 `65f3318 test(plan): verify exit plan approval contract end to end`。当前阻塞点是：计划仍要求为 Task 3 单独创建一次 commit，但工作树里没有可供执行该步骤的新增 web approval client 变更，需先确认 Step 5 应如何与现有提交历史对齐。
 
 ```bash
 git add web/src/api/client.ts web/src/api/client.test.ts
@@ -543,6 +549,8 @@ Expected: PASS
 
 - [ ] **Step 7: Commit**
 
+_Result:_ 2026-04-16 基于当前工作树快照复核时，`web/src/components/ToolCard/PermissionFooter.tsx` 与 `web/src/components/ToolCard/PermissionFooter.test.tsx` 当前均无未提交差异；这些文件可见的较新相关历史提交线索包含 `65f3318 test(plan): verify exit plan approval contract end to end`。当前阻塞点是：计划仍要求为 Task 4 单独创建一次 commit，但工作树里没有可供执行该步骤的新增 exit-plan approval UI 变更，需先确认 Step 7 应如何与现有提交历史对齐。
+
 ```bash
 git add web/src/components/ToolCard/PermissionFooter.tsx web/src/components/ToolCard/PermissionFooter.test.tsx
 git commit -m "feat(web): add explicit exit plan approval controls"
@@ -685,6 +693,8 @@ Expected: PASS
 _Result:_ `cli/src/claude/utils/permissionHandler.ts` 现在会读取 exit-plan 审批里的 `contextAction`，在 `keep_context` 时继续用 `queue.unshift(...)`，在 `clear_context` 时改用 `queue.pushIsolateAndClear(...)`；新增 `cli/src/claude/utils/permissionHandler.test.ts` 覆盖 keep/clear 两条路径和 durable metadata 边界，验证普通 session metadata 不会被误清理。
 
 - [ ] **Step 8: Commit**
+
+_Result:_ 2026-04-16 基于当前工作树快照复核时，`cli/src/claude/utils/permissionHandler.ts`、`cli/src/utils/MessageQueue2.ts`、`cli/src/claude/runClaude.ts` 与 `cli/src/claude/utils/permissionHandler.test.ts` 当前均无未提交差异；这些文件可见的较新相关历史提交线索包含 `65f3318 test(plan): verify exit plan approval contract end to end`。当前阻塞点是：计划仍要求为 Task 5 单独创建一次 commit，但工作树里没有可供执行该步骤的新增 exit-plan context handling 变更，需先确认 Step 8 应如何与现有提交历史对齐。
 
 ```bash
 git add cli/src/claude/utils/permissionHandler.ts cli/src/utils/MessageQueue2.ts cli/src/claude/runClaude.ts cli/src/claude/utils/permissionHandler.test.ts
@@ -891,6 +901,8 @@ Expected: PASS
 
 - [ ] **Step 9: Commit**
 
+_Result:_ 2026-04-16 基于当前工作树快照复核时，`web/src/components/SessionList.tsx`、`web/src/components/SessionActionMenu.tsx` 与 `web/src/components/SessionList.test.tsx` 当前均无未提交差异；这些文件可见的较新相关历史提交线索包含 `289b64b feat(web): 完成会话批量删除流程`。当前阻塞点是：计划仍要求为 Task 7 单独创建一次 commit，但工作树里没有可供执行该步骤的新增 inactive session multi-select 变更，需先确认 Step 9 应如何与现有提交历史对齐。
+
 ```bash
 git add web/src/components/SessionList.tsx web/src/components/SessionActionMenu.tsx web/src/components/SessionList.test.tsx
 git commit -m "feat(web): add inactive session multi-select mode"
@@ -1027,6 +1039,8 @@ Expected: PASS
 
 - [ ] **Step 7: Commit**
 
+_Result:_ 2026-04-16 基于当前工作树快照复核时，`web/src/hooks/mutations/useSessionActions.ts` 与 `web/src/hooks/mutations/useSessionActions.test.ts` 当前均无未提交差异；这些文件可见的较新相关历史提交线索包含 `289b64b feat(web): 完成会话批量删除流程`。当前阻塞点是：计划仍要求为 Task 8 单独创建一次 commit，但工作树里没有可供执行该步骤的新增 bulk delete aggregation 变更，需先确认 Step 7 应如何与现有提交历史对齐。
+
 ```bash
 git add web/src/hooks/mutations/useSessionActions.ts web/src/hooks/mutations/useSessionActions.test.ts
 git commit -m "feat(web): aggregate bulk session deletions"
@@ -1139,6 +1153,8 @@ Run: `cd web && bunx vitest run src/components/SessionList.test.tsx`
 Expected: PASS
 
 - [ ] **Step 7: Commit**
+
+_Result:_ 2026-04-16 基于当前工作树快照复核时，`web/src/components/SessionList.tsx`、`web/src/components/ConfirmDialog.tsx` 与 `web/src/components/SessionList.test.tsx` 当前均无未提交差异；这些文件可见的较新相关历史提交线索包含 `289b64b feat(web): 完成会话批量删除流程`。当前阻塞点是：计划仍要求为 Task 9 单独创建一次 commit，但工作树里没有可供执行该步骤的新增 bulk delete confirmation / summary 变更，需先确认 Step 7 应如何与现有提交历史对齐。
 
 ```bash
 git add web/src/components/SessionList.tsx web/src/components/ConfirmDialog.tsx web/src/components/SessionList.test.tsx
@@ -1317,6 +1333,8 @@ Expected: PASS
 
 - [ ] **Step 7: Commit**
 
+_Result:_ 2026-04-16 基于当前工作树快照复核时，`cli/src/runner/sharedRuntime/workerProtocol.ts`、`cli/src/runner/sharedRuntime/workerProtocol.test.ts`、`cli/src/runner/sharedRuntime/baseline.ts` 与 `cli/src/runner/run.ts` 当前均无未提交差异。可直接确认的相关历史提交线索中，`c61ce80 test(cli): measure shared runtime memory behavior` 覆盖了前三个 shared runtime 文件；对于 `cli/src/runner/run.ts`，本次复核仅确认其当前无未提交差异。因工作树中没有可供执行的新增 Task 11 变更，计划里要求的单独 commit 步骤目前仍需先确认应如何与现有提交历史对齐。
+
 ```bash
 git add cli/src/runner/sharedRuntime/workerProtocol.ts cli/src/runner/sharedRuntime/workerProtocol.test.ts cli/src/runner/sharedRuntime/baseline.ts cli/src/runner/run.ts
 git commit -m "feat(cli): define shared runtime protocol baseline"
@@ -1449,6 +1467,8 @@ Expected: PASS
 
 - [ ] **Step 7: Commit**
 
+_Result:_ 2026-04-16 基于当前工作树快照复核时，`cli/src/runner/sharedRuntime/host.test.ts`、`host.ts`、`resourcePolicy.ts` 与 `workerFactory.ts` 的最新相关提交已可追到 `c61ce80 test(cli): measure shared runtime memory behavior`；`run.ts` 的最新相关提交可追到 `a200fe9 feat(claude): add effort setting parity with model across stack (#353)`，且这些文件当前均无未提交差异。当前阻塞点是：计划仍要求为 Task 12 单独创建一次 commit，但工作树里没有可供执行该步骤的新增变更，需先确认 Step 7 应如何与现有历史提交对齐。
+
 ```bash
 git add cli/src/runner/sharedRuntime/host.ts cli/src/runner/sharedRuntime/workerFactory.ts cli/src/runner/sharedRuntime/resourcePolicy.ts cli/src/runner/sharedRuntime/host.test.ts cli/src/runner/run.ts
 git commit -m "feat(cli): add shared runtime host foundation"
@@ -1556,6 +1576,8 @@ Expected: PASS
 
 - [ ] **Step 7: Commit**
 
+_Result:_ 2026-04-16 基于当前工作树快照复核时，`cli/src/runner/sharedRuntime/adapters/base.test.ts`、`base.ts`、`claude.ts`、`codex.ts`、`cursor.ts`、`gemini.ts` 与 `opencode.ts` 的最新相关提交已可追到 `c61ce80 test(cli): measure shared runtime memory behavior`，且这些 adapter 文件当前无未提交差异。当前阻塞点是：计划仍要求为 Task 13 单独创建一次 commit，但工作树里没有可供执行该步骤的新增 adapter 变更，需先确认这一步是否应视为已被现有提交吸收。
+
 ```bash
 git add cli/src/runner/sharedRuntime/adapters cli/src/runner/sharedRuntime/adapters/*.test.ts cli/src/claude cli/src/codex cli/src/cursor cli/src/gemini cli/src/opencode
 git commit -m "feat(cli): define shared runtime flavor adapters"
@@ -1647,6 +1669,8 @@ Expected: PASS
 
 - [ ] **Step 7: Commit**
 
+_Result:_ 2026-04-16 基于当前工作树快照复核时，`cli/src/runner/sharedRuntime/host.test.ts`、`host.ts`、`resourcePolicy.ts` 与 `cli/src/api/apiMachine.ts` 当前均无未提交差异；其中前 3 个文件在当前历史中可见 `c61ce80 test(cli): measure shared runtime memory behavior`，`apiMachine.ts` 也能看到较新的相关历史提交线索（如 `a200fe9 feat(claude): add effort setting parity with model across stack (#353)`）。当前阻塞点是：计划仍要求为 Task 14 单独创建一次 commit，但工作树里没有可供执行该步骤的新增 reclaim / resume 变更，需先确认 Step 7 应如何与现有提交历史对齐。
+
 ```bash
 git add cli/src/runner/sharedRuntime/host.ts cli/src/runner/sharedRuntime/resourcePolicy.ts cli/src/api/apiMachine.ts cli/src/runner/sharedRuntime/host.test.ts
 git commit -m "feat(cli): add idle reclaim and resume boundaries"
@@ -1699,7 +1723,7 @@ Expected: PASS
 
 - [x] **Step 4: 运行基线测量脚本**
 
-_Result:_ 已新增 `cli/scripts/measure-shared-runtime.ts`，并通过 `measureSharedRuntimeReport(...)` 复用 `compareSharedRuntimePerformance(...)` 生成 CLI 文本输出；先在 `cli/src/runner/sharedRuntime/workerProtocol.test.ts` 中新增脚本输出 contract 测试，并验证脚本缺失时以 `Cannot find module '../../../scripts/measure-shared-runtime'` 正确失败，随后补上最小脚本实现并修正测试 import 路径，当前 `bunx vitest run cli/src/runner/sharedRuntime/workerProtocol.test.ts` 已通过。后续 direct-fit/fallback validation 已从单纯 adapter capability 检查提升为 host 级验证路径：先在 `cli/src/runner/sharedRuntime/host.test.ts` 中新增 `validateRuntimeSelection(...)` RED，验证 direct-fit flavor 会通过 `SharedRuntimeHost` 启动而未迁移 flavor 仍保持 standalone；随后在 `cli/src/runner/sharedRuntime/host.ts` 中补最小实现，并将 `cli/src/runner/sharedRuntime/baseline.ts` 的 validation 采样改为通过同一次 `SharedRuntimeHost.validateRuntimeSelection(...)` 返回 direct-fit / fallback 成对结果，再由 validation worker handle 把 direct-fit session 推进到 `active`，确保 report 里的 `runtimeMode` / `startedSessions` / `sessionState` 直接来自 host 返回值而不是 adapter gate + 手工拼装。最后在 `measureSharedRuntimeReport(...)` 中补上 `sessionState` 输出段。当前已通过 `bunx vitest run cli/src/runner/sharedRuntime/workerProtocol.test.ts cli/src/runner/sharedRuntime/host.test.ts`，并再次运行 `bun run cli/scripts/measure-shared-runtime.ts --flavor claude --sessions 1,3,5` 验证脚本仍能输出 before/after RSS、idle reclaim 与 fixed host overhead。
+_Result:_ 已新增 `cli/scripts/measure-shared-runtime.ts`，并通过 `measureSharedRuntimeReport(...)` 复用 `compareSharedRuntimePerformance(...)` 生成 CLI 文本输出；先在 `cli/src/runner/sharedRuntime/workerProtocol.test.ts` 中新增脚本输出 contract 测试，并验证脚本缺失时以 `Cannot find module '../../../scripts/measure-shared-runtime'` 正确失败，随后补上最小脚本实现并修正测试 import 路径，当前 `bunx vitest run cli/src/runner/sharedRuntime/workerProtocol.test.ts` 已通过。后续 direct-fit/fallback validation 已从单纯 adapter capability 检查提升为 host 级验证路径：先在 `cli/src/runner/sharedRuntime/host.test.ts` 中新增 `validateRuntimeSelection(...)` RED，验证 direct-fit flavor 会通过 `SharedRuntimeHost` 启动而未迁移 flavor 仍保持 standalone；随后在 `cli/src/runner/sharedRuntime/host.ts` 中补最小实现，并将 `cli/src/runner/sharedRuntime/baseline.ts` 的 validation 采样改为通过同一次 `SharedRuntimeHost.validateRuntimeSelection(...)` 返回 direct-fit / fallback 成对结果，再由 validation worker handle 把 direct-fit session 推进到 `active`，确保 report 里的 `runtimeMode` / `startedSessions` / `sessionState` 直接来自 host 返回值而不是 adapter gate + 手工拼装。最后在 `measureSharedRuntimeReport(...)` 中补上 `sessionState` 输出段，并让默认 CLI 输出也携带 `claude -> shared` / `opencode -> standalone` 的 validation 段，避免计划结果说明与脚本实际输出脱节。当前已通过 `bunx vitest run cli/src/runner/sharedRuntime/workerProtocol.test.ts cli/src/runner/sharedRuntime/host.test.ts`，并再次运行 `bun run cli/scripts/measure-shared-runtime.ts --flavor claude --sessions 1,3,5` 验证脚本仍能输出 before/after RSS、idle reclaim、fixed host overhead 与默认 validation 结果。
 Run:
 ```bash
 cd cli && bun run scripts/measure-shared-runtime.ts --flavor claude --sessions 1,3,5
@@ -1746,6 +1770,12 @@ _Result:_ 已提交 `test(cli): measure shared runtime memory behavior`，纳入
 git add cli/src/runner/sharedRuntime cli/scripts/measure-shared-runtime.ts docs/superpowers/plans/2026-04-15-hapi-gap-closure-implementation.md
 git commit -m "test(cli): measure shared runtime memory behavior"
 ```
+
+## Post-plan regression fix: ACP trailing tool updates
+
+- [x] **Follow-up: 修复 `AcpSdkBackend` 在同一 turn 尾随 tool updates 到达时过早发出 `turn_complete` 的回归**
+
+_Result:_ 在执行 `superpowers:finishing-a-development-branch` 的测试门禁时，`cli/src/agent/backends/acp/AcpSdkBackend.test.ts` 中 `emits turn_complete after trailing tool updates from the same turn` 失败，表现为消息顺序只剩 `text -> turn_complete`，缺少尾随 `tool_call` / `tool_result`。复核 `cli/src/agent/backends/acp/AcpSdkBackend.ts` 后，确认根因是 `session/prompt` 请求返回后没有重置 `lastSessionUpdateAt`，导致 finally 中的 quiet-period drain 可能在同一 turn 的尾随工具更新到达前就结束。已按最小修复在 `stopReason = ...` 后补 `this.lastSessionUpdateAt = Date.now()`，让 drain 窗口从 prompt 响应返回时刻重新起算，从而把同一 turn 的 trailing tool updates 纳入等待范围。随后以仓库标准入口 `bun run test` 复验，CLI / hub / web 全量测试均通过，并确认 `src/agent/backends/acp/AcpSdkBackend.test.ts` 恢复为绿灯。
 
 ---
 
