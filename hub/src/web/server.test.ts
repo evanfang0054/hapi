@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it, mock } from 'bun:test'
+import { afterAll, beforeAll, beforeEach, describe, expect, it, mock } from 'bun:test'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -10,17 +10,17 @@ import { SyncEngine } from '../sync/syncEngine'
 const initialHapiHome = process.env.HAPI_HOME
 const initialCliApiToken = process.env.CLI_API_TOKEN
 
-function restoreEnv() {
-    if (initialHapiHome === undefined) {
+function restoreEnv(hapiHome = initialHapiHome, cliApiToken = initialCliApiToken) {
+    if (hapiHome === undefined) {
         delete process.env.HAPI_HOME
     } else {
-        process.env.HAPI_HOME = initialHapiHome
+        process.env.HAPI_HOME = hapiHome
     }
 
-    if (initialCliApiToken === undefined) {
+    if (cliApiToken === undefined) {
         delete process.env.CLI_API_TOKEN
     } else {
-        process.env.CLI_API_TOKEN = initialCliApiToken
+        process.env.CLI_API_TOKEN = cliApiToken
     }
 }
 
@@ -94,9 +94,19 @@ describe('createWebApp CORS', () => {
 })
 
 describe('createWebApp session delete guard', () => {
+    let suiteHapiHome: string | undefined
+    let suiteCliApiToken: string | undefined
+
     beforeAll(async () => {
         process.env.HAPI_HOME = mkdtempSync(join(tmpdir(), 'hapi-web-server-delete-guard-'))
         process.env.CLI_API_TOKEN = 'task10-token'
+        suiteHapiHome = process.env.HAPI_HOME
+        suiteCliApiToken = process.env.CLI_API_TOKEN
+        await createConfiguration()
+    })
+
+    beforeEach(async () => {
+        restoreEnv(suiteHapiHome, suiteCliApiToken)
         await createConfiguration()
     })
 
@@ -175,13 +185,13 @@ describe('createWebApp session delete guard', () => {
         })
 
         engine.stop()
-        restoreEnv()
-        expect(process.env.HAPI_HOME).toBe(initialHapiHome)
-        expect(process.env.CLI_API_TOKEN).toBe(initialCliApiToken)
+        expect(process.env.HAPI_HOME).toBe(suiteHapiHome)
+        expect(process.env.CLI_API_TOKEN).toBe(suiteCliApiToken)
+    })
 
-        process.env.HAPI_HOME = mkdtempSync(join(tmpdir(), 'hapi-web-server-delete-guard-verify-'))
-        process.env.CLI_API_TOKEN = 'task10-token'
-        await createConfiguration()
+    it('keeps suite-local environment stable across tests', () => {
+        expect(process.env.HAPI_HOME).toBe(suiteHapiHome)
+        expect(process.env.CLI_API_TOKEN).toBe(suiteCliApiToken)
     })
 })
 

@@ -1191,10 +1191,10 @@ Expected: PASS
 
 - [x] **Step 5: 记录验证结果并 commit**
 
-_Result:_ 已通过 `bun test hub/src/web/server.test.ts` 为 Task 10 补固 `hub/src/web/server.test.ts` 中的真实 app route 自动化验证，并为 `createWebApp session delete guard` 与 `createWebApp CORS` 两组会改写 `HAPI_HOME` / `CLI_API_TOKEN` 的测试补上对称 `afterAll` 清理；同时在 delete guard 用例内加入恢复断言，确认该组测试不会把进程级环境泄漏到后续用例。后续已补提交 `test(hub): harden web server env cleanup coverage` 记录这次测试卫生修复。
+_Result:_ 已通过 `bun test hub/src/web/server.test.ts` 为 Task 10 补固 `hub/src/web/server.test.ts` 中的真实 app route 自动化验证，并为 `createWebApp session delete guard` 与 `createWebApp CORS` 两组会改写 `HAPI_HOME` / `CLI_API_TOKEN` 的测试补上对称清理。后续又按 TDD 先补 `keeps suite-local environment stable across tests` 失败用例，暴露 delete guard suite 内部的环境漂移，再改为在该 suite 里捕获 suite-local env snapshot，并通过 `beforeEach` 统一恢复与重建配置，去掉测试体内手动 `restoreEnv()` 后再重设 env / `createConfiguration()` 的脆弱流程。后续已补提交 `test(hub): harden web server env cleanup coverage` 记录这次测试卫生修复。
 
 ```bash
-git add hub/src/web/routes/sessions.test.ts web/src/hooks/useSSE.test.ts web/src/hooks/mutations/useSessionActions.test.ts
+git add hub/src/web/routes/sessions.test.ts hub/src/web/server.test.ts web/src/hooks/useSSE.test.ts web/src/hooks/mutations/useSessionActions.test.ts
 git commit -m "test(web): verify bulk delete session convergence"
 ```
 
