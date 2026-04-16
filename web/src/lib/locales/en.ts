@@ -78,6 +78,13 @@ export default {
   'dialog.delete.description': 'Are you sure you want to delete "{name}"? This action cannot be undone.',
   'dialog.delete.confirm': 'Delete',
   'dialog.delete.confirming': 'Deleting…',
+  'dialog.bulkDelete.title': 'Delete {n} sessions?',
+  'dialog.bulkDelete.description': 'This will permanently delete {n} selected session(s).',
+  'dialog.bulkDelete.confirm': 'Delete selected',
+  'dialog.bulkDelete.confirming': 'Deleting selected',
+  'selection.selected': '{n} selected',
+  'selection.deleted': 'Deleted {n} session(s)',
+  'selection.failureCount': '{n} deletions failed',
   'dialog.error.default': 'Operation failed. Please try again.',
 
   // Common buttons

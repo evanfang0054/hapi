@@ -4,8 +4,8 @@ export type Toast = {
     id: string
     title: string
     body: string
-    sessionId: string
-    url: string
+    sessionId?: string
+    url?: string
 }
 
 export type ToastContextValue = {

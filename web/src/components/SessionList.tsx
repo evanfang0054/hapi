@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { SessionSummary } from '@/types/api'
 import type { ApiClient } from '@/api/client'
-import type { BulkDeleteSummary } from '@/hooks/mutations/useSessionActions'
 import { useLongPress } from '@/hooks/useLongPress'
 import { usePlatform } from '@/hooks/usePlatform'
 import { useSessionActions } from '@/hooks/mutations/useSessionActions'
@@ -11,6 +10,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Button } from '@/components/ui/button'
 import { getSessionModelLabel } from '@/lib/sessionModelLabel'
 import { useTranslation } from '@/lib/use-translation'
+import { useToast } from '@/lib/toast-context'
 
 type SessionGroup = {
     key: string
@@ -456,8 +456,8 @@ export function SessionList(props: {
     const [selectionMode, setSelectionMode] = useState(false)
     const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
     const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
-    const [bulkDeleteSummary, setBulkDeleteSummary] = useState<BulkDeleteSummary | null>(null)
     const { deleteSessions, isPending } = useSessionActions(api, selectedSessionId ?? null)
+    const { addToast } = useToast()
     const selectedCount = selectedIds.size
     const isGroupCollapsed = (group: SessionGroup): boolean => {
         const override = collapseOverrides.get(group.key)
@@ -480,7 +480,6 @@ export function SessionList(props: {
         setSelectionMode(true)
         setSelectedIds(active ? new Set() : new Set([sessionId]))
         setBulkDeleteOpen(false)
-        setBulkDeleteSummary(null)
     }
 
     const toggleSelected = (sessionId: string, active: boolean) => {
@@ -509,7 +508,11 @@ export function SessionList(props: {
             const summary = await deleteSessions(sessionIds)
             setSelectionMode(false)
             setSelectedIds(new Set())
-            setBulkDeleteSummary(summary)
+            const title = t('selection.deleted', { n: summary.successCount })
+            const body = summary.failureCount > 0
+                ? t('selection.failureCount', { n: summary.failureCount })
+                : ''
+            addToast({ title, body })
         } catch {
             // Keep selection state so the user can retry.
         }
@@ -570,7 +573,7 @@ export function SessionList(props: {
     }, [groups])
 
     return (
-        <div className="mx-auto flex w-full max-w-content flex-col gap-4 px-3 pb-4 pt-4 md:px-5 md:pt-6">
+        <div className={`mx-auto flex w-full max-w-content flex-col gap-4 px-3 pt-4 md:px-5 md:pt-6 ${selectionMode ? 'pb-24' : 'pb-4'}`}>
             {renderHeader ? (
                 <div className="rounded-[var(--app-radius-panel)] border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-5 py-5 shadow-[var(--app-shadow-sm)]">
                     <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
@@ -598,36 +601,6 @@ export function SessionList(props: {
             ) : null}
 
             <div className="flex flex-col gap-4">
-                {bulkDeleteSummary ? (
-                    <div className="rounded-[var(--app-radius-panel)] border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-4 py-3 shadow-[var(--app-shadow-sm)]">
-                        <div className="text-sm font-medium">
-                            Deleted {bulkDeleteSummary.successCount} session{bulkDeleteSummary.successCount === 1 ? '' : 's'}
-                        </div>
-                        {bulkDeleteSummary.failureCount > 0 ? (
-                            <div className="mt-2 space-y-1 text-sm text-[var(--app-hint)]">
-                                <div>{bulkDeleteSummary.failureCount} deletions failed</div>
-                                {bulkDeleteSummary.failures.map((failure) => (
-                                    <div key={`${failure.sessionId}-${failure.reason}`}>{failure.reason}</div>
-                                ))}
-                            </div>
-                        ) : null}
-                    </div>
-                ) : null}
-                {selectionMode && !bulkDeleteOpen ? (
-                    <div className="flex items-center justify-between gap-3 rounded-[var(--app-radius-panel)] border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-4 py-3 shadow-[var(--app-shadow-sm)]">
-                        <Button type="button" variant="secondary" onClick={cancelSelectionMode}>
-                            Cancel selection
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="destructive"
-                            onClick={() => setBulkDeleteOpen(true)}
-                            disabled={selectedIds.size === 0}
-                        >
-                            Delete selected
-                        </Button>
-                    </div>
-                ) : null}
                 {groups.length === 0 ? (
                     <div className="rounded-[var(--app-radius-panel)] border border-dashed border-[var(--app-border)] bg-[var(--app-panel-bg)] px-6 py-10 text-center shadow-[var(--app-shadow-sm)]">
                         <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--app-subtle-bg)] text-[var(--app-link)]">
@@ -708,14 +681,35 @@ export function SessionList(props: {
             <ConfirmDialog
                 isOpen={bulkDeleteOpen}
                 onClose={() => setBulkDeleteOpen(false)}
-                title={`Delete ${selectedCount} sessions?`}
-                description={`This will permanently delete ${selectedCount} selected session${selectedCount === 1 ? '' : 's'}.`}
-                confirmLabel="Delete selected"
-                confirmingLabel="Deleting selected"
+                title={t('dialog.bulkDelete.title', { n: selectedCount })}
+                description={t('dialog.bulkDelete.description', { n: selectedCount })}
+                confirmLabel={t('dialog.bulkDelete.confirm')}
+                confirmingLabel={t('dialog.bulkDelete.confirming')}
                 onConfirm={confirmBulkDelete}
                 isPending={isPending}
                 destructive
             />
+
+            {selectionMode && !bulkDeleteOpen ? (
+                <div className="fixed inset-x-0 bottom-0 z-50 border-t border-[var(--app-border)] bg-[var(--app-panel-bg)] px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-2px_10px_rgba(0,0,0,0.1)]">
+                    <div className="mx-auto flex max-w-content items-center justify-between gap-3">
+                        <Button type="button" variant="secondary" onClick={cancelSelectionMode}>
+                            {t('button.cancel')}
+                        </Button>
+                        <span className="text-sm text-[var(--app-hint)]">
+                            {t('selection.selected', { n: selectedCount })}
+                        </span>
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={() => setBulkDeleteOpen(true)}
+                            disabled={selectedIds.size === 0}
+                        >
+                            {t('dialog.delete.confirm')}
+                        </Button>
+                    </div>
+                </div>
+            ) : null}
         </div>
     )
 }

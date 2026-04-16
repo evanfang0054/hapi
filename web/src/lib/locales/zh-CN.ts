@@ -80,6 +80,13 @@ export default {
   'dialog.delete.description': '确定要删除 "{name}" 吗？此操作无法撤销。',
   'dialog.delete.confirm': '删除',
   'dialog.delete.confirming': '删除中…',
+  'dialog.bulkDelete.title': '删除 {n} 个会话？',
+  'dialog.bulkDelete.description': '将永久删除 {n} 个已选择的会话。',
+  'dialog.bulkDelete.confirm': '删除所选',
+  'dialog.bulkDelete.confirming': '删除所选中',
+  'selection.selected': '已选择 {n} 个',
+  'selection.deleted': '已删除 {n} 个会话',
+  'selection.failureCount': '{n} 个删除失败',
   'dialog.error.default': '操作失败，请重试。',
 
   // Common buttons

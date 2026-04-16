@@ -2,13 +2,23 @@ import { describe, expect, it, vi } from 'vitest'
 import { render, screen, fireEvent, cleanup, act } from '@testing-library/react'
 import { I18nProvider } from '@/lib/i18n-context'
 import { SessionList } from '@/components/SessionList'
+import type { BulkDeleteSummary } from '@/hooks/mutations/useSessionActions'
 
 const longPressHandlers: Array<{ text: string; onLongPress?: () => void }> = []
+const toastMock = {
+    toasts: [] as { id: string; title: string; body: string }[],
+    addToast: vi.fn(),
+    removeToast: vi.fn(),
+}
+
+vi.mock('@/lib/toast-context', () => ({
+    useToast: () => toastMock,
+}))
 const sessionActionsMock = {
     archiveSession: vi.fn(async () => {}),
     renameSession: vi.fn(async () => {}),
     deleteSession: vi.fn(async () => {}),
-    deleteSessions: vi.fn(async () => ({ successCount: 0, failureCount: 0, failures: [] })),
+    deleteSessions: vi.fn(async (): Promise<BulkDeleteSummary> => ({ successCount: 0, failureCount: 0, failures: [] })),
     isPending: false,
 }
 
@@ -82,6 +92,8 @@ function renderWithProviders(ui: React.ReactElement) {
     sessionActionsMock.deleteSessions.mockReset()
     sessionActionsMock.deleteSessions.mockResolvedValue({ successCount: 0, failureCount: 0, failures: [] })
     sessionActionsMock.isPending = false
+    toastMock.addToast.mockReset()
+    toastMock.removeToast.mockReset()
     return render(<I18nProvider>{ui}</I18nProvider>)
 }
 
@@ -230,7 +242,7 @@ describe('SessionList', () => {
 
         await triggerLongPress(inactiveSession.metadata.name)
 
-        expect(screen.getByRole('button', { name: /delete selected/i })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: /^delete$/i })).toBeInTheDocument()
         expect(screen.getByRole('checkbox', { name: inactiveSession.metadata.name })).toBeChecked()
     })
 
@@ -245,7 +257,7 @@ describe('SessionList', () => {
 
         await triggerLongPress(activeSession.metadata.name)
 
-        expect(screen.getByRole('button', { name: /delete selected/i })).toBeDisabled()
+        expect(screen.getByRole('button', { name: /^delete$/i })).toBeDisabled()
         expect(screen.getByRole('checkbox', { name: activeSession.metadata.name })).not.toBeChecked()
     })
 
@@ -274,7 +286,7 @@ describe('SessionList', () => {
         )
 
         await triggerLongPress(inactiveSession.metadata.name)
-        expect(screen.getByRole('button', { name: /delete selected/i })).toBeEnabled()
+        expect(screen.getByRole('button', { name: /^delete$/i })).toBeEnabled()
 
         view.rerender(
             <I18nProvider>
@@ -287,7 +299,7 @@ describe('SessionList', () => {
         )
 
         expect(screen.queryByRole('checkbox', { name: inactiveSession.metadata.name })).not.toBeInTheDocument()
-        expect(screen.queryByRole('button', { name: /delete selected/i })).not.toBeInTheDocument()
+        expect(screen.queryByRole('button', { name: /^delete$/i })).not.toBeInTheDocument()
     })
 
     it('clears selection state when selection mode is cancelled', async () => {
@@ -300,7 +312,7 @@ describe('SessionList', () => {
         )
 
         await triggerLongPress(inactiveSession.metadata.name)
-        fireEvent.click(screen.getByRole('button', { name: /cancel selection/i }))
+        fireEvent.click(screen.getByRole('button', { name: /^cancel$/i }))
 
         expect(screen.queryByRole('checkbox', { name: inactiveSession.metadata.name })).not.toBeInTheDocument()
     })
@@ -316,9 +328,9 @@ describe('SessionList', () => {
 
         await triggerLongPress(inactiveSession.metadata.name)
         fireEvent.click(screen.getByRole('checkbox', { name: inactiveSessionB.metadata.name }))
-        fireEvent.click(screen.getByRole('button', { name: /delete selected/i }))
+        fireEvent.click(screen.getByRole('button', { name: /^delete$/i }))
 
-        expect(screen.getByText(/delete 2 sessions/i)).toBeInTheDocument()
+        expect(screen.getByText(/delete 2 sessions\?/i)).toBeInTheDocument()
     })
 
     it('shows partial failure summary after bulk delete', async () => {
@@ -341,13 +353,17 @@ describe('SessionList', () => {
         await triggerLongPress(inactiveSession.metadata.name)
         fireEvent.click(screen.getByRole('checkbox', { name: inactiveSessionB.metadata.name }))
         fireEvent.click(screen.getByRole('checkbox', { name: inactiveSessionC.metadata.name }))
-        fireEvent.click(screen.getByRole('button', { name: /delete selected/i }))
-        fireEvent.click(screen.getByRole('button', { name: /delete selected/i }))
+        fireEvent.click(screen.getByRole('button', { name: /^delete$/i }))
+        await act(async () => {
+            fireEvent.click(screen.getByRole('button', { name: /delete selected/i }))
+        })
 
-        expect(await screen.findByText(/deleted 1 session/i)).toBeInTheDocument()
-        expect(screen.getByText(/2 deletions failed/i)).toBeInTheDocument()
-        expect(screen.getByText(/Cannot delete active session/i)).toBeInTheDocument()
-        expect(screen.getByText(/Session not found/i)).toBeInTheDocument()
+        expect(toastMock.addToast).toHaveBeenCalledWith(
+            expect.objectContaining({
+                title: expect.stringMatching(/1/),
+                body: expect.stringMatching(/2/),
+            })
+        )
     })
 
     it('keeps selection mode active when bulk delete request fails unexpectedly', async () => {
@@ -362,10 +378,10 @@ describe('SessionList', () => {
 
         await triggerLongPress(inactiveSession.metadata.name)
         fireEvent.click(screen.getByRole('checkbox', { name: inactiveSessionB.metadata.name }))
-        fireEvent.click(screen.getByRole('button', { name: /delete selected/i }))
+        fireEvent.click(screen.getByRole('button', { name: /^delete$/i }))
         fireEvent.click(screen.getByRole('button', { name: /delete selected/i }))
 
-        expect(screen.getByRole('button', { name: /delete selected/i })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: /^delete$/i })).toBeInTheDocument()
         expect(screen.getByRole('checkbox', { name: inactiveSession.metadata.name })).toBeChecked()
         expect(screen.getByRole('checkbox', { name: inactiveSessionB.metadata.name })).toBeChecked()
     })
@@ -386,10 +402,14 @@ describe('SessionList', () => {
 
         await triggerLongPress(inactiveSession.metadata.name)
         fireEvent.click(screen.getByRole('checkbox', { name: inactiveSessionB.metadata.name }))
-        fireEvent.click(screen.getByRole('button', { name: /delete selected/i }))
-        fireEvent.click(screen.getByRole('button', { name: /delete selected/i }))
+        fireEvent.click(screen.getByRole('button', { name: /^delete$/i }))
+        await act(async () => {
+            fireEvent.click(screen.getByRole('button', { name: /delete selected/i }))
+        })
 
-        expect(await screen.findByText(/deleted 2 sessions/i)).toBeInTheDocument()
+        expect(toastMock.addToast).toHaveBeenCalledWith(
+            expect.objectContaining({ title: expect.stringMatching(/2/) })
+        )
         expect(screen.queryByRole('checkbox', { name: inactiveSession.metadata.name })).not.toBeInTheDocument()
         expect(screen.queryByRole('checkbox', { name: inactiveSessionB.metadata.name })).not.toBeInTheDocument()
     })
