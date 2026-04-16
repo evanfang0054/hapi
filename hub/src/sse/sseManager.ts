@@ -168,6 +168,11 @@ export class SSEManager {
             return true
         }
 
+        // Session list events are always broadcast so sidebar stays updated
+        if (event.type === 'session-added' || event.type === 'session-updated' || event.type === 'session-removed') {
+            return true
+        }
+
         if (connection.all) {
             return true
         }

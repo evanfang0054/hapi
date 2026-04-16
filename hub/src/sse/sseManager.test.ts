@@ -83,6 +83,44 @@ describe('SSEManager namespace filtering', () => {
         expect(tracker.hasVisibleConnectionForSession('ns-1', 'session-2')).toBe(true)
     })
 
+    it('broadcasts session events to all subscribers regardless of sessionId filter', () => {
+        const manager = new SSEManager(0, new VisibilityTracker())
+        const receivedSessionA: SyncEvent[] = []
+        const receivedSessionB: SyncEvent[] = []
+
+        manager.subscribe({
+            id: 'sub-a',
+            namespace: 'ns',
+            sessionId: 'session-a',
+            send: (event) => {
+                receivedSessionA.push(event)
+            },
+            sendHeartbeat: () => {}
+        })
+
+        manager.subscribe({
+            id: 'sub-b',
+            namespace: 'ns',
+            sessionId: 'session-b',
+            send: (event) => {
+                receivedSessionB.push(event)
+            },
+            sendHeartbeat: () => {}
+        })
+
+        // session-updated for session-a should reach both subscribers
+        manager.broadcast({ type: 'session-updated', sessionId: 'session-a', namespace: 'ns' })
+
+        expect(receivedSessionA).toHaveLength(1)
+        expect(receivedSessionB).toHaveLength(1)
+
+        // message-received should only reach the matching subscriber
+        manager.broadcast({ type: 'message-received', sessionId: 'session-a', message: {} as any, namespace: 'ns' })
+
+        expect(receivedSessionA).toHaveLength(2)
+        expect(receivedSessionB).toHaveLength(1)
+    })
+
     it('sends toast only to visible connections in a namespace', async () => {
         const manager = new SSEManager(0, new VisibilityTracker())
         const received: Array<{ id: string; event: SyncEvent }> = []
