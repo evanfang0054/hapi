@@ -105,9 +105,8 @@ describe('createWebApp session delete guard', () => {
         await createConfiguration()
     })
 
-    beforeEach(async () => {
+    beforeEach(() => {
         restoreEnv(suiteHapiHome, suiteCliApiToken)
-        await createConfiguration()
     })
 
     afterAll(() => {
@@ -189,9 +188,17 @@ describe('createWebApp session delete guard', () => {
         expect(process.env.CLI_API_TOKEN).toBe(suiteCliApiToken)
     })
 
-    it('keeps suite-local environment stable across tests', () => {
-        expect(process.env.HAPI_HOME).toBe(suiteHapiHome)
-        expect(process.env.CLI_API_TOKEN).toBe(suiteCliApiToken)
+    it('reuses the existing configuration singleton across tests', async () => {
+        const firstConfiguration = await createConfiguration()
+
+        process.env.HAPI_HOME = mkdtempSync(join(tmpdir(), 'hapi-web-server-delete-guard-config-drift-'))
+        process.env.CLI_API_TOKEN = 'task10-different-token'
+
+        const secondConfiguration = await createConfiguration()
+
+        expect(secondConfiguration).toBe(firstConfiguration)
+        expect(secondConfiguration.dataDir).toBe(firstConfiguration.dataDir)
+        expect(secondConfiguration.cliApiToken).toBe(firstConfiguration.cliApiToken)
     })
 })
 
