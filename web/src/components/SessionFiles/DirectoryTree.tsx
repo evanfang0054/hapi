@@ -46,15 +46,15 @@ function DirectorySkeleton(props: { depth: number; rows?: number }) {
     const indent = 12 + props.depth * 14
 
     return (
-        <div className="animate-pulse">
+        <div>
             {Array.from({ length: rows }).map((_, index) => (
                 <div
                     key={`dir-skel-${props.depth}-${index}`}
                     className="flex items-center gap-3 px-3 py-2"
                     style={{ paddingLeft: indent }}
                 >
-                    <div className="h-5 w-5 rounded bg-[var(--app-subtle-bg)]" />
-                    <div className="h-3 w-40 rounded bg-[var(--app-subtle-bg)]" />
+                    <div className="h-5 w-5 rounded bg-[linear-gradient(90deg,var(--app-subtle-bg)_25%,var(--app-panel-bg)_50%,var(--app-subtle-bg)_75%)] bg-[length:200%_100%] animate-[shimmer_1.5s_ease-in-out_infinite]" />
+                    <div className="h-3 w-40 rounded bg-[linear-gradient(90deg,var(--app-subtle-bg)_25%,var(--app-panel-bg)_50%,var(--app-subtle-bg)_75%)] bg-[length:200%_100%] animate-[shimmer_1.5s_ease-in-out_infinite]" />
                 </div>
             ))}
         </div>

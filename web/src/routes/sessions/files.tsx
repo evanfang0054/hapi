@@ -362,14 +362,14 @@ function FileListSkeleton(props: { label: string; rows?: number }) {
     const rows = props.rows ?? 6
 
     return (
-        <div className="p-3 animate-pulse space-y-3" role="status" aria-live="polite">
+        <div className="p-3 space-y-3" role="status" aria-live="polite">
             <span className="sr-only">{props.label}</span>
             {Array.from({ length: rows }).map((_, index) => (
                 <div key={`skeleton-row-${index}`} className="flex items-center gap-3">
-                    <div className="h-6 w-6 rounded bg-[var(--app-subtle-bg)]" />
+                    <div className="h-6 w-6 rounded bg-[linear-gradient(90deg,var(--app-subtle-bg)_25%,var(--app-panel-bg)_50%,var(--app-subtle-bg)_75%)] bg-[length:200%_100%] animate-[shimmer_1.5s_ease-in-out_infinite]" />
                     <div className="flex-1 space-y-2">
-                        <div className={`h-3 ${titleWidths[index % titleWidths.length]} rounded bg-[var(--app-subtle-bg)]`} />
-                        <div className={`h-2 ${subtitleWidths[index % subtitleWidths.length]} rounded bg-[var(--app-subtle-bg)]`} />
+                        <div className={`h-3 ${titleWidths[index % titleWidths.length]} rounded bg-[linear-gradient(90deg,var(--app-subtle-bg)_25%,var(--app-panel-bg)_50%,var(--app-subtle-bg)_75%)] bg-[length:200%_100%] animate-[shimmer_1.5s_ease-in-out_infinite]`} />
+                        <div className={`h-2 ${subtitleWidths[index % subtitleWidths.length]} rounded bg-[linear-gradient(90deg,var(--app-subtle-bg)_25%,var(--app-panel-bg)_50%,var(--app-subtle-bg)_75%)] bg-[length:200%_100%] animate-[shimmer_1.5s_ease-in-out_infinite]`} />
                     </div>
                 </div>
             ))}

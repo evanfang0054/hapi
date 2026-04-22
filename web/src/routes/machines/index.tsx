@@ -210,18 +210,6 @@ export default function MachinesPage() {
 
     return (
         <>
-            {/* Shimmer animation */}
-            <style>{`
-                @keyframes shimmer {
-                    0% { background-position: 200% 0; }
-                    100% { background-position: -200% 0; }
-                }
-                @keyframes drawer-slide-up {
-                    from { transform: translateY(100%); }
-                    to { transform: translateY(0); }
-                }
-            `}</style>
-
             <div className="flex h-full min-h-0 flex-col bg-[var(--app-bg)]">
                 {/* Sticky header */}
                 <div className="sticky top-0 z-10 bg-[var(--app-panel-bg)] border-b border-[var(--app-border)] px-5 py-4 flex items-center justify-between">

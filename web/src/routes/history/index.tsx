@@ -363,10 +363,10 @@ export default function HistoryPage() {
                             {[0, 1, 2].map(i => (
                                 <div key={i} className="border border-[var(--app-border)] rounded-[16px] bg-[var(--app-panel-bg)] p-3.5">
                                     <div className="flex items-start gap-3">
-                                        <div className="w-10 h-10 rounded-[10px] bg-[var(--app-subtle-bg)] animate-pulse" />
+                                        <div className="w-10 h-10 rounded-[10px] bg-[linear-gradient(90deg,var(--app-subtle-bg)_25%,var(--app-panel-bg)_50%,var(--app-subtle-bg)_75%)] bg-[length:200%_100%] animate-[shimmer_1.5s_ease-in-out_infinite]" />
                                         <div className="flex-1 space-y-2">
-                                            <div className="h-[14px] w-[60%] rounded bg-[var(--app-subtle-bg)] animate-pulse" />
-                                            <div className="h-[12px] w-[40%] rounded bg-[var(--app-subtle-bg)] animate-pulse" />
+                                            <div className="h-[14px] w-[60%] rounded bg-[linear-gradient(90deg,var(--app-subtle-bg)_25%,var(--app-panel-bg)_50%,var(--app-subtle-bg)_75%)] bg-[length:200%_100%] animate-[shimmer_1.5s_ease-in-out_infinite]" />
+                                            <div className="h-[12px] w-[40%] rounded bg-[linear-gradient(90deg,var(--app-subtle-bg)_25%,var(--app-panel-bg)_50%,var(--app-subtle-bg)_75%)] bg-[length:200%_100%] animate-[shimmer_1.5s_ease-in-out_infinite]" />
                                         </div>
                                     </div>
                                 </div>
