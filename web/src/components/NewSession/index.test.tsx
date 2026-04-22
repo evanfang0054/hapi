@@ -100,7 +100,7 @@ describe('NewSession', () => {
 
         expect(await screen.findByText('Directory does not exist. Creating the session will create it automatically.')).toBeInTheDocument()
 
-        fireEvent.click(screen.getByLabelText('Worktree'))
+        fireEvent.click(screen.getByRole('button', { name: /Worktree/ }))
         expect(await screen.findByPlaceholderText('feature-x (default 1228-xxxx)')).toBeInTheDocument()
         expect(screen.getByText('Worktree sessions require an existing repository directory.')).toBeInTheDocument()
 

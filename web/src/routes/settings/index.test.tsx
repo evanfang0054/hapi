@@ -37,6 +37,7 @@ vi.mock('@/hooks/useTerminalFontSize', () => ({
 
 // Mock useTheme hook
 vi.mock('@/hooks/useTheme', () => ({
+    useTheme: () => ({ isDark: false }),
     useAppearance: () => ({ appearance: 'system', setAppearance: vi.fn() }),
     getAppearanceOptions: () => [
         { value: 'system', labelKey: 'settings.display.appearance.system' },
@@ -100,7 +101,6 @@ describe('SettingsPage', () => {
 
         expect(screen.getAllByText('Language').length).toBeGreaterThanOrEqual(1)
         expect(screen.getAllByText('Display').length).toBeGreaterThanOrEqual(1)
-        expect(screen.getAllByText('Appearance').length).toBeGreaterThanOrEqual(1)
         expect(screen.getAllByText('Font Size').length).toBeGreaterThanOrEqual(1)
         expect(screen.getAllByText('Voice Assistant').length).toBeGreaterThanOrEqual(1)
         expect(screen.getAllByText('About').length).toBeGreaterThanOrEqual(1)
@@ -144,15 +144,14 @@ describe('SettingsPage', () => {
 
     it('renders the Appearance setting', () => {
         renderWithProviders(<SettingsPage />)
-        expect(screen.getAllByText('Appearance').length).toBeGreaterThanOrEqual(1)
-        expect(screen.getAllByText('Follow System').length).toBeGreaterThanOrEqual(1)
+        expect(screen.getAllByText('Dark Mode').length).toBeGreaterThanOrEqual(1)
     })
 
     it('uses correct i18n keys for Appearance setting', () => {
         const spyT = renderWithSpyT(<SettingsPage />)
         const calledKeys = spyT.mock.calls.map((call) => call[0])
-        expect(calledKeys).toContain('settings.display.appearance')
-        expect(calledKeys).toContain('settings.display.appearance.system')
+        expect(calledKeys).toContain('settings.display.darkMode')
+        expect(calledKeys).toContain('settings.display.darkModeDesc')
     })
 
     it('renders the Terminal Font Size setting', () => {

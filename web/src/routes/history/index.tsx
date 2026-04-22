@@ -1,11 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useAppContext } from '@/lib/app-context'
 import { useSessions } from '@/hooks/queries/useSessions'
 import { useSessionActions } from '@/hooks/mutations/useSessionActions'
 import { useTranslation } from '@/lib/use-translation'
 
-type FilterMode = 'all' | 'archived'
+type FilterMode = 'all' | 'archived' | 'deleted'
 
 type SessionItem = {
     id: string
@@ -16,6 +16,7 @@ type SessionItem = {
     updatedAt: number
     projectPath: string | null
     archived: boolean
+    deleted: boolean
 }
 
 type SessionGroup = {
@@ -70,17 +71,44 @@ function HistorySessionItem({ session, api, onOpen }: {
     onOpen: () => void
 }) {
     const { t } = useTranslation()
-    const { archiveSession } = useSessionActions(api, session.id, session.agent)
+    const { archiveSession, deleteSession } = useSessionActions(api, session.id, session.agent)
     const [actionsOpen, setActionsOpen] = useState(false)
+    const itemRef = useRef<HTMLDivElement>(null)
+
+    // Close actions when clicking outside
+    useEffect(() => {
+        if (!actionsOpen) return
+        function handleClickOutside(e: MouseEvent) {
+            if (itemRef.current && !itemRef.current.contains(e.target as Node)) {
+                setActionsOpen(false)
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => document.removeEventListener('mousedown', handleClickOutside)
+    }, [actionsOpen])
+
+    const handleAction = useCallback((fn: () => Promise<void>) => {
+        fn().catch(() => {})
+        setActionsOpen(false)
+    }, [])
+
+    // Determine status
+    const status: 'normal' | 'archived' | 'deleted' = session.deleted ? 'deleted' : session.archived ? 'archived' : 'normal'
 
     return (
         <div
+            ref={itemRef}
             className={`border rounded-[16px] bg-[var(--app-panel-bg)] p-3.5 transition-all cursor-pointer ${actionsOpen ? 'border-[var(--app-link)] shadow-[var(--app-shadow-sm)]' : 'border-[var(--app-border)] hover:border-[var(--app-link)] hover:shadow-[var(--app-shadow-sm)]'}`}
         >
             <div className="flex items-start gap-3" onClick={() => { if (!actionsOpen) onOpen() }}>
                 {/* Icon */}
                 <div className={`w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0 ${session.archived ? 'bg-[var(--app-border)]' : 'bg-[var(--app-subtle-bg)]'}`}>
-                    {session.archived ? (
+                    {status === 'deleted' ? (
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px] text-[var(--app-hint)]">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                        </svg>
+                    ) : session.archived ? (
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px] text-[var(--app-hint)]">
                             <path d="M21 8v13H3V8" />
                             <path d="M1 3h22v5H1z" />
@@ -111,8 +139,11 @@ function HistorySessionItem({ session, api, onOpen }: {
                                 <span>{session.model}</span>
                             </>
                         )}
-                        {session.archived && (
+                        {session.archived && !session.deleted && (
                             <span className="ml-1 px-2 py-0.5 rounded-[6px] text-[10px] font-medium bg-[var(--app-border)]">Archived</span>
+                        )}
+                        {session.deleted && (
+                            <span className="ml-1 px-2 py-0.5 rounded-[6px] text-[10px] font-medium bg-[rgba(181,51,51,0.08)] text-[var(--app-error)]">Deleted</span>
                         )}
                     </div>
                 </div>
@@ -130,21 +161,59 @@ function HistorySessionItem({ session, api, onOpen }: {
                     </button>
                 ) : (
                     <div className="flex items-center gap-2 animate-[fadeIn_0.15s_ease]">
-                        <button
-                            type="button"
-                            onClick={onOpen}
-                            className="flex items-center gap-1 px-3 py-1.5 rounded-[16px] text-[12px] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] hover:bg-[var(--app-panel-muted-bg)] transition-colors active:scale-95"
-                        >
-                            {t('history.open')}
-                        </button>
-                        {!session.archived && (
-                            <button
-                                type="button"
-                                onClick={() => archiveSession()}
-                                className="flex items-center gap-1 px-3 py-1.5 rounded-[16px] text-[12px] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] hover:bg-[var(--app-panel-muted-bg)] transition-colors active:scale-95"
-                            >
-                                {t('history.archive')}
-                            </button>
+                        {status === 'normal' && (
+                            <>
+                                <button
+                                    type="button"
+                                    onClick={() => handleAction(async () => onOpen())}
+                                    className="flex items-center gap-1 px-3 py-1.5 rounded-[16px] text-[12px] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] hover:bg-[var(--app-panel-muted-bg)] transition-colors active:scale-95"
+                                >
+                                    {t('history.open')}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => handleAction(archiveSession)}
+                                    className="flex items-center gap-1 px-3 py-1.5 rounded-[16px] text-[12px] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] hover:bg-[var(--app-panel-muted-bg)] transition-colors active:scale-95"
+                                >
+                                    {t('history.archive')}
+                                </button>
+                            </>
+                        )}
+                        {status === 'archived' && (
+                            <>
+                                <button
+                                    type="button"
+                                    disabled
+                                    className="flex items-center gap-1 px-3 py-1.5 rounded-[16px] text-[12px] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] hover:bg-[var(--app-panel-muted-bg)] transition-colors active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {t('history.restore')}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => handleAction(deleteSession)}
+                                    className="flex items-center gap-1 px-3 py-1.5 rounded-[16px] text-[12px] border border-[rgba(181,51,51,0.3)] bg-transparent text-[var(--app-error)] hover:bg-[rgba(181,51,51,0.08)] transition-colors active:scale-95"
+                                >
+                                    {t('history.delete')}
+                                </button>
+                            </>
+                        )}
+                        {status === 'deleted' && (
+                            <>
+                                <button
+                                    type="button"
+                                    disabled
+                                    className="flex items-center gap-1 px-3 py-1.5 rounded-[16px] text-[12px] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] hover:bg-[var(--app-panel-muted-bg)] transition-colors active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {t('history.restore')}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => handleAction(deleteSession)}
+                                    className="flex items-center gap-1 px-3 py-1.5 rounded-[16px] text-[12px] border border-[rgba(181,51,51,0.3)] bg-transparent text-[var(--app-error)] hover:bg-[rgba(181,51,51,0.08)] transition-colors active:scale-95"
+                                >
+                                    {t('history.permanentDelete')}
+                                </button>
+                            </>
                         )}
                         <button
                             type="button"
@@ -178,12 +247,15 @@ export default function HistoryPage() {
         updatedAt: s.updatedAt ?? 0,
         projectPath: s.metadata?.path ?? s.metadata?.worktree?.basePath ?? null,
         archived: false,
+        deleted: false,
     })), [sessions])
 
     const filteredSessions = useMemo(() => {
         let result = allSessions
         if (filterMode === 'archived') {
-            result = result.filter(s => s.archived)
+            result = result.filter(s => s.archived && !s.deleted)
+        } else if (filterMode === 'deleted') {
+            result = result.filter(s => s.deleted)
         }
         if (searchQuery.trim()) {
             const q = searchQuery.toLowerCase()
@@ -200,6 +272,15 @@ export default function HistoryPage() {
 
     const totalCount = allSessions.length
     const thisWeekCount = allSessions.filter(s => s.updatedAt >= Date.now() - 7 * 86400000).length
+
+    // Average duration placeholder — no createdAt field available yet
+    const avgDuration = '—'
+
+    const filterLabel = useCallback((mode: FilterMode): string => {
+        if (mode === 'all') return t('history.filter.all')
+        if (mode === 'archived') return t('history.filter.archived')
+        return t('history.filter.deleted')
+    }, [t])
 
     return (
         <div className="flex h-full min-h-0 flex-col bg-[var(--app-bg)]">
@@ -240,7 +321,7 @@ export default function HistoryPage() {
             {/* Filter chips */}
             {filterOpen && (
                 <div className="px-4 py-2.5 border-b border-[var(--app-border)] flex gap-2 flex-wrap">
-                    {(['all', 'archived'] as FilterMode[]).map((mode) => (
+                    {(['all', 'archived', 'deleted'] as FilterMode[]).map((mode) => (
                         <button
                             key={mode}
                             type="button"
@@ -251,7 +332,7 @@ export default function HistoryPage() {
                                     : 'bg-[var(--app-subtle-bg)] text-[var(--app-fg)] border border-[var(--app-border)] hover:bg-[var(--app-panel-muted-bg)]'
                             }`}
                         >
-                            {mode === 'all' ? t('history.filter.all') : t('history.filter.archived')}
+                            {filterLabel(mode)}
                         </button>
                     ))}
                 </div>
@@ -265,6 +346,9 @@ export default function HistoryPage() {
                     </div>
                     <div className="text-[12px] text-[var(--app-hint)]">
                         <strong className="text-[var(--app-fg)] font-semibold">{thisWeekCount}</strong> {t('history.thisWeek')}
+                    </div>
+                    <div className="text-[12px] text-[var(--app-hint)]">
+                        <strong className="text-[var(--app-fg)] font-semibold">{avgDuration}</strong> {t('history.avgDuration')}
                     </div>
                 </div>
             )}

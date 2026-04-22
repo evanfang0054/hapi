@@ -6,25 +6,11 @@ const locales: { value: Locale; label: string }[] = [
   { value: 'zh-CN', label: '简体中文' },
 ]
 
-function LanguageIcon() {
+function GlobeIcon() {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="m5 8 6 6" />
-      <path d="m4 14 6-6 2-3" />
-      <path d="M2 5h12" />
-      <path d="M7 2h1" />
-      <path d="m22 22-5-10-5 10" />
-      <path d="M14 18h6" />
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
     </svg>
   )
 }
@@ -52,12 +38,13 @@ export function LanguageSwitcher() {
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
+  const currentLabel = locales.find(l => l.value === locale)?.label ?? 'English'
+
   const handleLocaleChange = (newLocale: Locale) => {
     setLocale(newLocale)
     setIsOpen(false)
   }
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     if (!isOpen) return
 
@@ -71,7 +58,6 @@ export function LanguageSwitcher() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [isOpen])
 
-  // Close on escape key
   useEffect(() => {
     if (!isOpen) return
 
@@ -90,13 +76,14 @@ export function LanguageSwitcher() {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-center h-8 w-8 rounded-md text-[var(--app-hint)] hover:text-[var(--app-fg)] hover:bg-[var(--app-subtle-bg)] transition-colors"
+        className="flex items-center gap-1 px-3 py-1.5 rounded-[20px] bg-[var(--app-panel-elevated-bg)] border border-[var(--app-border)] text-[13px] text-[var(--app-hint)] hover:text-[var(--app-fg)] hover:bg-[var(--app-subtle-bg)] transition-all"
         title={t('language.title')}
         aria-label={t('language.title')}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
       >
-        <LanguageIcon />
+        <GlobeIcon />
+        <span>{currentLabel}</span>
       </button>
 
       {isOpen && (

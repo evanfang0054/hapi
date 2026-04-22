@@ -221,7 +221,7 @@ export default function FilePage() {
                                                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--app-hint)]">
                                                     {t('sessionFileDetail.viewer')}
                                                 </p>
-                                                <CardTitle className="mt-2 truncate text-3xl leading-none" data-ui-heading="serif">
+                                                <CardTitle className="mt-2 break-all text-3xl leading-none" data-ui-heading="serif">
                                                     {fileName}
                                                 </CardTitle>
                                             </div>
@@ -248,28 +248,27 @@ export default function FilePage() {
                                         </div>
                                     </div>
 
-                                    {diffContent ? (
-                                        <div className="flex flex-wrap gap-2 md:justify-end">
-                                            <button
-                                                type="button"
-                                                onClick={() => setDisplayMode('diff')}
-                                                className={`inline-flex min-h-10 items-center rounded-full border px-4 py-2 text-sm font-medium transition-colors ${displayMode === 'diff'
-                                                    ? 'border-[var(--app-link)] bg-[color:color-mix(in_srgb,var(--app-link)_12%,transparent)] text-[var(--app-fg)]'
-                                                    : 'border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] text-[var(--app-hint)] hover:bg-[var(--app-panel-muted-bg)] hover:text-[var(--app-fg)]'}`}
-                                            >
-                                                {t('diff.title')}
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => setDisplayMode('file')}
-                                                className={`inline-flex min-h-10 items-center rounded-full border px-4 py-2 text-sm font-medium transition-colors ${displayMode === 'file'
-                                                    ? 'border-[var(--app-link)] bg-[color:color-mix(in_srgb,var(--app-link)_12%,transparent)] text-[var(--app-fg)]'
-                                                    : 'border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] text-[var(--app-hint)] hover:bg-[var(--app-panel-muted-bg)] hover:text-[var(--app-fg)]'}`}
-                                            >
-                                                {t('sessionFileDetail.mode.file')}
-                                            </button>
-                                        </div>
-                                    ) : null}
+                                    <div className="flex flex-wrap gap-2 md:justify-end">
+                                        <button
+                                            type="button"
+                                            onClick={() => setDisplayMode('diff')}
+                                            disabled={!diffContent}
+                                            className={`inline-flex min-h-10 items-center rounded-full border px-4 py-2 text-sm font-medium transition-colors ${displayMode === 'diff'
+                                                ? 'border-[var(--app-link)] bg-[color:color-mix(in_srgb,var(--app-link)_12%,transparent)] text-[var(--app-fg)]'
+                                                : 'border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] text-[var(--app-hint)] hover:bg-[var(--app-panel-muted-bg)] hover:text-[var(--app-fg)]'} disabled:cursor-not-allowed disabled:opacity-50`}
+                                        >
+                                            {t('diff.title')}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setDisplayMode('file')}
+                                            className={`inline-flex min-h-10 items-center rounded-full border px-4 py-2 text-sm font-medium transition-colors ${displayMode === 'file'
+                                                ? 'border-[var(--app-link)] bg-[color:color-mix(in_srgb,var(--app-link)_12%,transparent)] text-[var(--app-fg)]'
+                                                : 'border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] text-[var(--app-hint)] hover:bg-[var(--app-panel-muted-bg)] hover:text-[var(--app-fg)]'}`}
+                                        >
+                                            {t('sessionFileDetail.mode.file')}
+                                        </button>
+                                    </div>
                                 </div>
                             </CardHeader>
 

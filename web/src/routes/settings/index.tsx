@@ -3,7 +3,7 @@ import { useTranslation, type Locale } from '@/lib/use-translation'
 import { getElevenLabsSupportedLanguages, getLanguageDisplayName, type Language } from '@/lib/languages'
 import { getFontScaleOptions, useFontScale, type FontScale } from '@/hooks/useFontScale'
 import { getTerminalFontSizeOptions, useTerminalFontSize, type TerminalFontSize } from '@/hooks/useTerminalFontSize'
-import { useAppearance, getAppearanceOptions, type AppearancePreference } from '@/hooks/useTheme'
+import { useAppearance, useTheme } from '@/hooks/useTheme'
 import { useAppContext } from '@/lib/app-context'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { PROTOCOL_VERSION } from '@hapi/protocol'
@@ -127,18 +127,17 @@ export default function SettingsPage() {
     const { t, locale, setLocale } = useTranslation()
     const { api, connectionState, clearAuth, baseUrl } = useAppContext()
     const [isOpen, setIsOpen] = useState(false)
-    const [isAppearanceOpen, setIsAppearanceOpen] = useState(false)
     const [isFontOpen, setIsFontOpen] = useState(false)
     const [isTerminalFontOpen, setIsTerminalFontOpen] = useState(false)
     const [isVoiceOpen, setIsVoiceOpen] = useState(false)
     const containerRef = useRef<HTMLDivElement>(null)
-    const appearanceContainerRef = useRef<HTMLDivElement>(null)
     const fontContainerRef = useRef<HTMLDivElement>(null)
     const terminalFontContainerRef = useRef<HTMLDivElement>(null)
     const voiceContainerRef = useRef<HTMLDivElement>(null)
     const { fontScale, setFontScale } = useFontScale()
     const { terminalFontSize, setTerminalFontSize } = useTerminalFontSize()
-    const { appearance, setAppearance } = useAppearance()
+    const { setAppearance } = useAppearance()
+    const { isDark } = useTheme()
 
     const [voiceLanguage, setVoiceLanguage] = useState<string | null>(() => {
         return localStorage.getItem('hapi-voice-lang')
@@ -147,12 +146,12 @@ export default function SettingsPage() {
         return localStorage.getItem('hapi-voice-enabled') !== 'false'
     })
     const [logoutOpen, setLogoutOpen] = useState(false)
+    const [pushNotifications, setPushNotifications] = useState(true)
+    const [telegramNotifications, setTelegramNotifications] = useState(false)
 
     const fontScaleOptions = getFontScaleOptions()
     const terminalFontSizeOptions = getTerminalFontSizeOptions()
-    const appearanceOptions = getAppearanceOptions()
     const currentLocale = locales.find((loc) => loc.value === locale)
-    const currentAppearanceLabel = appearanceOptions.find((opt) => opt.value === appearance)?.labelKey ?? 'settings.display.appearance.system'
     const currentFontScaleLabel = fontScaleOptions.find((opt) => opt.value === fontScale)?.label ?? '100%'
     const currentTerminalFontSizeLabel = terminalFontSizeOptions.find((opt) => opt.value === terminalFontSize)?.label ?? '13px'
     const currentVoiceLanguage = voiceLanguages.find((lang) => lang.code === voiceLanguage)
@@ -162,9 +161,8 @@ export default function SettingsPage() {
         setIsOpen(false)
     }
 
-    const handleAppearanceChange = (pref: AppearancePreference) => {
-        setAppearance(pref)
-        setIsAppearanceOpen(false)
+    const handleDarkModeToggle = (checked: boolean) => {
+        setAppearance(checked ? 'dark' : 'light')
     }
 
     const handleFontScaleChange = (newScale: FontScale) => {
@@ -189,14 +187,11 @@ export default function SettingsPage() {
 
     // Close dropdown when clicking outside
     useEffect(() => {
-        if (!isOpen && !isAppearanceOpen && !isFontOpen && !isTerminalFontOpen && !isVoiceOpen) return
+        if (!isOpen && !isFontOpen && !isTerminalFontOpen && !isVoiceOpen) return
 
         const handleClickOutside = (event: MouseEvent) => {
             if (isOpen && containerRef.current && !containerRef.current.contains(event.target as Node)) {
                 setIsOpen(false)
-            }
-            if (isAppearanceOpen && appearanceContainerRef.current && !appearanceContainerRef.current.contains(event.target as Node)) {
-                setIsAppearanceOpen(false)
             }
             if (isFontOpen && fontContainerRef.current && !fontContainerRef.current.contains(event.target as Node)) {
                 setIsFontOpen(false)
@@ -211,16 +206,15 @@ export default function SettingsPage() {
 
         document.addEventListener('mousedown', handleClickOutside)
         return () => document.removeEventListener('mousedown', handleClickOutside)
-    }, [isOpen, isAppearanceOpen, isFontOpen, isTerminalFontOpen, isVoiceOpen])
+    }, [isOpen, isFontOpen, isTerminalFontOpen, isVoiceOpen])
 
     // Close on escape key
     useEffect(() => {
-        if (!isOpen && !isAppearanceOpen && !isFontOpen && !isTerminalFontOpen && !isVoiceOpen) return
+        if (!isOpen && !isFontOpen && !isTerminalFontOpen && !isVoiceOpen) return
 
         const handleEscape = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
                 setIsOpen(false)
-                setIsAppearanceOpen(false)
                 setIsFontOpen(false)
                 setIsTerminalFontOpen(false)
                 setIsVoiceOpen(false)
@@ -229,7 +223,7 @@ export default function SettingsPage() {
 
         document.addEventListener('keydown', handleEscape)
         return () => document.removeEventListener('keydown', handleEscape)
-    }, [isOpen, isAppearanceOpen, isFontOpen, isTerminalFontOpen, isVoiceOpen])
+    }, [isOpen, isFontOpen, isTerminalFontOpen, isVoiceOpen])
 
     const voiceLanguageDisplay = currentVoiceLanguage
         ? currentVoiceLanguage.code === null
@@ -251,35 +245,43 @@ export default function SettingsPage() {
             {/* Scrollable content */}
             <div className="app-scroll-y flex-1 min-h-0">
                 <div className="mx-auto w-full max-w-[600px] px-4 py-5 space-y-6">
+                    {/* User Card */}
+                    <div>
+                        <SettingsCard>
+                            <div className="flex items-center gap-3.5 p-4 cursor-pointer hover:border-[var(--app-link)] transition-all rounded-[var(--app-radius-2xl)]">
+                                <div
+                                    className="w-14 h-14 rounded-full flex items-center justify-center text-white text-xl font-semibold shrink-0"
+                                    style={{ background: 'linear-gradient(135deg, var(--app-link) 0%, #d97757 100%)' }}
+                                >
+                                    {t('settings.user.name').charAt(0).toUpperCase()}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="text-[16px] font-semibold text-[var(--app-fg)]">{t('settings.user.name')}</div>
+                                    <div className="text-[13px] text-[var(--app-hint)] mt-0.5" style={{ fontFamily: 'var(--app-font-mono)' }}>{t('settings.user.email')}</div>
+                                </div>
+                                <ChevronRightIcon />
+                            </div>
+                        </SettingsCard>
+                    </div>
+
                     {/* Appearance Section */}
                     <div>
                         <SectionTitle>{t('settings.display.title')}</SectionTitle>
                         <SettingsCard>
-                            {/* Appearance (Dark Mode) */}
-                            <div ref={appearanceContainerRef} className="relative">
-                                <SettingRow onClick={() => setIsAppearanceOpen(!isAppearanceOpen)}>
-                                    <div className="flex items-center gap-3.5">
-                                        <SettingIconBox variant="accent">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
-                                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-                                            </svg>
-                                        </SettingIconBox>
-                                        <div>
-                                            <div className="text-[15px] font-medium text-[var(--app-fg)]">{t('settings.display.appearance')}</div>
-                                        </div>
+                            {/* Dark Mode Toggle */}
+                            <div className="flex items-center justify-between px-4 py-3.5 border-b border-[var(--app-border)]">
+                                <div className="flex items-center gap-3.5">
+                                    <SettingIconBox variant="accent">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
+                                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                                        </svg>
+                                    </SettingIconBox>
+                                    <div>
+                                        <div className="text-[15px] font-medium text-[var(--app-fg)]">{t('settings.display.darkMode')}</div>
+                                        <div className="text-[12px] text-[var(--app-hint)] mt-0.5">{t('settings.display.darkModeDesc')}</div>
                                     </div>
-                                    <div className="flex items-center gap-1.5 text-[13px] text-[var(--app-hint)]">
-                                        <span>{t(currentAppearanceLabel)}</span>
-                                        <ChevronDownIcon open={isAppearanceOpen} />
-                                    </div>
-                                </SettingRow>
-                                <DropdownMenu open={isAppearanceOpen}>
-                                    {appearanceOptions.map((opt) => (
-                                        <DropdownOption key={opt.value} selected={appearance === opt.value} onClick={() => handleAppearanceChange(opt.value)}>
-                                            {t(opt.labelKey)}
-                                        </DropdownOption>
-                                    ))}
-                                </DropdownMenu>
+                                </div>
+                                <Toggle checked={isDark} onChange={handleDarkModeToggle} />
                             </div>
 
                             {/* Language */}
@@ -424,6 +426,43 @@ export default function SettingsPage() {
                                         ))}
                                     </div>
                                 </DropdownMenu>
+                            </div>
+                        </SettingsCard>
+                    </div>
+
+                    {/* Notifications Section */}
+                    <div>
+                        <SectionTitle>{t('settings.notifications.title')}</SectionTitle>
+                        <SettingsCard>
+                            {/* Push Notifications Toggle */}
+                            <div className="flex items-center justify-between px-4 py-3.5 border-b border-[var(--app-border)]">
+                                <div className="flex items-center gap-3.5">
+                                    <SettingIconBox>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
+                                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                                        </svg>
+                                    </SettingIconBox>
+                                    <div>
+                                        <div className="text-[15px] font-medium text-[var(--app-fg)]">{t('settings.notifications.push')}</div>
+                                        <div className="text-[12px] text-[var(--app-hint)] mt-0.5">{t('settings.notifications.pushDesc')}</div>
+                                    </div>
+                                </div>
+                                <Toggle checked={pushNotifications} onChange={setPushNotifications} />
+                            </div>
+                            {/* Telegram Notifications Toggle */}
+                            <div className="flex items-center justify-between px-4 py-3.5">
+                                <div className="flex items-center gap-3.5">
+                                    <SettingIconBox>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
+                                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72" />
+                                        </svg>
+                                    </SettingIconBox>
+                                    <div>
+                                        <div className="text-[15px] font-medium text-[var(--app-fg)]">{t('settings.notifications.telegram')}</div>
+                                    </div>
+                                </div>
+                                <Toggle checked={telegramNotifications} onChange={setTelegramNotifications} />
                             </div>
                         </SettingsCard>
                     </div>

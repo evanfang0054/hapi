@@ -14,73 +14,61 @@ export function SessionTypeSelector(props: {
 
     return (
         <div className="space-y-3">
-            <label className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--app-hint)]">
+            <label className="block text-xs font-semibold uppercase tracking-[0.5px] text-[var(--app-hint)]">
                 {t('newSession.type')}
             </label>
-            <div className="flex flex-col gap-3">
-                {(['simple', 'worktree'] as const).map((type) => (
-                    <div key={type} className="flex flex-col gap-2">
-                        {type === 'worktree' ? (
-                            <div className="flex items-center gap-3">
-                                <input
-                                    id="session-type-worktree"
-                                    type="radio"
-                                    name="sessionType"
-                                    value="worktree"
-                                    checked={props.sessionType === 'worktree'}
-                                    onChange={() => props.onSessionTypeChange('worktree')}
-                                    disabled={props.isDisabled}
-                                    className="accent-[var(--app-link)]"
-                                />
-                                <div className="flex-1">
-                                    <div className="min-h-12 flex items-center">
-                                        {props.sessionType === 'worktree' ? (
-                                            <input
-                                                ref={props.worktreeInputRef}
-                                                type="text"
-                                                placeholder={t('newSession.type.worktree.placeholder')}
-                                                value={props.worktreeName}
-                                                onChange={(e) => props.onWorktreeNameChange(e.target.value)}
-                                                disabled={props.isDisabled}
-                                                className="min-h-12 w-full rounded-[18px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-4 py-3 text-sm text-[var(--app-fg)] shadow-[var(--app-shadow-sm)] focus:outline-none focus:ring-2 focus:ring-[var(--app-link)] disabled:opacity-60"
-                                            />
-                                        ) : (
-                                            <div className="flex items-center gap-2">
-                                                <label
-                                                    htmlFor="session-type-worktree"
-                                                    className="cursor-pointer text-sm capitalize text-[var(--app-fg)]"
-                                                >
-                                                    {t('newSession.type.worktree')}
-                                                </label>
-                                                <span className="text-xs text-[var(--app-hint)]">
-                                                    {t('newSession.type.worktree.desc')}
-                                                </span>
-                                            </div>
-                                        )}
-                                    </div>
+            <div className="flex gap-[10px]">
+                {(['simple', 'worktree'] as const).map((type) => {
+                    const selected = props.sessionType === type
+                    return (
+                        <button
+                            key={type}
+                            type="button"
+                            disabled={props.isDisabled}
+                            onClick={() => props.onSessionTypeChange(type)}
+                            className={`flex-1 flex items-center gap-[10px] rounded-[14px] border-2 p-[14px] transition-colors ${
+                                selected
+                                    ? 'border-[var(--app-link)] bg-[rgba(201,100,66,0.08)] dark:bg-[rgba(217,119,87,0.12)]'
+                                    : 'border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] hover:border-[var(--app-hint)]'
+                            } ${props.isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                        >
+                            <div className={`w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center shrink-0 ${
+                                selected
+                                    ? 'border-[var(--app-link)]'
+                                    : 'border-[var(--app-border)]'
+                            }`}>
+                                {selected && (
+                                    <div className="w-2 h-2 rounded-full bg-[var(--app-link)]" />
+                                )}
+                            </div>
+                            <div className="flex-1 text-left">
+                                <div className="text-[13px] font-medium">
+                                    {type === 'simple' ? t('newSession.type.simple') : t('newSession.type.worktree')}
+                                </div>
+                                <div className="text-[11px] text-[var(--app-hint)] mt-[2px]">
+                                    {type === 'simple' ? t('newSession.type.simple.desc') : t('newSession.type.worktree.desc')}
                                 </div>
                             </div>
-                        ) : (
-                            <label className="flex min-h-12 items-center gap-3 cursor-pointer">
-                                <input
-                                    id="session-type-simple"
-                                    type="radio"
-                                    name="sessionType"
-                                    value="simple"
-                                    checked={props.sessionType === 'simple'}
-                                    onChange={() => props.onSessionTypeChange('simple')}
-                                    disabled={props.isDisabled}
-                                    className="accent-[var(--app-link)]"
-                                />
-                                <span className="text-sm capitalize text-[var(--app-fg)]">{t('newSession.type.simple')}</span>
-                                <span className="text-xs text-[var(--app-hint)]">
-                                    {t('newSession.type.simple.desc')}
-                                </span>
-                            </label>
-                        )}
-                    </div>
-                ))}
+                        </button>
+                    )
+                })}
             </div>
+            {props.sessionType === 'worktree' && (
+                <div className="mt-2">
+                    <label className="block text-[11px] font-medium text-[var(--app-hint)] mb-1.5">
+                        {t('newSession.type.worktree.nameLabel')}
+                    </label>
+                    <input
+                        ref={props.worktreeInputRef}
+                        type="text"
+                        placeholder={t('newSession.type.worktree.placeholder')}
+                        value={props.worktreeName}
+                        onChange={(e) => props.onWorktreeNameChange(e.target.value)}
+                        disabled={props.isDisabled}
+                        className="w-full rounded-xl border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-[14px] py-3 text-[13px] font-mono text-[var(--app-fg)] focus:outline-none focus:border-[var(--app-link)] placeholder:text-[var(--app-hint)] disabled:opacity-60"
+                    />
+                </div>
+            )}
         </div>
     )
 }

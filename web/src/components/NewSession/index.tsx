@@ -381,7 +381,7 @@ export function NewSession(props: {
     const canCreate = Boolean(machineId && trimmedDirectory && !isFormDisabled && !missingWorktreeDirectory)
 
     return (
-        <div className="px-1 py-2">
+        <div className="px-4 py-5">
             <div className="space-y-5">
                 {runnerSpawnError ? (
                     <div className="rounded-[var(--app-radius-lg)] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">

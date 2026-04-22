@@ -9,19 +9,22 @@ export function YoloToggle(props: {
 
     return (
         <div className="space-y-3">
-            <label className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--app-hint)]">
+            <label className="block text-xs font-semibold uppercase tracking-[0.5px] text-[var(--app-hint)]">
                 {t('newSession.yolo')}
             </label>
-            <div className="flex items-center justify-between gap-4 rounded-[20px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-4 py-3 shadow-[var(--app-shadow-sm)]">
-                <div className="flex flex-col gap-1">
-                    <span className="text-sm text-[var(--app-fg)]">
+            <div className="flex items-center justify-between rounded-[14px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] p-4">
+                <div className="flex-1">
+                    <div className="text-sm font-medium flex items-center gap-2">
                         {t('newSession.yolo.title')}
-                    </span>
-                    <span className="text-xs leading-5 text-[var(--app-hint)]">
+                        <span className="px-2 py-[2px] rounded-md text-[10px] font-semibold bg-[var(--app-warning)] text-white">
+                            {t('newSession.yolo.badge')}
+                        </span>
+                    </div>
+                    <div className="text-xs text-[var(--app-hint)] mt-1">
                         {t('newSession.yolo.desc')}
-                    </span>
+                    </div>
                 </div>
-                <label className="relative inline-flex h-6 w-11 items-center">
+                <label className="relative inline-flex items-center">
                     <input
                         type="checkbox"
                         checked={props.yoloMode}
@@ -29,8 +32,14 @@ export function YoloToggle(props: {
                         disabled={props.isDisabled}
                         className="peer sr-only"
                     />
-                    <span className="absolute inset-0 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-muted-bg)] transition-colors peer-checked:border-[var(--app-link)] peer-checked:bg-[var(--app-link)] peer-disabled:opacity-50" />
-                    <span className="absolute left-0.5 h-5 w-5 rounded-full bg-[var(--app-panel-bg)] shadow-sm transition-transform peer-checked:translate-x-5 peer-disabled:opacity-50" />
+                    <span className={`w-12 h-7 rounded-[14px] transition-colors ${
+                        props.yoloMode
+                            ? 'bg-[var(--app-warning)]'
+                            : 'bg-[var(--app-subtle-bg)]'
+                    } ${props.isDisabled ? 'opacity-50' : ''}`} />
+                    <span className={`absolute left-[2px] w-6 h-6 rounded-full bg-white shadow-[0_2px_4px_rgba(0,0,0,0.1)] transition-transform ${
+                        props.yoloMode ? 'translate-x-5' : 'translate-x-0'
+                    } ${props.isDisabled ? 'opacity-50' : ''}`} />
                 </label>
             </div>
         </div>

@@ -16,6 +16,8 @@ type SessionActionMenuProps = {
     onRename: () => void
     onArchive: () => void
     onDelete: () => void
+    onDuplicate?: () => void
+    onSelectMultiple?: () => void
     anchorPoint: { x: number; y: number }
     menuId?: string
 }
@@ -84,6 +86,46 @@ function TrashIcon(props: { className?: string }) {
     )
 }
 
+function DuplicateIcon(props: { className?: string }) {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={props.className}
+        >
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+        </svg>
+    )
+}
+
+function SelectMultipleIcon(props: { className?: string }) {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={props.className}
+        >
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+            <polyline points="22 4 12 14.01 9 11.01" />
+        </svg>
+    )
+}
+
 type MenuPosition = {
     top: number
     left: number
@@ -99,6 +141,8 @@ export function SessionActionMenu(props: SessionActionMenuProps) {
         onRename,
         onArchive,
         onDelete,
+        onDuplicate,
+        onSelectMultiple,
         anchorPoint,
         menuId
     } = props
@@ -121,6 +165,16 @@ export function SessionActionMenu(props: SessionActionMenuProps) {
     const handleDelete = () => {
         onClose()
         onDelete()
+    }
+
+    const handleDuplicate = () => {
+        onClose()
+        onDuplicate?.()
+    }
+
+    const handleSelectMultiple = () => {
+        onClose()
+        onSelectMultiple?.()
     }
 
     const updatePosition = useCallback(() => {
@@ -260,6 +314,29 @@ export function SessionActionMenu(props: SessionActionMenuProps) {
                         {t('session.action.delete')}
                     </button>
                 )}
+
+                <button
+                    type="button"
+                    role="menuitem"
+                    className={`${baseItemClassName} hover:bg-[var(--app-subtle-bg)] opacity-50 cursor-not-allowed`}
+                    disabled
+                    title={t('session.action.duplicate.comingSoon')}
+                >
+                    <DuplicateIcon className="text-[var(--app-hint)]" />
+                    {t('session.action.duplicate')}
+                </button>
+
+                <div className="my-1 h-px bg-[var(--app-border)]" />
+
+                <button
+                    type="button"
+                    role="menuitem"
+                    className={`${baseItemClassName} hover:bg-[var(--app-subtle-bg)]`}
+                    onClick={handleSelectMultiple}
+                >
+                    <SelectMultipleIcon className="text-[var(--app-hint)]" />
+                    {t('session.action.selectMultiple')}
+                </button>
             </div>
         </div>
     )

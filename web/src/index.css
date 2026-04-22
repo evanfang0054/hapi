@@ -65,6 +65,8 @@
     --app-fg-dark: #3d3d3a;
     --app-accent-light: #d97757;
     --app-error: #b53333;
+    --app-warning: #c58a3a;
+    --app-success: #5f8a63;
     --app-focus: #3898ec;
     --app-border-strong: #e8e6dc;
     --app-ring-warm: #d1cfc5;
@@ -131,6 +133,8 @@
     --app-fg-dark: #d1cfc5;
     --app-accent-light: #e8956e;
     --app-error: #e05a5a;
+    --app-warning: #dfad61;
+    --app-success: #8ab08d;
     --app-focus: #3898ec;
     --app-border-strong: #3d3d3a;
     --app-ring-warm: #4d4c48;
@@ -335,6 +339,21 @@ html[data-theme="dark"] .shiki span {
   animation: menu-pop 0.18s ease-out;
 }
 
+@keyframes batch-bar-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.animate-batch-bar-in {
+  animation: batch-bar-in 0.3s ease-out;
+}
+
 /* Syncing spinner animation */
 @keyframes spin {
   from {
@@ -372,4 +391,14 @@ html[data-theme="dark"] .shiki span {
 .tsqd-open-btn-container {
   bottom: 50% !important;
   transform: translateY(50%);
+}
+
+/* Message entrance animation */
+@keyframes msg-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-msg-in {
+  animation: msg-in 0.3s ease-out;
 }

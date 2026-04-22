@@ -44,12 +44,12 @@ export function HappyAssistantMessage() {
             .join('\n\n')
     })
     const rootClass = toolOnly
-        ? 'py-1 min-w-0 max-w-full overflow-x-hidden'
-        : 'mr-auto min-w-0 max-w-full overflow-x-hidden'
+        ? 'py-1 min-w-0 max-w-full overflow-x-hidden animate-msg-in'
+        : 'mr-auto min-w-0 max-w-full overflow-x-hidden animate-msg-in'
 
     if (isCliOutput) {
         return (
-            <MessagePrimitive.Root className="mr-auto min-w-0 max-w-full overflow-x-hidden">
+            <MessagePrimitive.Root className="mr-auto min-w-0 max-w-full overflow-x-hidden animate-msg-in">
                 <div className="w-full max-w-[min(82ch,100%)] rounded-[20px] rounded-bl-[6px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-[18px] py-[14px]">
                     <CliOutputBlock text={cliText} />
                 </div>

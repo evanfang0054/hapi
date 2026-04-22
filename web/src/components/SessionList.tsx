@@ -266,7 +266,7 @@ function SessionItem(props: {
     const sessionName = getSessionTitle(s)
     const modelLabel = getSessionModelLabel(s)
     const statusDotClass = s.active
-        ? (s.thinking ? 'bg-[#007AFF] shadow-[0_0_8px_#007AFF]' : 'bg-[var(--app-badge-success-text)]')
+        ? (s.thinking ? 'bg-[#007AFF] shadow-[0_0_8px_#007AFF]' : 'bg-[var(--app-badge-success-text)] shadow-[0_0_6px_var(--app-badge-success-text)]')
         : 'bg-[var(--app-hint)]'
     const todoProgress = getTodoProgress(s)
     const sessionContent = (
@@ -284,7 +284,7 @@ function SessionItem(props: {
                         </div>
                     ) : null}
                 </div>
-                <div className="shrink-0 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2.5 py-1 text-[11px] text-[var(--app-hint)]">
+                <div className="shrink-0 rounded-full bg-[var(--app-subtle-bg)] px-2.5 py-1 text-[11px] text-[var(--app-hint)]">
                     {formatRelativeTime(s.updatedAt, t)}
                 </div>
             </div>
@@ -343,7 +343,7 @@ function SessionItem(props: {
                         />
                     ) : (
                         <span className="mt-1 flex h-4 w-4 shrink-0 items-center justify-center" aria-hidden="true">
-                            <span className={`h-2 w-2 rounded-full ${statusDotClass}`} />
+                            <span className={`h-2.5 w-2.5 rounded-full ${statusDotClass}`} />
                         </span>
                     )}
 
@@ -382,7 +382,11 @@ function SessionItem(props: {
                                 })
                             }}
                         >
-                            <span aria-hidden="true">•••</span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4" aria-hidden="true">
+                                <circle cx="12" cy="5" r="1" />
+                                <circle cx="12" cy="12" r="1" />
+                                <circle cx="12" cy="19" r="1" />
+                            </svg>
                         </button>
                     ) : null}
                 </div>
@@ -395,6 +399,7 @@ function SessionItem(props: {
                 onRename={() => setRenameOpen(true)}
                 onArchive={() => setArchiveOpen(true)}
                 onDelete={() => setDeleteOpen(true)}
+                onSelectMultiple={() => onEnterSelectionMode?.(s.id, s.active)}
                 anchorPoint={menuAnchorPoint}
             />
 
@@ -693,7 +698,7 @@ export function SessionList(props: {
             />
 
             {selectionMode && !bulkDeleteOpen ? (
-                <div className="fixed left-1/2 z-50 -translate-x-1/2 rounded-[16px] border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-4 py-2.5 shadow-[0_-2px_10px_rgba(0,0,0,0.1)] lg:bottom-4" style={{ bottom: 'calc(4.5rem + env(safe-area-inset-bottom))' }}>
+                <div className="fixed left-1/2 z-50 -translate-x-1/2 rounded-[16px] border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-4 py-2.5 shadow-[0_-2px_10px_rgba(0,0,0,0.1)] lg:bottom-4 animate-batch-bar-in" style={{ bottom: 'calc(4.5rem + env(safe-area-inset-bottom))' }}>
                     <div className="flex items-center gap-3">
                         <span className="text-sm font-medium text-[var(--app-fg)]">
                             {selectedCount}

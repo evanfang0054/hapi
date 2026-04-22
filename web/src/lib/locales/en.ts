@@ -66,6 +66,9 @@ export default {
   'session.action.archive': 'Archive',
   'session.action.delete': 'Delete',
   'session.action.copy': 'Copy',
+  'session.action.duplicate': 'Duplicate',
+  'session.action.duplicate.comingSoon': 'Coming soon',
+  'session.action.selectMultiple': 'Select Multiple',
 
   // Dialogs
   'dialog.rename.title': 'Rename Session',
@@ -117,6 +120,10 @@ export default {
   'newSession.effort': 'Effort',
   'newSession.model.optional': 'optional',
   'newSession.reasoningEffort': 'Reasoning effort',
+  'newSession.machine.online': 'Online',
+  'newSession.machine.offline': 'Offline',
+  'newSession.type.worktree.nameLabel': 'Worktree Name (optional)',
+  'newSession.yolo.badge': 'Dangerous',
   'newSession.yolo': 'YOLO mode',
   'newSession.yolo.title': 'Bypass approvals and sandbox',
   'newSession.yolo.desc': 'Uses dangerous agent flags when spawning.',
@@ -171,6 +178,8 @@ export default {
   'terminal.stdout': 'Stdout',
   'terminal.stderr': 'Stderr',
   'terminal.unsupportedWindows': 'Remote terminal is unavailable on Windows hosts.',
+  'terminal.unsupportedWindows.title': 'Terminal Not Supported',
+  'terminal.unsupportedWindows.description': 'Remote terminal access is not available on Windows machines. Use SSH or local terminal instead.',
   'terminal.paste.fallbackTitle': 'Paste input',
   'terminal.paste.fallbackDescription': 'Clipboard read is unavailable. Paste your text below.',
   'terminal.paste.placeholder': 'Paste terminal input here…',
@@ -189,6 +198,8 @@ export default {
   'terminal.commandInput.send': 'Send',
   'terminal.exitCode': 'with code {code}',
   'terminal.exitInfo': 'Terminal exited{suffix}',
+  'terminal.exited': 'Process exited',
+  'terminal.exitCodeLabel': 'exit code: {code}',
 
   // Code block
   'code.copy': 'Copy',
@@ -235,6 +246,9 @@ export default {
   'sessionFiles.dialog.discardAll.title': 'Discard All Changes',
   'sessionFiles.dialog.discardAll.description': 'Are you sure you want to discard all unstaged changes? This action cannot be undone.',
   'sessionFiles.dialog.confirming': 'Processing…',
+  'sessionFiles.retry': 'Retry',
+  'sessionFiles.errorTitle': 'Git Unavailable',
+  'sessionFiles.errorDescription': 'This directory is not a git repository or git is not configured properly.',
 
   // Session file detail page
   'sessionFileDetail.fileFallback': 'File',
@@ -357,9 +371,21 @@ export default {
 
   // Settings page
   'settings.title': 'Settings',
+  'settings.user.name': 'User',
+  'settings.user.email': 'user@hapi.run',
+  'settings.display.darkMode': 'Dark Mode',
+  'settings.display.darkModeDesc': 'Follow system preference',
 
   // Tab bar labels
   'machines.title': 'Machines',
+  'machines.stats.online': 'Online',
+  'machines.stats.offline': 'Offline',
+  'machines.stats.total': 'Total',
+  'machines.drawer.info': 'Machine Info',
+  'machines.drawer.host': 'Host',
+  'machines.drawer.platform': 'Platform',
+  'machines.drawer.cliVersion': 'CLI Version',
+  'machines.drawer.close': 'Close',
   'machines.newSession': 'New Session',
   'machines.online.singular': 'machine online',
   'machines.online.plural': 'machines online',
@@ -381,6 +407,10 @@ export default {
   'history.restore': 'Restore',
   'history.filter.all': 'All',
   'history.filter.archived': 'Archived',
+  'history.filter.deleted': 'Deleted',
+  'history.delete': 'Delete',
+  'history.permanentDelete': 'Permanent Delete',
+  'history.avgDuration': 'avg duration',
 
   // Theme
   'theme.light': 'Light mode',

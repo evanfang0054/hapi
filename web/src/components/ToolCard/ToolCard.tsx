@@ -374,7 +374,7 @@ function ToolCardInner(props: ToolCardProps) {
     )
 
     return (
-        <Card className="overflow-hidden rounded-[14px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] shadow-[var(--app-shadow-sm)]">
+        <Card className="overflow-hidden rounded-[24px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] shadow-[var(--app-shadow-sm)]">
             <CardHeader className="border-b border-[var(--app-divider)] bg-[var(--app-subtle-bg)] px-4 py-3 space-y-0">
                 <Dialog>
                     <DialogTrigger asChild>

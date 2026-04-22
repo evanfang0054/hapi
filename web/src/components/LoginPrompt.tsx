@@ -120,24 +120,17 @@ export function LoginPrompt(props: LoginPromptProps) {
                 <button
                     type="button"
                     onClick={() => setAppearance(isDark ? 'light' : 'dark')}
-                    className="w-9 h-9 rounded-full bg-[var(--app-subtle-bg)] border border-[var(--app-border)] flex items-center justify-center text-[var(--app-hint)] hover:text-[var(--app-fg)] hover:bg-[var(--app-panel-muted-bg)] transition-colors"
+                    className="w-9 h-9 rounded-full bg-[var(--app-panel-elevated-bg)] border border-[var(--app-border)] flex items-center justify-center text-[var(--app-hint)] hover:text-[var(--app-fg)] hover:bg-[var(--app-subtle-bg)] transition-all"
                     aria-label={isDark ? 'Light mode' : 'Dark mode'}
                 >
                     {isDark ? (
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-                            <circle cx="12" cy="12" r="5" />
-                            <line x1="12" y1="1" x2="12" y2="3" />
-                            <line x1="12" y1="21" x2="12" y2="23" />
-                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                            <line x1="1" y1="12" x2="3" y2="12" />
-                            <line x1="21" y1="12" x2="23" y2="12" />
-                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
                         </svg>
                     ) : (
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
+                            <circle cx="12" cy="12" r="5" />
+                            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
                         </svg>
                     )}
                 </button>
@@ -148,13 +141,13 @@ export function LoginPrompt(props: LoginPromptProps) {
                 {/* Header with logo */}
                 <div className="text-center mb-10">
                     <div
-                        className="w-[72px] h-[72px] rounded-[20px] mx-auto mb-6 flex items-center justify-center shadow-[var(--app-shadow-md)]"
+                        className="w-[72px] max-[480px]:w-[60px] h-[72px] max-[480px]:h-[60px] rounded-[20px] mx-auto mb-6 flex items-center justify-center shadow-[var(--app-shadow-md)]"
                         style={{ background: 'linear-gradient(135deg, var(--app-link) 0%, #d97757 100%)' }}
                     >
-                        <span className="text-white text-[28px] font-semibold" style={{ fontFamily: 'var(--app-font-serif)' }}>E</span>
+                        <span className="text-white text-[28px] max-[480px]:text-[24px] font-semibold" style={{ fontFamily: 'var(--app-font-serif)' }}>E</span>
                     </div>
                     <h1
-                        className="text-[28px] font-medium text-[var(--app-fg)] mb-2"
+                        className="text-[28px] max-[480px]:text-[24px] font-medium text-[var(--app-fg)] mb-2"
                         style={{ fontFamily: 'var(--app-font-serif)' }}
                     >
                         {title}
@@ -163,7 +156,7 @@ export function LoginPrompt(props: LoginPromptProps) {
                 </div>
 
                 {/* Card */}
-                <div className="rounded-[24px] border border-[var(--app-border)] bg-[var(--app-panel-bg)] shadow-[var(--app-shadow-sm)] p-8">
+                <div className="rounded-[24px] border border-[var(--app-border)] bg-[var(--app-panel-bg)] shadow-[var(--app-shadow-sm)] p-8 max-[480px]:p-6">
                     <form onSubmit={handleSubmit} className="space-y-5">
                         {/* Form group: Access Token */}
                         <div>
@@ -182,7 +175,7 @@ export function LoginPrompt(props: LoginPromptProps) {
                                 }`}
                                 style={{ fontFamily: 'var(--app-font-mono)', fontSize: '15px' }}
                             />
-                            <p className="mt-1.5 text-[12px] text-[var(--app-hint)]">
+                            <p className="mt-2 text-[12px] text-[var(--app-hint)]">
                                 {t('login.tokenHint')}
                             </p>
                         </div>
@@ -224,7 +217,7 @@ export function LoginPrompt(props: LoginPromptProps) {
                     {/* Links row with separator */}
                     {!isBindMode && (
                         <div className="mt-5 pt-5 border-t border-[var(--app-border)] flex items-center justify-between text-[13px] text-[var(--app-hint)]">
-                            <a href="https://hapi.run/docs" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--app-fg)] transition-colors">
+                            <a href="https://hapi.run/docs" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--app-link)] transition-colors">
                                 {t('login.help')}
                             </a>
                             <Dialog open={isServerDialogOpen} onOpenChange={handleServerDialogOpenChange}>
@@ -255,7 +248,7 @@ export function LoginPrompt(props: LoginPromptProps) {
                                                     setServerError(null)
                                                 }}
                                                 placeholder={t('login.server.placeholder')}
-                                                className="w-full px-4 py-3.5 rounded-[16px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] text-[var(--app-fg)] placeholder:text-[var(--app-hint)] focus:outline-none focus:ring-2 focus:ring-[var(--app-link)] focus:border-transparent"
+                                                className="w-full px-4 py-3.5 rounded-[16px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] text-[var(--app-fg)] placeholder:text-[var(--app-hint)] focus:outline-none focus:border-[var(--app-link)] focus:shadow-[0_0_0_3px_rgba(201,100,66,0.12)]"
                                                 style={{ fontFamily: 'var(--app-font-mono)' }}
                                             />
                                             <div className="text-[11px] text-[var(--app-hint)]">

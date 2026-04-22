@@ -8,6 +8,7 @@ export function useGitStatusFiles(api: ApiClient | null, sessionId: string | nul
     status: GitStatusFiles | null
     error: string | null
     isLoading: boolean
+    isFetching: boolean
     refetch: () => Promise<unknown>
 } {
     const resolvedSessionId = sessionId ?? 'unknown'
@@ -60,6 +61,7 @@ export function useGitStatusFiles(api: ApiClient | null, sessionId: string | nul
         status: query.data?.status ?? null,
         error: queryError ?? query.data?.error ?? null,
         isLoading: query.isLoading,
+        isFetching: query.isFetching,
         refetch: query.refetch
     }
 }

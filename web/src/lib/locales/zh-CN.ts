@@ -66,6 +66,9 @@ export default {
   'session.action.archive': '归档',
   'session.action.delete': '删除',
   'session.action.copy': '复制',
+  'session.action.duplicate': '复制会话',
+  'session.action.duplicate.comingSoon': '即将推出',
+  'session.action.selectMultiple': '多选',
 
   // Dialogs
   'dialog.rename.title': '重命名会话',
@@ -119,6 +122,10 @@ export default {
   'newSession.effort': '思考强度',
   'newSession.model.optional': '可选',
   'newSession.reasoningEffort': '推理强度',
+  'newSession.machine.online': '在线',
+  'newSession.machine.offline': '离线',
+  'newSession.type.worktree.nameLabel': '工作树名称（可选）',
+  'newSession.yolo.badge': '危险',
   'newSession.yolo': 'YOLO 模式',
   'newSession.yolo.title': '跳过审批和沙箱',
   'newSession.yolo.desc': '启动时使用危险的代理标志。',
@@ -173,6 +180,8 @@ export default {
   'terminal.stdout': '标准输出',
   'terminal.stderr': '标准错误',
   'terminal.unsupportedWindows': 'Windows 主机暂不支持远程终端。',
+  'terminal.unsupportedWindows.title': '终端不支持',
+  'terminal.unsupportedWindows.description': 'Windows 主机暂不支持远程终端，请使用 SSH 或本地终端。',
   'terminal.paste.fallbackTitle': '粘贴输入',
   'terminal.paste.fallbackDescription': '无法读取剪贴板，请在下方粘贴文本。',
   'terminal.paste.placeholder': '在此粘贴终端输入…',
@@ -191,6 +200,8 @@ export default {
   'terminal.commandInput.send': '发送',
   'terminal.exitCode': '退出码 {code}',
   'terminal.exitInfo': '终端已退出{suffix}',
+  'terminal.exited': '进程已退出',
+  'terminal.exitCodeLabel': '退出码: {code}',
 
   // Code block
   'code.copy': '复制',
@@ -237,6 +248,9 @@ export default {
   'sessionFiles.dialog.discardAll.title': '放弃所有更改',
   'sessionFiles.dialog.discardAll.description': '确定要放弃所有未暂存的更改吗？此操作无法撤销。',
   'sessionFiles.dialog.confirming': '处理中…',
+  'sessionFiles.retry': '重试',
+  'sessionFiles.errorTitle': 'Git 不可用',
+  'sessionFiles.errorDescription': '此目录不是 Git 仓库或 Git 未正确配置。',
 
   // Session file detail page
   'sessionFileDetail.fileFallback': '文件',
@@ -359,9 +373,21 @@ export default {
 
   // Settings page
   'settings.title': '设置',
+  'settings.user.name': '用户',
+  'settings.user.email': 'user@hapi.run',
+  'settings.display.darkMode': '深色模式',
+  'settings.display.darkModeDesc': '跟随系统偏好',
 
   // Tab bar labels
   'machines.title': '机器',
+  'machines.stats.online': '在线',
+  'machines.stats.offline': '离线',
+  'machines.stats.total': '总计',
+  'machines.drawer.info': '机器信息',
+  'machines.drawer.host': '主机名',
+  'machines.drawer.platform': '平台',
+  'machines.drawer.cliVersion': 'CLI 版本',
+  'machines.drawer.close': '关闭',
   'machines.newSession': '新建会话',
   'machines.online.singular': '台机器在线',
   'machines.online.plural': '台机器在线',
@@ -383,6 +409,10 @@ export default {
   'history.restore': '恢复',
   'history.filter.all': '全部',
   'history.filter.archived': '已归档',
+  'history.filter.deleted': '已删除',
+  'history.delete': '删除',
+  'history.permanentDelete': '永久删除',
+  'history.avgDuration': '平均时长',
 
   // Theme
   'theme.light': '浅色模式',

@@ -514,15 +514,36 @@ export default function TerminalPage() {
                             ) : null}
                         </CardHeader>
 
-                        <CardContent className="flex min-h-0 flex-1 flex-col gap-2 md:gap-4 md:px-6 md:py-5">
-                            <div className="min-h-0 flex-1 overflow-hidden border border-[var(--app-border)] bg-[var(--app-code-bg)]">
+                        <CardContent className="relative flex min-h-0 flex-1 flex-col gap-2 md:gap-4 md:px-6 md:py-5">
+                            <div className="relative min-h-0 flex-1 overflow-hidden border border-[var(--app-border)] bg-[var(--app-code-bg)]">
                                 {terminalSupported ? (
                                     <TerminalView onMount={handleTerminalMount} onResize={handleResize} fontSize={terminalFontSize} className="h-full w-full" />
                                 ) : (
-                                    <div className="flex h-full items-center justify-center p-4 text-sm text-[var(--app-hint)]">
-                                        {t('terminal.unsupportedWindows')}
+                                    <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
+                                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--app-subtle-bg)]">
+                                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--app-warning)]">
+                                                <circle cx="12" cy="12" r="10" />
+                                                <line x1="12" y1="8" x2="12" y2="12" />
+                                                <line x1="12" y1="16" x2="12.01" y2="16" />
+                                            </svg>
+                                        </div>
+                                        <div className="font-serif text-lg font-medium" data-ui-heading="serif">{t('terminal.unsupportedWindows.title')}</div>
+                                        <div className="max-w-[280px] text-sm leading-relaxed text-[var(--app-hint)]">{t('terminal.unsupportedWindows.description')}</div>
                                     </div>
                                 )}
+                                {exitInfo && terminalSupported ? (
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-[var(--app-bg)]/80 gap-3 text-center font-mono text-[13px] text-[var(--app-hint)]">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                            <circle cx="12" cy="12" r="10" />
+                                            <line x1="12" y1="8" x2="12" y2="12" />
+                                            <line x1="12" y1="16" x2="12.01" y2="16" />
+                                        </svg>
+                                        <span>{t('terminal.exited')}</span>
+                                        <span className={`rounded-md px-2.5 py-1 text-[11px] ${exitInfo.code !== null && exitInfo.code !== 0 ? 'text-[var(--app-danger)] bg-[var(--app-danger)]/15' : 'bg-[var(--app-subtle-bg)]'}`}>
+                                            {t('terminal.exitCodeLabel', { code: exitInfo.code ?? '?' })}
+                                        </span>
+                                    </div>
+                                ) : null}
                             </div>
 
                             <div className="space-y-1.5 rounded-[var(--app-radius-panel)] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] p-2 shadow-[var(--app-shadow-sm)] md:space-y-3 md:p-4">

@@ -309,11 +309,30 @@ function GitFileRow(props: {
     )
 }
 
+function HighlightedText(props: { text: string; query: string }) {
+    if (!props.query) {
+        return <>{props.text}</>
+    }
+    const escaped = props.query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const parts = props.text.split(new RegExp(`(${escaped})`, 'gi'))
+    return (
+        <>
+            {parts.map((part, i) => {
+                const isMatch = part.toLowerCase() === props.query.toLowerCase() && part.length > 0
+                return isMatch
+                    ? <span key={i} className="rounded-sm bg-[rgba(201,100,66,0.2)] px-0.5 text-[var(--app-fg)]">{part}</span>
+                    : <span key={i}>{part}</span>
+            })}
+        </>
+    )
+}
+
 function SearchResultRow(props: {
     file: FileSearchItem
     onOpen: () => void
     showDivider: boolean
     projectRootLabel: string
+    searchQuery: string
 }) {
     const subtitle = props.file.filePath || props.projectRootLabel
     const icon = props.file.fileType === 'file'
@@ -328,7 +347,9 @@ function SearchResultRow(props: {
         >
             {icon}
             <div className="min-w-0 flex-1">
-                <div className="truncate font-medium">{props.file.fileName}</div>
+                <div className="truncate font-medium">
+                    <HighlightedText text={props.file.fileName} query={props.searchQuery} />
+                </div>
                 <div className="truncate text-xs text-[var(--app-hint)]">{subtitle}</div>
             </div>
         </button>
@@ -382,6 +403,7 @@ export default function FilesPage() {
         status: gitStatus,
         error: gitError,
         isLoading: gitLoading,
+        isFetching: gitFetching,
         refetch: refetchGit
     } = useGitStatusFiles(api, sessionId)
 
@@ -559,10 +581,11 @@ export default function FilesPage() {
                                         <button
                                             type="button"
                                             onClick={handleRefresh}
-                                            className="inline-flex h-10 items-center justify-center gap-2 self-start rounded-full border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-4 text-sm text-[var(--app-fg)] transition-colors hover:bg-[var(--app-panel-muted-bg)] md:self-end"
+                                            disabled={gitFetching}
+                                            className="inline-flex h-10 items-center justify-center gap-2 self-start rounded-full border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-4 text-sm text-[var(--app-fg)] transition-colors hover:bg-[var(--app-panel-muted-bg)] disabled:opacity-70 md:self-end"
                                             title={t('sessionFiles.refresh')}
                                         >
-                                            <RefreshIcon className="h-4 w-4 text-[var(--app-hint)]" />
+                                            <RefreshIcon className={`h-4 w-4 text-[var(--app-hint)] ${gitFetching ? 'animate-spin' : ''}`} />
                                             <span>{t('sessionFiles.refresh')}</span>
                                         </button>
                                         <div className="flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-4 py-3 shadow-[var(--app-shadow-sm)]">
@@ -607,8 +630,33 @@ export default function FilesPage() {
 
                             <CardContent className="px-0 py-0">
                                 {showGitErrorBanner && activeTab === 'changes' ? (
-                                    <div className="border-b border-[var(--app-divider)] bg-amber-500/10 px-5 py-3 text-xs text-[var(--app-hint)] sm:px-6">
-                                        {gitError}
+                                    <div>
+                                        <div className="flex items-center gap-3 border-b border-[var(--app-divider)] px-5 py-3 text-sm text-[var(--app-danger)] sm:px-6" style={{ background: 'color-mix(in srgb, var(--app-danger) 12%, transparent)' }}>
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                                                <circle cx="12" cy="12" r="10" />
+                                                <line x1="12" y1="8" x2="12" y2="12" />
+                                                <line x1="12" y1="16" x2="12.01" y2="16" />
+                                            </svg>
+                                            <span className="flex-1 min-w-0">{gitError}</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => void refetchGit()}
+                                                className="shrink-0 rounded-lg border border-[var(--app-danger)] px-3 py-1 text-xs font-medium text-[var(--app-danger)] transition-colors hover:bg-[var(--app-danger)] hover:text-white"
+                                            >
+                                                {t('sessionFiles.retry')}
+                                            </button>
+                                        </div>
+                                        <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
+                                            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--app-subtle-bg)]">
+                                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--app-hint)]">
+                                                    <circle cx="12" cy="12" r="10" />
+                                                    <line x1="12" y1="8" x2="12" y2="12" />
+                                                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                                                </svg>
+                                            </div>
+                                            <div className="font-serif text-lg font-medium" data-ui-heading="serif">{t('sessionFiles.errorTitle')}</div>
+                                            <div className="max-w-[280px] text-sm leading-relaxed text-[var(--app-hint)]">{t('sessionFiles.errorDescription')}</div>
+                                        </div>
                                     </div>
                                 ) : null}
 
@@ -630,6 +678,7 @@ export default function FilesPage() {
                                                     onOpen={() => handleOpenFile(file.fullPath)}
                                                     showDivider={index < searchResults.files.length - 1}
                                                     projectRootLabel={t('sessionFiles.projectRoot')}
+                                                    searchQuery={searchQuery}
                                                 />
                                             ))}
                                         </div>
