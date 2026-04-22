@@ -52,6 +52,28 @@ describe('RpcGateway', () => {
         expect(true).toBe(true)
     })
 
+    it('dispatches rewind-session RPC with user message localId and returns the response', async () => {
+        const io = new FakeServer()
+        const rpcRegistry = new RpcRegistry()
+        const socket = new FakeSocket('socket-1')
+        io.addSocket(socket)
+        rpcRegistry.register(socket as never, 'session-1:rewind-session')
+
+        const gateway = new RpcGateway(io as never, rpcRegistry)
+        const result = await gateway.rewindSession('session-1', 'msg-1')
+
+        expect(socket.lastPayload).toEqual({
+            method: 'session-1:rewind-session',
+            params: {
+                userMessageLocalId: 'msg-1'
+            }
+        })
+        // FakeSocket echoes the payload; type assertion needed since actual CLI would return RpcRewindResponse
+        expect(result).toEqual(expect.objectContaining({
+            method: 'session-1:rewind-session'
+        }))
+    })
+
     it('includes contextAction in permission RPC payload', async () => {
         const io = new FakeServer()
         const rpcRegistry = new RpcRegistry()
@@ -90,3 +112,4 @@ describe('RpcGateway', () => {
         await expect(gateway.takeOverSession('missing')).rejects.toThrow('RPC handler not registered: missing:take-over')
     })
 })
+

@@ -138,6 +138,39 @@ describe('useSSE visibility recovery', () => {
     expect(MockEventSource.instances[1]?.url).toContain('visibility=visible')
   })
 
+  it('invalidates message queries when session-rewound event arrives', () => {
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,
+        },
+      },
+    })
+    const invalidateQueries = vi.spyOn(queryClient, 'invalidateQueries')
+
+    render(
+      createElement(
+        QueryClientProvider,
+        { client: queryClient },
+        createElement(HookHarness, { onDisconnect: vi.fn() })
+      )
+    )
+
+    const source = MockEventSource.instances[0]
+    expect(source).toBeDefined()
+
+    act(() => {
+      source?.onmessage?.(new MessageEvent('message', {
+        data: JSON.stringify({
+          type: 'session-rewound',
+          sessionId: 'session-a',
+        }),
+      }))
+    })
+
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: queryKeys.messages('session-a') })
+  })
+
   it('removes deleted session detail cache when session-removed event arrives', () => {
     const queryClient = new QueryClient({
       defaultOptions: {

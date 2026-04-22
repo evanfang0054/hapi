@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { AgentStateCompletedRequestSchema } from './schemas'
+import { AgentStateCompletedRequestSchema, SyncEventSchema } from './schemas'
 
 describe('AgentStateCompletedRequestSchema', () => {
     it('accepts exit-plan approvals with contextAction', () => {
@@ -24,5 +24,23 @@ describe('AgentStateCompletedRequestSchema', () => {
                 contextAction: 'reset_everything'
             })
         ).toThrow()
+    })
+})
+
+describe('SyncEventSchema', () => {
+    it('accepts session-rewound events', () => {
+        const parsed = SyncEventSchema.parse({
+            type: 'session-rewound',
+            sessionId: 'session-1',
+            rewindToLocalId: 'msg-1',
+            deletedCount: 2
+        })
+
+        expect(parsed).toEqual({
+            type: 'session-rewound',
+            sessionId: 'session-1',
+            rewindToLocalId: 'msg-1',
+            deletedCount: 2
+        })
     })
 })

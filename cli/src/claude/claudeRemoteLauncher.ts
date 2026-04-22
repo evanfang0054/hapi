@@ -12,6 +12,7 @@ import { PLAN_FAKE_REJECT } from "./sdk/prompts";
 import { EnhancedMode } from "./loop";
 import { OutgoingMessageQueue } from "./utils/OutgoingMessageQueue";
 import type { ClaudePermissionMode } from "@hapi/protocol/types";
+import type { RewindFilesResponse } from './sdk/types'
 import {
     RemoteLauncherBase,
     type RemoteLauncherDisplayContext,
@@ -25,12 +26,32 @@ interface PermissionsField {
     allowedTools?: string[];
 }
 
+function containsLocalCommandStdoutTag(content: unknown): boolean {
+    if (typeof content === 'string') {
+        return content.includes('<local-command-stdout>')
+    }
+    if (Array.isArray(content)) {
+        return content.some((part) => containsLocalCommandStdoutTag(part))
+    }
+    if (content && typeof content === 'object') {
+        if ('text' in content) {
+            return containsLocalCommandStdoutTag((content as { text?: unknown }).text)
+        }
+        if ('content' in content) {
+            return containsLocalCommandStdoutTag((content as { content?: unknown }).content)
+        }
+    }
+    return false
+}
+
 class ClaudeRemoteLauncher extends RemoteLauncherBase {
     private readonly session: Session;
     private abortController: AbortController | null = null;
     private abortFuture: Future<void> | null = null;
     private permissionHandler: PermissionHandler | null = null;
     private handleSessionFound: ((sessionId: string) => void) | null = null;
+    private rewindFilesCallback: ((userMessageId: string) => Promise<RewindFilesResponse>) | null = null;
+    private readonly rewindUserMessageIdsByLocalId = new Map<string, string>();
 
     constructor(session: Session) {
         super(process.env.DEBUG ? session.logPath : undefined);
@@ -91,6 +112,27 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
             onSwitch: () => this.handleSwitchRequest()
         });
 
+        session.client.rpcHandlerManager.registerHandler('rewind-session', async (params: { userMessageLocalId: string }) => {
+            if (!this.rewindFilesCallback) {
+                return { success: false, error: 'Rewind not available - session not active' };
+            }
+
+            const userMessageId = this.rewindUserMessageIdsByLocalId.get(params.userMessageLocalId);
+            if (!userMessageId) {
+                return {
+                    success: false,
+                    error: 'Rewind target message is not available in the active Claude session history'
+                };
+            }
+
+            try {
+                const result = await this.rewindFilesCallback(userMessageId);
+                return { success: result.canRewind, ...result };
+            } catch (error) {
+                return { success: false, error: error instanceof Error ? error.message : String(error) };
+            }
+        });
+
         const permissionHandler = new PermissionHandler(session);
         this.permissionHandler = permissionHandler;
 
@@ -107,6 +149,7 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
             cwd: session.path,
             version: process.env.npm_package_version
         }, permissionHandler.getResponses());
+        const rewindUserMessageIdsByLocalId = this.rewindUserMessageIdsByLocalId;
 
         const handleSessionFound = (sessionId: string) => {
             sdkToLogConverter.updateSessionId(sessionId);
@@ -189,6 +232,16 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
 
             const logMessage = sdkToLogConverter.convert(msg);
             if (logMessage) {
+                if (
+                    message.type === 'user'
+                    && typeof message.uuid === 'string'
+                    && typeof logMessage.uuid === 'string'
+                    && message.tool_use_result === undefined
+                    && !containsLocalCommandStdoutTag((message as SDKUserMessage).message?.content)
+                ) {
+                    rewindUserMessageIdsByLocalId.set(logMessage.uuid, message.uuid);
+                }
+
                 if (logMessage.type === 'user' && logMessage.message?.content) {
                     const content = Array.isArray(logMessage.message.content)
                         ? logMessage.message.content
@@ -277,15 +330,27 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
                 logger.debug('[remote]: launch');
                 messageBuffer.addMessage('═'.repeat(40), 'status');
 
-                const isNewSession = session.sessionId !== previousSessionId;
-                if (isNewSession) {
+                const hasSessionChanged = previousSessionId !== null
+                    && session.sessionId !== null
+                    && session.sessionId !== previousSessionId;
+                const isFirstDiscoveredSession = previousSessionId === null && session.sessionId !== null;
+                if (hasSessionChanged) {
                     messageBuffer.addMessage('Starting new Claude session...', 'status');
                     permissionHandler.reset();
                     sdkToLogConverter.resetParentChain();
+                    this.rewindFilesCallback = null;
+                    this.rewindUserMessageIdsByLocalId.clear();
                     logger.debug(`[remote]: New session detected (previous: ${previousSessionId}, current: ${session.sessionId})`);
                 } else {
-                    messageBuffer.addMessage('Continuing Claude session...', 'status');
-                    logger.debug(`[remote]: Continuing existing session: ${session.sessionId}`);
+                    messageBuffer.addMessage(
+                        isFirstDiscoveredSession ? 'Continuing Claude session...' : 'Continuing Claude session...',
+                        'status'
+                    );
+                    logger.debug(
+                        isFirstDiscoveredSession
+                            ? `[remote]: First Claude session discovered: ${session.sessionId}`
+                            : `[remote]: Continuing existing session: ${session.sessionId}`
+                    );
                 }
 
                 previousSessionId = session.sessionId;
@@ -359,6 +424,9 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
                                 logger.debug('[claudeRemoteLauncher][async-debug] ready event suppressed (pending input exists)');
                             }
                         },
+                        onRewindFilesReady: (rewind) => {
+                            this.rewindFilesCallback = rewind;
+                        },
                         signal: controller.signal,
                     });
 
@@ -418,6 +486,9 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
         if (this.permissionHandler) {
             this.permissionHandler.reset();
         }
+
+        this.rewindFilesCallback = null;
+        this.rewindUserMessageIdsByLocalId.clear();
 
         if (this.abortFuture) {
             this.abortFuture.resolve(undefined);

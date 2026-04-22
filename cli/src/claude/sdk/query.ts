@@ -20,6 +20,8 @@ import {
     type CanUseToolControlResponse,
     type ControlCancelRequest,
     type PermissionResult,
+    type RewindFilesRequest,
+    type RewindFilesResponse,
     AbortError
 } from './types'
 import { getDefaultClaudeCodePath, logDebug, streamToStdin } from './utils'
@@ -176,6 +178,23 @@ export class Query implements AsyncIterableIterator<SDKMessage> {
         await this.request({
             subtype: 'interrupt'
         }, this.childStdin)
+    }
+
+    async rewindFiles(userMessageId: string, dryRun = false): Promise<RewindFilesResponse> {
+        if (!this.childStdin) {
+            throw new Error('rewindFiles requires --input-format stream-json')
+        }
+
+        const response = await this.request({
+            subtype: 'rewind_files',
+            user_message_id: userMessageId,
+            dry_run: dryRun
+        } as RewindFilesRequest, this.childStdin)
+
+        if (response.subtype === 'error') {
+            return { canRewind: false, error: response.error }
+        }
+        return response.response ?? { canRewind: true }
     }
 
     /**
@@ -378,7 +397,10 @@ export function query(config: {
     cleanupMcpConfig = appendMcpConfigArg(spawnArgs, mcpServers)
 
     // Spawn Claude Code process
-    const spawnEnv = withBunRuntimeEnv(process.env, { allowBunBeBun: false })
+    const spawnEnv = {
+        ...withBunRuntimeEnv(process.env, { allowBunBeBun: false }),
+        CLAUDE_CODE_ENABLE_SDK_FILE_CHECKPOINTING: '1'
+    }
     logDebug(`Spawning Claude Code process: ${spawnCommand} ${spawnArgs.join(' ')}`)
 
     const child = spawn(spawnCommand, spawnArgs, {

@@ -6,6 +6,7 @@ export type {
     DecryptedMessage,
     Metadata,
     Session,
+    SessionRewoundEvent,
     SyncEvent,
     TeamMember,
     TeamMessage,

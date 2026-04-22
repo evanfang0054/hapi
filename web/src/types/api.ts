@@ -145,6 +145,12 @@ export type UploadFileResponse = {
     error?: string
 }
 
+export type RewindSessionResponse = {
+    success: boolean
+    deletedCount?: number
+    error?: string
+}
+
 export type DeleteUploadResponse = {
     success: boolean
     error?: string

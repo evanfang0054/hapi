@@ -49,19 +49,30 @@ function createSession(overrides?: Partial<Session>): Session {
     }
 }
 
-function createApp(session: Session) {
+function createApp(
+    session: Session,
+    options?: {
+        rewindResult?: { success: boolean; deletedCount?: number; error?: string }
+    }
+) {
     const applySessionConfigCalls: Array<[string, Record<string, unknown>]> = []
     const takeOverCalls: string[] = []
+    const rewindSessionCalls: Array<[string, string]> = []
     const applySessionConfig = async (sessionId: string, config: Record<string, unknown>) => {
         applySessionConfigCalls.push([sessionId, config])
     }
     const takeOverSession = async (sessionId: string) => {
         takeOverCalls.push(sessionId)
     }
+    const rewindSession = async (sessionId: string, messageLocalId: string) => {
+        rewindSessionCalls.push([sessionId, messageLocalId])
+        return options?.rewindResult ?? { success: true, deletedCount: 2 }
+    }
     const engine = {
         resolveSessionAccess: () => ({ ok: true, sessionId: session.id, session }),
         applySessionConfig,
-        takeOverSession
+        takeOverSession,
+        rewindSession
     } as Partial<SyncEngine>
 
     const app = new Hono<WebAppEnv>()
@@ -71,7 +82,7 @@ function createApp(session: Session) {
     })
     app.route('/api', createSessionsRoutes(() => engine as SyncEngine))
 
-    return { app, applySessionConfigCalls, takeOverCalls }
+    return { app, applySessionConfigCalls, takeOverCalls, rewindSessionCalls }
 }
 
 describe('sessions routes', () => {
@@ -202,6 +213,152 @@ describe('sessions routes', () => {
         expect(response.status).toBe(409)
         expect(await response.json()).toEqual({ error: 'Session is inactive' })
         expect(takeOverCalls).toEqual([])
+    })
+
+    it('rejects rewind for inactive session', async () => {
+        const { app, rewindSessionCalls } = createApp(createSession({
+            active: false,
+            metadata: {
+                path: '/tmp/project',
+                host: 'localhost',
+                flavor: 'claude'
+            }
+        }))
+
+        const response = await app.request('/api/sessions/session-1/rewind', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ messageLocalId: 'user-1' })
+        })
+
+        expect(response.status).toBe(409)
+        expect(await response.json()).toEqual({ error: 'Session is inactive' })
+        expect(rewindSessionCalls).toEqual([])
+    })
+
+    it('returns a validation error when rewind body is missing messageLocalId', async () => {
+        const { app, rewindSessionCalls } = createApp(createSession({
+            metadata: {
+                path: '/tmp/project',
+                host: 'localhost',
+                flavor: 'claude'
+            }
+        }))
+
+        const response = await app.request('/api/sessions/session-1/rewind', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({})
+        })
+
+        expect(response.status).toBe(400)
+        expect(await response.json()).toEqual({ error: 'Invalid body: messageLocalId is required' })
+        expect(rewindSessionCalls).toEqual([])
+    })
+
+    it('rejects rewind for non-Claude sessions', async () => {
+        const { app, rewindSessionCalls } = createApp(createSession())
+
+        const response = await app.request('/api/sessions/session-1/rewind', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ messageLocalId: 'user-1' })
+        })
+
+        expect(response.status).toBe(400)
+        expect(await response.json()).toEqual({ error: 'UNSUPPORTED_FLAVOR' })
+        expect(rewindSessionCalls).toEqual([])
+    })
+
+    it('maps CLI unavailable rewind errors to 503', async () => {
+        const { app, rewindSessionCalls } = createApp(createSession({
+            metadata: {
+                path: '/tmp/project',
+                host: 'localhost',
+                flavor: 'claude'
+            }
+        }), {
+            rewindResult: { success: false, error: 'CLI_UNAVAILABLE' }
+        })
+
+        const response = await app.request('/api/sessions/session-1/rewind', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ messageLocalId: 'user-1' })
+        })
+
+        expect(response.status).toBe(503)
+        expect(await response.json()).toEqual({ error: 'CLI_UNAVAILABLE' })
+        expect(rewindSessionCalls).toEqual([['session-1', 'user-1']])
+    })
+
+    it('maps invalid rewind targets to 400', async () => {
+        const { app, rewindSessionCalls } = createApp(createSession({
+            metadata: {
+                path: '/tmp/project',
+                host: 'localhost',
+                flavor: 'claude'
+            }
+        }), {
+            rewindResult: { success: false, error: 'NOT_USER_MESSAGE' }
+        })
+
+        const response = await app.request('/api/sessions/session-1/rewind', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ messageLocalId: 'assistant-1' })
+        })
+
+        expect(response.status).toBe(400)
+        expect(await response.json()).toEqual({ error: 'NOT_USER_MESSAGE' })
+        expect(rewindSessionCalls).toEqual([['session-1', 'assistant-1']])
+    })
+
+    it('maps active Claude history rewind misses to 400', async () => {
+        const { app, rewindSessionCalls } = createApp(createSession({
+            metadata: {
+                path: '/tmp/project',
+                host: 'localhost',
+                flavor: 'claude'
+            }
+        }), {
+            rewindResult: {
+                success: false,
+                error: 'Rewind target message is not available in the active Claude session history'
+            }
+        })
+
+        const response = await app.request('/api/sessions/session-1/rewind', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ messageLocalId: 'user-1' })
+        })
+
+        expect(response.status).toBe(400)
+        expect(await response.json()).toEqual({
+            error: 'Rewind target message is not available in the active Claude session history'
+        })
+        expect(rewindSessionCalls).toEqual([['session-1', 'user-1']])
+    })
+
+    it('rewinds a Claude session by message local id', async () => {
+        const { app, rewindSessionCalls } = createApp(createSession({
+            metadata: {
+                path: '/tmp/project',
+                host: 'localhost',
+                flavor: 'claude'
+            }
+        }))
+
+        const response = await app.request('/api/sessions/session-1/rewind', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ messageLocalId: 'user-1' })
+        })
+
+        expect(response.status).toBe(200)
+        expect(await response.json()).toEqual({ success: true, deletedCount: 2 })
+        expect(rewindSessionCalls).toEqual([['session-1', 'user-1']])
     })
 
     it('still rejects deleting active sessions', async () => {

@@ -4,6 +4,12 @@ import { randomUUID } from 'node:crypto'
 import type { StoredMessage } from './types'
 import { safeJsonParse } from './json'
 
+export type DeleteMessagesResult = {
+    deletedCount: number
+    targetMessage: StoredMessage | null
+    error?: 'NOT_FOUND' | 'NOT_USER_MESSAGE'
+}
+
 type DbMessageRow = {
     id: string
     session_id: string
@@ -104,6 +110,35 @@ export function getMessagesAfter(
     ).all(sessionId, safeAfterSeq, safeLimit) as DbMessageRow[]
 
     return rows.map(toStoredMessage)
+}
+
+export function deleteMessagesAfter(
+    db: Database,
+    sessionId: string,
+    localId: string
+): DeleteMessagesResult {
+    const targetRow = db.prepare(
+        'SELECT * FROM messages WHERE session_id = ? AND local_id = ? LIMIT 1'
+    ).get(sessionId, localId) as DbMessageRow | undefined
+
+    if (!targetRow) {
+        return { deletedCount: 0, targetMessage: null, error: 'NOT_FOUND' }
+    }
+
+    const targetMessage = toStoredMessage(targetRow)
+    const content = targetMessage.content as { role?: string; type?: string } | null
+    if (content?.role !== 'user' && content?.type !== 'user') {
+        return { deletedCount: 0, targetMessage, error: 'NOT_USER_MESSAGE' }
+    }
+
+    const result = db.prepare(
+        'DELETE FROM messages WHERE session_id = ? AND seq > ?'
+    ).run(sessionId, targetRow.seq)
+
+    return {
+        deletedCount: result.changes,
+        targetMessage
+    }
 }
 
 export function getMaxSeq(db: Database, sessionId: string): number {

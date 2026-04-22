@@ -69,6 +69,51 @@ async function waitFor(condition: () => boolean, timeoutMs = 300, intervalMs = 1
 }
 
 describe('claudeRemote async message handling', () => {
+    it('exposes rewind callback that proxies to query.rewindFiles', async () => {
+        const rewindFilesMock = vi.fn(async () => ({ canRewind: true, filesChanged: ['src/file.ts'] }))
+        const querySpy = vi.spyOn(claudeSdk, 'query').mockImplementation((() => ({
+            rewindFiles: rewindFilesMock,
+            async *[Symbol.asyncIterator]() {
+                // no-op
+            }
+        })) as unknown as typeof claudeSdk.query)
+        const { claudeRemote } = await import('./claudeRemote')
+
+        let capturedRewind: ((userMessageId: string) => Promise<unknown>) | undefined
+
+        try {
+            await claudeRemote({
+                sessionId: 'session-1',
+                path: process.cwd(),
+                mcpServers: {},
+                claudeEnvVars: {},
+                claudeArgs: [],
+                allowedTools: [],
+                hookSettingsPath: '/tmp/hook.json',
+                canCallTool: async () => ({ behavior: 'allow', updatedInput: {} }),
+                nextMessage: async () => ({ message: 'A', mode: { permissionMode: 'default' } }),
+                onReady: () => {},
+                isAborted: () => false,
+                onSessionFound: () => {},
+                onMessage: () => {},
+                onCompletionEvent: () => {},
+                onSessionReset: () => {},
+                onRewindFilesReady: (rewind) => {
+                    capturedRewind = rewind
+                }
+            })
+
+            expect(capturedRewind).toBeTypeOf('function')
+            await expect(capturedRewind?.('msg-1')).resolves.toEqual({
+                canRewind: true,
+                filesChanged: ['src/file.ts']
+            })
+            expect(rewindFilesMock).toHaveBeenCalledWith('msg-1')
+        } finally {
+            querySpy.mockRestore()
+        }
+    })
+
     it('continues consuming assistant messages even when next user message is pending', async () => {
         const querySpy = vi.spyOn(claudeSdk, 'query').mockImplementation(queryMock as typeof claudeSdk.query);
         const { claudeRemote } = await import('./claudeRemote');

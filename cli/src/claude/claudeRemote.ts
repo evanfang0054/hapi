@@ -1,5 +1,6 @@
 import { EnhancedMode, PermissionMode } from "./loop";
 import { query, type QueryOptions as Options, type SDKMessage, type SDKSystemMessage, AbortError, SDKUserMessage } from '@/claude/sdk'
+import type { RewindFilesResponse } from './sdk/types'
 import { claudeCheckSession } from "./utils/claudeCheckSession";
 import { join } from 'node:path';
 import { parseSpecialCommand } from "@/parsers/specialCommands";
@@ -35,7 +36,8 @@ export async function claudeRemote(opts: {
     onThinkingChange?: (thinking: boolean) => void,
     onMessage: (message: SDKMessage) => void,
     onCompletionEvent?: (message: string) => void,
-    onSessionReset?: () => void
+    onSessionReset?: () => void,
+    onRewindFilesReady?: (rewind: (userMessageId: string) => Promise<RewindFilesResponse>) => void
 }) {
     const debugPrefix = '[claudeRemote][async-debug]';
 
@@ -168,6 +170,12 @@ export async function claudeRemote(opts: {
         prompt: messages,
         options: sdkOptions,
     });
+
+    if (opts.onRewindFilesReady) {
+        opts.onRewindFilesReady(async (userMessageId: string) => {
+            return await response.rewindFiles(userMessageId)
+        })
+    }
 
     let nextMessageFetchInFlight = false;
     let inputEnded = false;

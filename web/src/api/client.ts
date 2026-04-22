@@ -20,7 +20,8 @@ import type {
     UploadFileResponse,
     VisibilityPayload,
     SessionResponse,
-    SessionsResponse
+    SessionsResponse,
+    RewindSessionResponse
 } from '@/types/api'
 
 type ApiClientOptions = {
@@ -345,6 +346,13 @@ export class ApiClient {
         await this.request(`/api/sessions/${encodeURIComponent(sessionId)}/archive`, {
             method: 'POST',
             body: JSON.stringify({})
+        })
+    }
+
+    async rewindSession(sessionId: string, messageLocalId: string): Promise<RewindSessionResponse> {
+        return await this.request<RewindSessionResponse>(`/api/sessions/${encodeURIComponent(sessionId)}/rewind`, {
+            method: 'POST',
+            body: JSON.stringify({ messageLocalId })
         })
     }
 

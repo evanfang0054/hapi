@@ -79,6 +79,7 @@ export interface SDKControlResponse extends SDKMessage {
         request_id: string
         subtype: 'success' | 'error'
         error?: string
+        response?: RewindFilesResponse
     }
 }
 
@@ -126,6 +127,20 @@ export interface CanUseToolControlResponse {
 export interface ControlCancelRequest {
     type: 'control_cancel_request'
     request_id: string
+}
+
+export interface RewindFilesRequest extends ControlRequest {
+    subtype: 'rewind_files'
+    user_message_id: string
+    dry_run?: boolean
+}
+
+export interface RewindFilesResponse {
+    canRewind: boolean
+    error?: string
+    filesChanged?: string[]
+    insertions?: number
+    deletions?: number
 }
 
 export interface SDKControlRequest {

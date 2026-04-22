@@ -62,7 +62,12 @@ function parseCorsOrigins(str: string): string[] {
  */
 function deriveCorsOrigins(publicUrl: string): string[] {
     try {
-        return [new URL(publicUrl).origin]
+        const publicOrigin = new URL(publicUrl).origin
+        const corsOrigins = [publicOrigin]
+        if (publicOrigin !== 'http://localhost:5173') {
+            corsOrigins.push('http://localhost:5173')
+        }
+        return corsOrigins
     } catch {
         return []
     }

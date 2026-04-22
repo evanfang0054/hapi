@@ -213,6 +213,11 @@ export const SyncEventSchema = z.discriminatedUnion('type', [
         type: z.literal('message-received'),
         message: DecryptedMessageSchema
     }),
+    SessionChangedSchema.extend({
+        type: z.literal('session-rewound'),
+        rewindToLocalId: z.string(),
+        deletedCount: z.number()
+    }),
     MachineChangedSchema.extend({
         type: z.literal('machine-updated'),
         data: z.unknown().optional()
@@ -243,3 +248,4 @@ export const SyncEventSchema = z.discriminatedUnion('type', [
 ])
 
 export type SyncEvent = z.infer<typeof SyncEventSchema>
+export type SessionRewoundEvent = Extract<SyncEvent, { type: 'session-rewound' }>

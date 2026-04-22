@@ -44,10 +44,12 @@ export type ResumeSessionResult =
 
 export class SyncEngine {
     private readonly eventPublisher: EventPublisher
+    private readonly store: Store
     private readonly sessionCache: SessionCache
     private readonly machineCache: MachineCache
     private readonly messageService: MessageService
     private readonly rpcGateway: RpcGateway
+    private readonly rewindLocks = new Map<string, Promise<void>>()
     private inactivityTimer: NodeJS.Timeout | null = null
 
     constructor(
@@ -56,6 +58,7 @@ export class SyncEngine {
         rpcRegistry: RpcRegistry,
         sseManager: SSEManager
     ) {
+        this.store = store
         this.eventPublisher = new EventPublisher(sseManager, (event) => this.resolveNamespace(event))
         this.sessionCache = new SessionCache(store, this.eventPublisher)
         this.machineCache = new MachineCache(store, this.eventPublisher)
@@ -279,6 +282,65 @@ export class SyncEngine {
 
     async takeOverSession(sessionId: string): Promise<void> {
         await this.rpcGateway.takeOverSession(sessionId)
+    }
+
+    async rewindSession(
+        sessionId: string,
+        userMessageLocalId: string
+    ): Promise<{ success: boolean; deletedCount?: number; error?: string }> {
+        const previousLock = this.rewindLocks.get(sessionId) ?? Promise.resolve()
+        let releaseLock!: () => void
+        const currentLock = new Promise<void>((resolve) => {
+            releaseLock = resolve
+        })
+        const sessionLock = previousLock.finally(() => currentLock)
+        this.rewindLocks.set(sessionId, sessionLock)
+
+        await previousLock
+
+        try {
+            const session = this.sessionCache.getSession(sessionId)
+            if (!session) {
+                return { success: false, error: 'SESSION_NOT_FOUND' }
+            }
+
+            if (!session.active) {
+                return { success: false, error: 'SESSION_NOT_ACTIVE' }
+            }
+
+            let rewindResult
+            try {
+                rewindResult = await this.rpcGateway.rewindSession(sessionId, userMessageLocalId)
+            } catch {
+                return { success: false, error: 'CLI_UNAVAILABLE' }
+            }
+
+            if (!rewindResult.success) {
+                return { success: false, error: rewindResult.error || 'REWIND_FAILED' }
+            }
+
+            const result = this.store.messages.deleteMessagesAfter(sessionId, userMessageLocalId)
+            if (result.error === 'NOT_FOUND') {
+                return { success: false, error: 'MESSAGE_NOT_FOUND' }
+            }
+            if (result.error === 'NOT_USER_MESSAGE') {
+                return { success: false, error: 'NOT_USER_MESSAGE' }
+            }
+
+            this.handleRealtimeEvent({
+                type: 'session-rewound',
+                sessionId,
+                rewindToLocalId: userMessageLocalId,
+                deletedCount: result.deletedCount
+            })
+
+            return { success: true, deletedCount: result.deletedCount }
+        } finally {
+            releaseLock()
+            if (this.rewindLocks.get(sessionId) === sessionLock) {
+                this.rewindLocks.delete(sessionId)
+            }
+        }
     }
 
     async renameSession(sessionId: string, name: string): Promise<void> {

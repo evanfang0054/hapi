@@ -528,6 +528,10 @@ export function useSSE(options: {
                 }
             }
 
+            if (event.type === 'session-rewound') {
+                void queryClient.invalidateQueries({ queryKey: queryKeys.messages(event.sessionId) })
+            }
+
             if (event.type === 'machine-updated') {
                 if (isMachineRecord(event.data)) {
                     upsertMachine(event.data)

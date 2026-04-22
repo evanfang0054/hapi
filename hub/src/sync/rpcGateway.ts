@@ -44,6 +44,15 @@ export type RpcPathExistsResponse = {
     exists: Record<string, boolean>
 }
 
+export type RpcRewindResponse = {
+    success: boolean
+    canRewind?: boolean
+    error?: string
+    filesChanged?: string[]
+    insertions?: number
+    deletions?: number
+}
+
 export class RpcGateway {
     constructor(
         private readonly io: Server,
@@ -93,6 +102,10 @@ export class RpcGateway {
 
     async takeOverSession(sessionId: string): Promise<void> {
         await this.sessionRpc(sessionId, 'take-over', {})
+    }
+
+    async rewindSession(sessionId: string, userMessageLocalId: string): Promise<RpcRewindResponse> {
+        return await this.sessionRpc(sessionId, 'rewind-session', { userMessageLocalId }) as RpcRewindResponse
     }
 
     async requestSessionConfig(

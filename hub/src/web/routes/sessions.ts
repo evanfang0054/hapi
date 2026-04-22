@@ -32,6 +32,10 @@ const uploadSchema = z.object({
     mimeType: z.string().min(1).max(255)
 })
 
+const rewindSchema = z.object({
+    messageLocalId: z.string().min(1)
+})
+
 const uploadDeleteSchema = z.object({
     path: z.string().min(1)
 })
@@ -43,6 +47,22 @@ function estimateBase64Bytes(base64: string): number {
     if (len === 0) return 0
     const padding = base64.endsWith('==') ? 2 : base64.endsWith('=') ? 1 : 0
     return Math.floor((len * 3) / 4) - padding
+}
+
+function rewindErrorToStatus(error: string): 400 | 503 | 500 {
+    switch (error) {
+        case 'MESSAGE_NOT_FOUND':
+        case 'NOT_USER_MESSAGE':
+        case 'SESSION_NOT_ACTIVE':
+        case 'UNSUPPORTED_FLAVOR':
+        case 'Rewind target message is not available in the active Claude session history':
+            return 400
+        case 'CLI_UNAVAILABLE':
+            return 503
+        case 'REWIND_FAILED':
+        default:
+            return 500
+    }
 }
 
 export function createSessionsRoutes(getSyncEngine: () => SyncEngine | null): Hono<WebAppEnv> {
@@ -373,6 +393,37 @@ export function createSessionsRoutes(getSyncEngine: () => SyncEngine | null): Ho
             const message = error instanceof Error ? error.message : 'Failed to apply effort'
             return c.json({ error: message }, 409)
         }
+    })
+
+    app.post('/sessions/:id/rewind', async (c) => {
+        const engine = requireSyncEngine(c, getSyncEngine)
+        if (engine instanceof Response) {
+            return engine
+        }
+
+        const sessionResult = requireSessionFromParam(c, engine, { requireActive: true })
+        if (sessionResult instanceof Response) {
+            return sessionResult
+        }
+
+        const flavor = sessionResult.session.metadata?.flavor ?? 'claude'
+        if (flavor !== 'claude') {
+            return c.json({ error: 'UNSUPPORTED_FLAVOR' }, 400)
+        }
+
+        const body = await c.req.json().catch(() => null)
+        const parsed = rewindSchema.safeParse(body)
+        if (!parsed.success) {
+            return c.json({ error: 'Invalid body: messageLocalId is required' }, 400)
+        }
+
+        const result = await engine.rewindSession(sessionResult.sessionId, parsed.data.messageLocalId)
+        if (!result.success) {
+            const status = rewindErrorToStatus(result.error || 'REWIND_FAILED')
+            return c.json({ error: result.error }, status)
+        }
+
+        return c.json({ success: true, deletedCount: result.deletedCount })
     })
 
     app.patch('/sessions/:id', async (c) => {
