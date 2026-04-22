@@ -159,8 +159,11 @@ export function SessionHeader(props: {
                     <div className="min-w-0 flex-1 rounded-[var(--app-radius-panel)] border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2.5 py-2 shadow-[var(--app-shadow-sm)] md:px-5 md:py-3">
                         <div className="flex items-start justify-between gap-1.5 md:gap-3">
                             <div className="min-w-0">
-                                <div className="truncate text-[15px] leading-tight text-[var(--app-fg)] md:text-xl" data-ui-heading="serif">
-                                    {title}
+                                <div className="flex items-center gap-2">
+                                    <div className={`w-2 h-2 rounded-full shrink-0 ${session.active ? 'bg-[var(--app-git-staged-color)]' : 'bg-[var(--app-hint)] opacity-40'}`} />
+                                    <div className="truncate text-[15px] leading-tight text-[var(--app-fg)] md:text-xl" data-ui-heading="serif">
+                                        {title}
+                                    </div>
                                 </div>
                                 <div className="mt-1 flex flex-wrap items-center gap-1 text-[10px] text-[var(--app-hint)] md:mt-2 md:gap-2 md:text-xs">
                                     <Badge className="gap-1.5 bg-[var(--app-panel-muted-bg)] text-[var(--app-fg)]">
