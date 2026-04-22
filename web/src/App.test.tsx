@@ -125,6 +125,7 @@ vi.mock('@/lib/app-context', () => ({
         token: 'token',
         baseUrl: 'https://example.com',
         connectionState: 'connected',
+        clearAuth: vi.fn(),
     }),
 }))
 

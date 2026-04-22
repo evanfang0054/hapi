@@ -33,6 +33,8 @@ import type { Machine } from '@/types/api'
 import FilesPage from '@/routes/sessions/files'
 import FilePage from '@/routes/sessions/file'
 import TerminalPage from '@/routes/sessions/terminal'
+import MachinesPage from '@/routes/machines'
+import HistoryPage from '@/routes/history'
 import SettingsPage from '@/routes/settings'
 
 function getMachineTitle(machine: Machine): string {
@@ -277,46 +279,6 @@ function SessionDetailRoute() {
     const isChat = pathname === basePath || pathname === `${basePath}/`
 
     return isChat ? <SessionPage /> : <Outlet />
-}
-
-/**
- * Placeholder pages for Machines and History (to be implemented in sub-plan 3)
- */
-function MachinesPage() {
-    const { t } = useTranslation()
-    return (
-        <div className="flex items-center justify-center h-full">
-            <div className="text-center text-[var(--app-hint)]">
-                <div className="text-2xl mb-2">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-12 h-12 mx-auto mb-4 opacity-40">
-                        <rect x="2" y="3" width="20" height="14" rx="2" />
-                        <line x1="8" y1="21" x2="16" y2="21" />
-                        <line x1="12" y1="17" x2="12" y2="21" />
-                    </svg>
-                </div>
-                <div className="font-[var(--app-font-serif)] text-lg text-[var(--app-fg)]">{t('machines.title')}</div>
-                <div className="text-sm mt-1">Coming soon</div>
-            </div>
-        </div>
-    )
-}
-
-function HistoryPage() {
-    const { t } = useTranslation()
-    return (
-        <div className="flex items-center justify-center h-full">
-            <div className="text-center text-[var(--app-hint)]">
-                <div className="text-2xl mb-2">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-12 h-12 mx-auto mb-4 opacity-40">
-                        <circle cx="12" cy="12" r="10" />
-                        <polyline points="12 6 12 12 16 14" />
-                    </svg>
-                </div>
-                <div className="font-[var(--app-font-serif)] text-lg text-[var(--app-fg)]">{t('history.title')}</div>
-                <div className="text-sm mt-1">Coming soon</div>
-            </div>
-        </div>
-    )
 }
 
 // ─── Route tree ──────────────────────────────────────────────────────────────

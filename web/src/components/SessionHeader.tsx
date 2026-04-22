@@ -139,7 +139,7 @@ export function SessionHeader(props: {
                         variant="outline"
                         size="sm"
                         onClick={props.onBack}
-                        className="self-center h-8 w-8 rounded-full p-0 text-[var(--app-hint)] hover:text-[var(--app-fg)] md:h-10 md:w-10"
+                        className="self-center h-9 w-9 rounded-[10px] p-0 text-[var(--app-hint)] hover:text-[var(--app-fg)] md:h-9 md:w-9"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"

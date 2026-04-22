@@ -2,35 +2,38 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useAppContext } from '@/lib/app-context'
 import { useSessions } from '@/hooks/queries/useSessions'
+import { useSessionActions } from '@/hooks/mutations/useSessionActions'
 import { useTranslation } from '@/lib/use-translation'
+
+type FilterMode = 'all' | 'archived'
+
+type SessionItem = {
+    id: string
+    name: string
+    agent: string
+    model: string | null
+    active: boolean
+    updatedAt: number
+    projectPath: string | null
+    archived: boolean
+}
 
 type SessionGroup = {
     label: string
-    sessions: Array<{
-        id: string
-        name: string
-        agent: string
-        model: string | null
-        active: boolean
-        updatedAt: number
-        projectPath: string | null
-    }>
+    sessions: SessionItem[]
 }
 
-function groupSessionsByTime(sessions: SessionGroup['sessions']): SessionGroup[] {
-    const now = Date.now()
+function groupSessionsByTime(sessions: SessionItem[]): SessionGroup[] {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const todayMs = today.getTime()
     const yesterdayMs = todayMs - 86400000
     const weekMs = todayMs - 7 * 86400000
-    const monthMs = todayMs - 30 * 86400000
 
     const groups: SessionGroup[] = [
         { label: 'Today', sessions: [] },
         { label: 'Yesterday', sessions: [] },
         { label: 'This Week', sessions: [] },
-        { label: 'This Month', sessions: [] },
         { label: 'Older', sessions: [] },
     ]
 
@@ -41,14 +44,120 @@ function groupSessionsByTime(sessions: SessionGroup['sessions']): SessionGroup[]
             groups[1].sessions.push(session)
         } else if (session.updatedAt >= weekMs) {
             groups[2].sessions.push(session)
-        } else if (session.updatedAt >= monthMs) {
-            groups[3].sessions.push(session)
         } else {
-            groups[4].sessions.push(session)
+            groups[3].sessions.push(session)
         }
     }
 
     return groups.filter(g => g.sessions.length > 0)
+}
+
+function formatRelativeTime(timestamp: number): string {
+    const diff = Date.now() - timestamp
+    const minutes = Math.floor(diff / 60000)
+    if (minutes < 1) return 'just now'
+    if (minutes < 60) return `${minutes}m ago`
+    const hours = Math.floor(minutes / 60)
+    if (hours < 24) return `${hours}h ago`
+    const days = Math.floor(hours / 24)
+    if (days < 7) return `${days}d ago`
+    return new Date(timestamp).toLocaleDateString()
+}
+
+function HistorySessionItem({ session, api, onOpen }: {
+    session: SessionItem
+    api: import('@/api/client').ApiClient
+    onOpen: () => void
+}) {
+    const { t } = useTranslation()
+    const { archiveSession } = useSessionActions(api, session.id, session.agent)
+    const [actionsOpen, setActionsOpen] = useState(false)
+
+    return (
+        <div
+            className={`border rounded-[16px] bg-[var(--app-panel-bg)] p-3.5 transition-all cursor-pointer ${actionsOpen ? 'border-[var(--app-link)] shadow-[var(--app-shadow-sm)]' : 'border-[var(--app-border)] hover:border-[var(--app-link)] hover:shadow-[var(--app-shadow-sm)]'}`}
+        >
+            <div className="flex items-start gap-3" onClick={() => { if (!actionsOpen) onOpen() }}>
+                {/* Icon */}
+                <div className={`w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0 ${session.archived ? 'bg-[var(--app-border)]' : 'bg-[var(--app-subtle-bg)]'}`}>
+                    {session.archived ? (
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px] text-[var(--app-hint)]">
+                            <path d="M21 8v13H3V8" />
+                            <path d="M1 3h22v5H1z" />
+                            <path d="M10 12h4" />
+                        </svg>
+                    ) : (
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px] text-[var(--app-hint)]">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                        </svg>
+                    )}
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                    <div className="text-[14px] font-medium text-[var(--app-fg)] truncate">{session.name}</div>
+                    {session.projectPath && (
+                        <div className="text-[12px] text-[var(--app-hint)] line-clamp-2 mt-0.5 leading-snug">
+                            {session.projectPath}
+                        </div>
+                    )}
+                    <div className="flex items-center gap-1.5 text-[11px] text-[var(--app-hint)] mt-1 font-mono">
+                        <span>{formatRelativeTime(session.updatedAt)}</span>
+                        <span className="w-[3px] h-[3px] rounded-full bg-[var(--app-hint)]" />
+                        <span>{session.agent}</span>
+                        {session.model && (
+                            <>
+                                <span className="w-[3px] h-[3px] rounded-full bg-[var(--app-hint)]" />
+                                <span>{session.model}</span>
+                            </>
+                        )}
+                        {session.archived && (
+                            <span className="ml-1 px-2 py-0.5 rounded-[6px] text-[10px] font-medium bg-[var(--app-border)]">Archived</span>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Actions */}
+            <div className="mt-2 ml-[52px]">
+                {!actionsOpen ? (
+                    <button
+                        type="button"
+                        onClick={() => setActionsOpen(true)}
+                        className="text-[12px] text-[var(--app-hint)] hover:text-[var(--app-fg)] transition-colors"
+                    >
+                        ···
+                    </button>
+                ) : (
+                    <div className="flex items-center gap-2 animate-[fadeIn_0.15s_ease]">
+                        <button
+                            type="button"
+                            onClick={onOpen}
+                            className="flex items-center gap-1 px-3 py-1.5 rounded-[16px] text-[12px] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] hover:bg-[var(--app-panel-muted-bg)] transition-colors active:scale-95"
+                        >
+                            {t('history.open')}
+                        </button>
+                        {!session.archived && (
+                            <button
+                                type="button"
+                                onClick={() => archiveSession()}
+                                className="flex items-center gap-1 px-3 py-1.5 rounded-[16px] text-[12px] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] hover:bg-[var(--app-panel-muted-bg)] transition-colors active:scale-95"
+                            >
+                                {t('history.archive')}
+                            </button>
+                        )}
+                        <button
+                            type="button"
+                            onClick={() => setActionsOpen(false)}
+                            className="text-[12px] text-[var(--app-hint)] hover:text-[var(--app-fg)] transition-colors ml-1"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                )}
+            </div>
+        </div>
+    )
 }
 
 export default function HistoryPage() {
@@ -57,50 +166,55 @@ export default function HistoryPage() {
     const navigate = useNavigate()
     const { sessions, isLoading, error } = useSessions(api)
     const [searchQuery, setSearchQuery] = useState('')
+    const [filterMode, setFilterMode] = useState<FilterMode>('all')
+    const [filterOpen, setFilterOpen] = useState(false)
+
+    const allSessions = useMemo(() => sessions.map(s => ({
+        id: s.id,
+        name: s.metadata?.name ?? s.id.slice(0, 8),
+        agent: s.metadata?.flavor ?? 'claude',
+        model: s.model ?? null,
+        active: s.active ?? false,
+        updatedAt: s.updatedAt ?? 0,
+        projectPath: s.metadata?.path ?? s.metadata?.worktree?.basePath ?? null,
+        archived: false,
+    })), [sessions])
 
     const filteredSessions = useMemo(() => {
-        const allSessions = sessions.map(s => ({
-            id: s.id,
-            name: s.metadata?.name ?? s.id.slice(0, 8),
-            agent: s.metadata?.flavor ?? 'claude',
-            model: s.model ?? null,
-            active: s.active ?? false,
-            updatedAt: s.updatedAt ?? 0,
-            projectPath: s.metadata?.path ?? s.metadata?.worktree?.basePath ?? null,
-        }))
-
-        if (!searchQuery.trim()) return allSessions
-        const q = searchQuery.toLowerCase()
-        return allSessions.filter(s =>
-            s.name.toLowerCase().includes(q) ||
-            s.projectPath?.toLowerCase().includes(q) ||
-            s.agent.toLowerCase().includes(q)
-        )
-    }, [sessions, searchQuery])
+        let result = allSessions
+        if (filterMode === 'archived') {
+            result = result.filter(s => s.archived)
+        }
+        if (searchQuery.trim()) {
+            const q = searchQuery.toLowerCase()
+            result = result.filter(s =>
+                s.name.toLowerCase().includes(q) ||
+                s.projectPath?.toLowerCase().includes(q) ||
+                s.agent.toLowerCase().includes(q)
+            )
+        }
+        return result
+    }, [allSessions, filterMode, searchQuery])
 
     const groups = useMemo(() => groupSessionsByTime(filteredSessions), [filteredSessions])
 
-    const totalCount = sessions.length
-    const activeCount = sessions.filter(s => s.active).length
+    const totalCount = allSessions.length
+    const thisWeekCount = allSessions.filter(s => s.updatedAt >= Date.now() - 7 * 86400000).length
 
     return (
         <div className="flex h-full min-h-0 flex-col bg-[var(--app-bg)]">
             {/* Sticky header */}
-            <div className="sticky top-0 z-10 bg-[var(--app-bg)] border-b border-[var(--app-border)] px-5 py-3">
-                <h1 className="text-[20px] font-medium text-[var(--app-fg)]" style={{ fontFamily: 'var(--app-font-serif)' }}>
+            <div className="sticky top-0 z-10 bg-[var(--app-panel-bg)] border-b border-[var(--app-border)] px-5 py-4" style={{ paddingTop: 'calc(16px + env(safe-area-inset-top))' }}>
+                <h1 className="text-[28px] font-normal italic text-[var(--app-fg)]" style={{ fontFamily: 'var(--app-font-serif)' }}>
                     {t('history.title')}
                 </h1>
-                {totalCount > 0 && (
-                    <div className="text-[12px] text-[var(--app-hint)] mt-1">
-                        {totalCount} {t('history.total')} · {activeCount} {t('history.active')}
-                    </div>
-                )}
+                <p className="text-[13px] text-[var(--app-hint)] mt-1">{t('history.subtitle')}</p>
             </div>
 
-            {/* Search bar */}
-            <div className="px-4 py-3 border-b border-[var(--app-border)]">
-                <div className="relative">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--app-hint)]">
+            {/* Search bar + filter button */}
+            <div className="px-4 py-3 border-b border-[var(--app-border)] flex gap-2.5">
+                <div className="relative flex-1">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-[var(--app-hint)]">
                         <circle cx="11" cy="11" r="8" />
                         <line x1="21" y1="21" x2="16.65" y2="16.65" />
                     </svg>
@@ -109,72 +223,111 @@ export default function HistoryPage() {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder={t('history.search')}
-                        className="w-full pl-10 pr-4 py-2.5 rounded-[var(--app-radius-lg)] border border-[var(--app-border)] bg-[var(--app-panel-bg)] text-[var(--app-fg)] placeholder:text-[var(--app-hint)] focus:outline-none focus:border-[var(--app-link)] focus:shadow-[0_0_0_3px_rgba(201,100,66,0.12)] transition-colors"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-[12px] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] text-[var(--app-fg)] placeholder:text-[var(--app-hint)] focus:outline-none focus:border-[var(--app-link)] transition-colors"
                     />
                 </div>
+                <button
+                    type="button"
+                    onClick={() => setFilterOpen(!filterOpen)}
+                    className={`flex items-center justify-center w-11 h-11 rounded-[12px] border transition-colors ${filterOpen ? 'border-[var(--app-link)] text-[var(--app-link)]' : 'border-[var(--app-border)] text-[var(--app-hint)] hover:bg-[var(--app-subtle-bg)]'}`}
+                >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+                    </svg>
+                </button>
             </div>
+
+            {/* Filter chips */}
+            {filterOpen && (
+                <div className="px-4 py-2.5 border-b border-[var(--app-border)] flex gap-2 flex-wrap">
+                    {(['all', 'archived'] as FilterMode[]).map((mode) => (
+                        <button
+                            key={mode}
+                            type="button"
+                            onClick={() => setFilterMode(mode)}
+                            className={`px-3.5 py-2 rounded-[20px] text-[13px] font-medium transition-colors active:scale-95 ${
+                                filterMode === mode
+                                    ? 'bg-[var(--app-link)] text-white border border-[var(--app-link)]'
+                                    : 'bg-[var(--app-subtle-bg)] text-[var(--app-fg)] border border-[var(--app-border)] hover:bg-[var(--app-panel-muted-bg)]'
+                            }`}
+                        >
+                            {mode === 'all' ? t('history.filter.all') : t('history.filter.archived')}
+                        </button>
+                    ))}
+                </div>
+            )}
+
+            {/* Stats bar */}
+            {totalCount > 0 && (
+                <div className="px-4 py-3 border-b border-[var(--app-border)] bg-[var(--app-panel-bg)] flex gap-4">
+                    <div className="text-[12px] text-[var(--app-hint)]">
+                        <strong className="text-[var(--app-fg)] font-semibold">{totalCount}</strong> {t('history.total')}
+                    </div>
+                    <div className="text-[12px] text-[var(--app-hint)]">
+                        <strong className="text-[var(--app-fg)] font-semibold">{thisWeekCount}</strong> {t('history.thisWeek')}
+                    </div>
+                </div>
+            )}
 
             {/* Content */}
             <div className="app-scroll-y flex-1 min-h-0">
-                <div className="mx-auto w-full max-w-[600px] px-4 py-6 space-y-6">
+                <div className="mx-auto w-full max-w-[600px] px-4 py-5">
                     {error ? (
                         <div className="text-sm text-[var(--app-error)] p-4">{error}</div>
                     ) : isLoading ? (
-                        <div className="flex items-center justify-center py-12">
-                            <div className="text-sm text-[var(--app-hint)]">{t('loading')}</div>
+                        <div className="space-y-3">
+                            {[0, 1, 2].map(i => (
+                                <div key={i} className="border border-[var(--app-border)] rounded-[16px] bg-[var(--app-panel-bg)] p-3.5">
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-10 h-10 rounded-[10px] bg-[var(--app-subtle-bg)] animate-pulse" />
+                                        <div className="flex-1 space-y-2">
+                                            <div className="h-[14px] w-[60%] rounded bg-[var(--app-subtle-bg)] animate-pulse" />
+                                            <div className="h-[12px] w-[40%] rounded bg-[var(--app-subtle-bg)] animate-pulse" />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     ) : groups.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-16 text-center">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-12 h-12 text-[var(--app-hint)] opacity-40 mb-4">
-                                <circle cx="12" cy="12" r="10" />
-                                <polyline points="12 6 12 12 16 14" />
-                            </svg>
-                            <div className="text-[var(--app-fg)] font-medium">
+                        <div className="flex flex-col items-center justify-center py-12 text-center">
+                            <div className="w-12 h-12 flex items-center justify-center mb-3 opacity-50">
+                                {searchQuery ? (
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-12 h-12 text-[var(--app-hint)]">
+                                        <circle cx="11" cy="11" r="8" />
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                    </svg>
+                                ) : (
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-16 h-16 text-[var(--app-hint)]">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <polyline points="12 6 12 12 16 14" />
+                                    </svg>
+                                )}
+                            </div>
+                            <div className="text-[15px] font-medium text-[var(--app-fg)]">
                                 {searchQuery ? t('history.noResults') : t('history.empty')}
                             </div>
-                            <div className="text-sm text-[var(--app-hint)] mt-1">{t('history.empty.description')}</div>
+                            <div className="text-[13px] text-[var(--app-hint)] mt-1">{searchQuery ? t('history.noResults.description') : t('history.empty.description')}</div>
                         </div>
                     ) : (
-                        groups.map((group) => (
-                            <div key={group.label}>
-                                <div className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[var(--app-hint)] mb-2">
-                                    {group.label} ({group.sessions.length})
+                        <div className="space-y-6">
+                            {groups.map((group) => (
+                                <div key={group.label}>
+                                    <div className="text-[12px] font-semibold uppercase tracking-[0.5px] text-[var(--app-hint)] mb-3 pl-1">
+                                        {group.label}
+                                    </div>
+                                    <div className="space-y-2.5">
+                                        {group.sessions.map((session) => (
+                                            <HistorySessionItem
+                                                key={session.id}
+                                                session={session}
+                                                api={api}
+                                                onOpen={() => navigate({ to: '/sessions/$sessionId', params: { sessionId: session.id } })}
+                                            />
+                                        ))}
+                                    </div>
                                 </div>
-                                <div className="border border-[var(--app-border)] rounded-[var(--app-radius-xl)] overflow-hidden bg-[var(--app-panel-bg)]">
-                                    {group.sessions.map((session, i) => (
-                                        <button
-                                            key={session.id}
-                                            type="button"
-                                            onClick={() => navigate({ to: '/sessions/$sessionId', params: { sessionId: session.id } })}
-                                            className={`flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-[var(--app-panel-muted-bg)] transition-colors ${i < group.sessions.length - 1 ? 'border-b border-[var(--app-border)]' : ''}`}
-                                        >
-                                            <div className={`w-2 h-2 rounded-full shrink-0 ${session.active ? 'bg-[var(--app-git-staged-color)]' : 'bg-[var(--app-hint)] opacity-40'}`} />
-                                            <div className="flex-1 min-w-0">
-                                                <div className="text-[14px] font-medium text-[var(--app-fg)] truncate">{session.name}</div>
-                                                <div className="text-[12px] text-[var(--app-hint)] flex items-center gap-2 mt-0.5">
-                                                    <span>{session.agent}</span>
-                                                    {session.model && (
-                                                        <>
-                                                            <span className="text-[var(--app-border)]">·</span>
-                                                            <span>{session.model}</span>
-                                                        </>
-                                                    )}
-                                                    {session.projectPath && (
-                                                        <>
-                                                            <span className="text-[var(--app-border)]">·</span>
-                                                            <span className="truncate">{session.projectPath.split('/').pop()}</span>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-[var(--app-hint)] shrink-0">
-                                                <polyline points="9 18 15 12 9 6" />
-                                            </svg>
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        ))
+                            ))}
+                        </div>
                     )}
 
                     {/* Bottom padding for mobile tab bar */}

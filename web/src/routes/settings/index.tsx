@@ -5,6 +5,7 @@ import { getFontScaleOptions, useFontScale, type FontScale } from '@/hooks/useFo
 import { getTerminalFontSizeOptions, useTerminalFontSize, type TerminalFontSize } from '@/hooks/useTerminalFontSize'
 import { useAppearance, getAppearanceOptions, type AppearancePreference } from '@/hooks/useTheme'
 import { useAppContext } from '@/lib/app-context'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { PROTOCOL_VERSION } from '@hapi/protocol'
 
 const locales: { value: Locale; nativeLabel: string }[] = [
@@ -38,6 +39,22 @@ function ChevronRightIcon() {
     )
 }
 
+function Toggle({ checked, onChange }: { checked: boolean; onChange: (val: boolean) => void }) {
+    return (
+        <button
+            type="button"
+            role="switch"
+            aria-checked={checked}
+            onClick={() => onChange(!checked)}
+            className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full transition-colors ${checked ? 'bg-[var(--app-link)]' : 'bg-[var(--app-subtle-bg)]'}`}
+        >
+            <span
+                className={`pointer-events-none inline-block h-[22px] w-[22px] rounded-full bg-white shadow-[0_2px_4px_rgba(0,0,0,0.15)] transition-transform ${checked ? 'translate-x-[22px]' : 'translate-x-[3px]'} mt-[3px]`}
+            />
+        </button>
+    )
+}
+
 function SettingIconBox({ children, variant }: { children: React.ReactNode; variant?: 'default' | 'accent' | 'danger' }) {
     const bgClass = variant === 'accent'
         ? 'bg-[rgba(201,100,66,0.12)] text-[var(--app-link)] [html[data-theme=dark]_&]:bg-[rgba(217,119,87,0.15)]'
@@ -57,7 +74,7 @@ function SettingRow({ children, onClick }: { children: React.ReactNode; onClick?
         <button
             type="button"
             onClick={onClick}
-            className="flex w-full items-center justify-between px-4 py-3.5 border-b border-[var(--app-border)] last:border-b-0 text-left hover:bg-[var(--app-panel-muted-bg)] transition-colors"
+            className="flex w-full items-center justify-between px-4 py-3.5 border-b border-[var(--app-border)] last:border-b-0 text-left hover:bg-[var(--app-subtle-bg)] transition-colors"
         >
             {children}
         </button>
@@ -66,7 +83,7 @@ function SettingRow({ children, onClick }: { children: React.ReactNode; onClick?
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
     return (
-        <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[var(--app-hint)] px-4 mb-2">
+        <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[var(--app-hint)] px-1 mb-2.5">
             {children}
         </p>
     )
@@ -74,7 +91,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 function SettingsCard({ children }: { children: React.ReactNode }) {
     return (
-        <div className="border border-[var(--app-border)] rounded-[var(--app-radius-xl)] overflow-hidden bg-[var(--app-panel-bg)]">
+        <div className="border border-[var(--app-border)] rounded-[var(--app-radius-2xl)] overflow-hidden bg-[var(--app-panel-bg)]">
             {children}
         </div>
     )
@@ -108,7 +125,7 @@ function DropdownOption({ selected, onClick, children }: { selected: boolean; on
 
 export default function SettingsPage() {
     const { t, locale, setLocale } = useTranslation()
-    const { api, connectionState } = useAppContext()
+    const { api, connectionState, clearAuth, baseUrl } = useAppContext()
     const [isOpen, setIsOpen] = useState(false)
     const [isAppearanceOpen, setIsAppearanceOpen] = useState(false)
     const [isFontOpen, setIsFontOpen] = useState(false)
@@ -126,6 +143,10 @@ export default function SettingsPage() {
     const [voiceLanguage, setVoiceLanguage] = useState<string | null>(() => {
         return localStorage.getItem('hapi-voice-lang')
     })
+    const [voiceEnabled, setVoiceEnabled] = useState(() => {
+        return localStorage.getItem('hapi-voice-enabled') !== 'false'
+    })
+    const [logoutOpen, setLogoutOpen] = useState(false)
 
     const fontScaleOptions = getFontScaleOptions()
     const terminalFontSizeOptions = getTerminalFontSizeOptions()
@@ -221,7 +242,7 @@ export default function SettingsPage() {
     return (
         <div className="flex h-full min-h-0 flex-col bg-[var(--app-bg)]">
             {/* Sticky header */}
-            <div className="sticky top-0 z-10 bg-[var(--app-bg)] border-b border-[var(--app-border)] px-5 py-3">
+            <div className="sticky top-0 z-10 bg-[var(--app-panel-bg)] border-b border-[var(--app-border)] px-5 py-4">
                 <h1 className="text-[20px] font-medium text-[var(--app-fg)]" style={{ fontFamily: 'var(--app-font-serif)' }}>
                     {t('settings.title')}
                 </h1>
@@ -229,7 +250,7 @@ export default function SettingsPage() {
 
             {/* Scrollable content */}
             <div className="app-scroll-y flex-1 min-h-0">
-                <div className="mx-auto w-full max-w-[600px] px-4 py-6 space-y-6">
+                <div className="mx-auto w-full max-w-[600px] px-4 py-5 space-y-6">
                     {/* Appearance Section */}
                     <div>
                         <SectionTitle>{t('settings.display.title')}</SectionTitle>
@@ -247,7 +268,7 @@ export default function SettingsPage() {
                                             <div className="text-[15px] font-medium text-[var(--app-fg)]">{t('settings.display.appearance')}</div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-1 text-[13px] text-[var(--app-hint)]">
+                                    <div className="flex items-center gap-1.5 text-[13px] text-[var(--app-hint)]">
                                         <span>{t(currentAppearanceLabel)}</span>
                                         <ChevronDownIcon open={isAppearanceOpen} />
                                     </div>
@@ -276,7 +297,7 @@ export default function SettingsPage() {
                                             <div className="text-[15px] font-medium text-[var(--app-fg)]">{t('settings.language.label')}</div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-1 text-[13px] text-[var(--app-hint)]">
+                                    <div className="flex items-center gap-1.5 text-[13px] text-[var(--app-hint)]">
                                         <span>{currentLocale?.nativeLabel}</span>
                                         <ChevronDownIcon open={isOpen} />
                                     </div>
@@ -305,7 +326,7 @@ export default function SettingsPage() {
                                             <div className="text-[15px] font-medium text-[var(--app-fg)]">{t('settings.display.fontSize')}</div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-1 text-[13px] text-[var(--app-hint)]">
+                                    <div className="flex items-center gap-1.5 text-[13px] text-[var(--app-hint)]">
                                         <span>{currentFontScaleLabel}</span>
                                         <ChevronDownIcon open={isFontOpen} />
                                     </div>
@@ -334,7 +355,7 @@ export default function SettingsPage() {
                                             <div className="text-[15px] font-medium text-[var(--app-fg)]">{t('settings.display.terminalFontSize')}</div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-1 text-[13px] text-[var(--app-hint)]">
+                                    <div className="flex items-center gap-1.5 text-[13px] text-[var(--app-hint)]">
                                         <span>{currentTerminalFontSizeLabel}</span>
                                         <ChevronDownIcon open={isTerminalFontOpen} />
                                     </div>
@@ -354,6 +375,25 @@ export default function SettingsPage() {
                     <div>
                         <SectionTitle>{t('settings.voice.title')}</SectionTitle>
                         <SettingsCard>
+                            {/* Voice Enable Toggle */}
+                            <div className="flex items-center justify-between px-4 py-3.5 border-b border-[var(--app-border)]">
+                                <div className="flex items-center gap-3.5">
+                                    <SettingIconBox variant="accent">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
+                                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                                            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                                            <line x1="12" y1="19" x2="12" y2="22" />
+                                        </svg>
+                                    </SettingIconBox>
+                                    <div>
+                                        <div className="text-[15px] font-medium text-[var(--app-fg)]">{t('settings.voice.enable')}</div>
+                                        <div className="text-[12px] text-[var(--app-hint)] mt-0.5">{t('settings.voice.enableDesc')}</div>
+                                    </div>
+                                </div>
+                                <Toggle checked={voiceEnabled} onChange={(val) => { setVoiceEnabled(val); localStorage.setItem('hapi-voice-enabled', String(val)) }} />
+                            </div>
+
+                            {/* Voice Language */}
                             <div ref={voiceContainerRef} className="relative">
                                 <SettingRow onClick={() => setIsVoiceOpen(!isVoiceOpen)}>
                                     <div className="flex items-center gap-3.5">
@@ -370,7 +410,7 @@ export default function SettingsPage() {
                                             <div className="text-[15px] font-medium text-[var(--app-fg)]">{t('settings.voice.language')}</div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-1 text-[13px] text-[var(--app-hint)]">
+                                    <div className="flex items-center gap-1.5 text-[13px] text-[var(--app-hint)]">
                                         <span>{voiceLanguageDisplay}</span>
                                         <ChevronDownIcon open={isVoiceOpen} />
                                     </div>
@@ -392,7 +432,11 @@ export default function SettingsPage() {
                     <div>
                         <SectionTitle>{t('settings.server.title')}</SectionTitle>
                         <SettingsCard>
-                            <div className="px-4 py-3 space-y-2" style={{ fontFamily: 'var(--app-font-mono)', fontSize: '12px' }}>
+                            <div className="px-4 py-3.5 space-y-1.5" style={{ fontFamily: 'var(--app-font-mono)', fontSize: '12px' }}>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[var(--app-hint)]">Hub URL</span>
+                                    <span className="text-[var(--app-fg)]">{baseUrl}</span>
+                                </div>
                                 <div className="flex items-center justify-between">
                                     <span className="text-[var(--app-hint)]">{t('settings.server.status')}</span>
                                     <span className="flex items-center gap-1.5">
@@ -422,7 +466,7 @@ export default function SettingsPage() {
                                 href="https://hapi.run"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center justify-between px-4 py-3.5 border-b border-[var(--app-border)] hover:bg-[var(--app-panel-muted-bg)] transition-colors"
+                                className="flex items-center justify-between px-4 py-3.5 border-b border-[var(--app-border)] hover:bg-[var(--app-subtle-bg)] transition-colors"
                             >
                                 <div className="flex items-center gap-3.5">
                                     <SettingIconBox>
@@ -439,7 +483,7 @@ export default function SettingsPage() {
                                 href="https://hapi.run/docs"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center justify-between px-4 py-3.5 border-b border-[var(--app-border)] hover:bg-[var(--app-panel-muted-bg)] transition-colors"
+                                className="flex items-center justify-between px-4 py-3.5 border-b border-[var(--app-border)] hover:bg-[var(--app-subtle-bg)] transition-colors"
                             >
                                 <div className="flex items-center gap-3.5">
                                     <SettingIconBox>
@@ -465,6 +509,44 @@ export default function SettingsPage() {
                             </div>
                         </SettingsCard>
                     </div>
+
+                    {/* Danger Zone — Log Out */}
+                    <div>
+                        <SectionTitle>{t('settings.danger.title')}</SectionTitle>
+                        <SettingsCard>
+                            <button
+                                type="button"
+                                onClick={() => setLogoutOpen(true)}
+                                className="flex w-full items-center justify-between px-4 py-3.5 text-left hover:bg-[var(--app-subtle-bg)] transition-colors"
+                            >
+                                <div className="flex items-center gap-3.5">
+                                    <SettingIconBox variant="danger">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
+                                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                                            <polyline points="16 17 21 12 16 7" />
+                                            <line x1="21" y1="12" x2="9" y2="12" />
+                                        </svg>
+                                    </SettingIconBox>
+                                    <div>
+                                        <div className="text-[15px] font-medium text-[var(--app-error)]">{t('settings.danger.logOut')}</div>
+                                        <div className="text-[12px] text-[var(--app-hint)] mt-0.5">{t('settings.danger.logOutDesc')}</div>
+                                    </div>
+                                </div>
+                            </button>
+                        </SettingsCard>
+                    </div>
+
+                    <ConfirmDialog
+                        isOpen={logoutOpen}
+                        onClose={() => setLogoutOpen(false)}
+                        title={t('settings.danger.logOut')}
+                        description={t('settings.danger.logOutDesc')}
+                        confirmLabel={t('settings.danger.logOut')}
+                        confirmingLabel={t('settings.danger.logOut')}
+                        onConfirm={async () => clearAuth()}
+                        isPending={false}
+                        destructive
+                    />
 
                     {/* Bottom padding for mobile tab bar */}
                     <div className="h-20 lg:h-4" />

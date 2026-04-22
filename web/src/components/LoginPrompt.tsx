@@ -20,40 +20,10 @@ type LoginPromptProps = {
     error?: string | null
 }
 
-function ThemeToggle() {
-    const { isDark } = useTheme()
-    const { setAppearance } = useAppearance()
-
-    return (
-        <button
-            type="button"
-            onClick={() => setAppearance(isDark ? 'light' : 'dark')}
-            className="fixed top-4 left-4 z-50 w-9 h-9 rounded-full bg-[var(--app-subtle-bg)] border border-[var(--app-border)] flex items-center justify-center text-[var(--app-hint)] hover:text-[var(--app-fg)] hover:bg-[var(--app-panel-muted-bg)] transition-colors"
-            aria-label={isDark ? 'Light mode' : 'Dark mode'}
-        >
-            {isDark ? (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-                    <circle cx="12" cy="12" r="5" />
-                    <line x1="12" y1="1" x2="12" y2="3" />
-                    <line x1="12" y1="21" x2="12" y2="23" />
-                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                    <line x1="1" y1="12" x2="3" y2="12" />
-                    <line x1="21" y1="12" x2="23" y2="12" />
-                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-                </svg>
-            ) : (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-                </svg>
-            )}
-        </button>
-    )
-}
-
 export function LoginPrompt(props: LoginPromptProps) {
     const { t } = useTranslation()
+    const { isDark } = useTheme()
+    const { setAppearance } = useAppearance()
     const isBindMode = props.mode === 'bind'
     const [accessToken, setAccessToken] = useState('')
     const [isLoading, setIsLoading] = useState(false)
@@ -144,12 +114,33 @@ export function LoginPrompt(props: LoginPromptProps) {
     const submitLabel = isBindMode ? t('login.bind.submit') : t('login.submit')
 
     return (
-        <div className="relative h-full flex items-center justify-center p-6">
-            {/* Theme toggle — top left */}
-            <ThemeToggle />
-
-            {/* Language switcher — top right */}
-            <div className="fixed top-4 right-4 z-50">
+        <div className="relative min-h-[100dvh] flex items-center justify-center p-6">
+            {/* Top controls bar */}
+            <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 py-4" style={{ paddingTop: 'calc(16px + env(safe-area-inset-top))' }}>
+                <button
+                    type="button"
+                    onClick={() => setAppearance(isDark ? 'light' : 'dark')}
+                    className="w-9 h-9 rounded-full bg-[var(--app-subtle-bg)] border border-[var(--app-border)] flex items-center justify-center text-[var(--app-hint)] hover:text-[var(--app-fg)] hover:bg-[var(--app-panel-muted-bg)] transition-colors"
+                    aria-label={isDark ? 'Light mode' : 'Dark mode'}
+                >
+                    {isDark ? (
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                            <circle cx="12" cy="12" r="5" />
+                            <line x1="12" y1="1" x2="12" y2="3" />
+                            <line x1="12" y1="21" x2="12" y2="23" />
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                            <line x1="1" y1="12" x2="3" y2="12" />
+                            <line x1="21" y1="12" x2="23" y2="12" />
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                        </svg>
+                    ) : (
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                        </svg>
+                    )}
+                </button>
                 <LanguageSwitcher />
             </div>
 
@@ -160,7 +151,7 @@ export function LoginPrompt(props: LoginPromptProps) {
                         className="w-[72px] h-[72px] rounded-[20px] mx-auto mb-6 flex items-center justify-center shadow-[var(--app-shadow-md)]"
                         style={{ background: 'linear-gradient(135deg, var(--app-link) 0%, #d97757 100%)' }}
                     >
-                        <span className="text-white text-[28px] font-medium" style={{ fontFamily: 'var(--app-font-serif)' }}>E</span>
+                        <span className="text-white text-[28px] font-semibold" style={{ fontFamily: 'var(--app-font-serif)' }}>E</span>
                     </div>
                     <h1
                         className="text-[28px] font-medium text-[var(--app-fg)] mb-2"
@@ -176,7 +167,7 @@ export function LoginPrompt(props: LoginPromptProps) {
                     <form onSubmit={handleSubmit} className="space-y-5">
                         {/* Form group: Access Token */}
                         <div>
-                            <label className="block text-[13px] font-medium text-[var(--app-fg)] mb-1.5">
+                            <label className="block text-[13px] font-medium text-[var(--app-fg)] mb-2">
                                 {t('login.tokenLabel')}
                             </label>
                             <input
@@ -198,8 +189,8 @@ export function LoginPrompt(props: LoginPromptProps) {
 
                         {/* Error */}
                         {displayError && (
-                            <div className="flex items-start gap-2 text-sm text-[var(--app-error)]">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 shrink-0 mt-0.5">
+                            <div className="flex items-center gap-1.5 text-[13px] text-[var(--app-error)]">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 shrink-0">
                                     <circle cx="12" cy="12" r="10" />
                                     <line x1="12" y1="8" x2="12" y2="12" />
                                     <line x1="12" y1="16" x2="12.01" y2="16" />
@@ -232,7 +223,7 @@ export function LoginPrompt(props: LoginPromptProps) {
 
                     {/* Links row with separator */}
                     {!isBindMode && (
-                        <div className="mt-5 pt-5 border-t border-[var(--app-border)] flex items-center justify-between text-xs text-[var(--app-hint)]">
+                        <div className="mt-5 pt-5 border-t border-[var(--app-border)] flex items-center justify-between text-[13px] text-[var(--app-hint)]">
                             <a href="https://hapi.run/docs" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--app-fg)] transition-colors">
                                 {t('login.help')}
                             </a>
@@ -250,7 +241,7 @@ export function LoginPrompt(props: LoginPromptProps) {
                                         </DialogDescription>
                                     </DialogHeader>
                                     <form onSubmit={handleSaveServer} className="space-y-4">
-                                        <div className="px-4 py-3 rounded-[12px] bg-[var(--app-subtle-bg)] text-xs">
+                                        <div className="px-4 py-3 rounded-[12px] bg-[var(--app-subtle-bg)] text-[13px]">
                                             <span className="font-medium text-[var(--app-fg)]">{t('login.server.current')}</span>{' '}
                                             <span className="text-[var(--app-hint)]">{serverSummary}</span>
                                         </div>
@@ -264,7 +255,8 @@ export function LoginPrompt(props: LoginPromptProps) {
                                                     setServerError(null)
                                                 }}
                                                 placeholder={t('login.server.placeholder')}
-                                                className="w-full px-3 py-2.5 rounded-[16px] border border-[var(--app-border)] bg-[var(--app-bg)] text-[var(--app-fg)] placeholder:text-[var(--app-hint)] focus:outline-none focus:ring-2 focus:ring-[var(--app-link)] focus:border-transparent"
+                                                className="w-full px-4 py-3.5 rounded-[16px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] text-[var(--app-fg)] placeholder:text-[var(--app-hint)] focus:outline-none focus:ring-2 focus:ring-[var(--app-link)] focus:border-transparent"
+                                                style={{ fontFamily: 'var(--app-font-mono)' }}
                                             />
                                             <div className="text-[11px] text-[var(--app-hint)]">
                                                 {t('login.server.hint')}
@@ -301,7 +293,7 @@ export function LoginPrompt(props: LoginPromptProps) {
             </div>
 
             {/* Footer */}
-            <div className="absolute bottom-4 left-0 right-0 text-center text-xs text-[var(--app-hint)] space-y-1">
+            <div className="fixed bottom-0 left-0 right-0 text-center text-xs text-[var(--app-hint)] space-y-1 px-5 py-4" style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}>
                 <div>{t('login.footer')} <span className="text-red-500">&#9829;</span> {t('login.footer.for')}</div>
                 <div>&copy; {new Date().getFullYear()} HAPI</div>
             </div>

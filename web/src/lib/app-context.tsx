@@ -8,6 +8,7 @@ type AppContextValue = {
     token: string
     baseUrl: string
     connectionState: ConnectionState
+    clearAuth: () => void
 }
 
 const AppContext = createContext<AppContextValue | null>(null)
