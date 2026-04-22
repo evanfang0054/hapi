@@ -20,6 +20,7 @@ type ConfirmDialogProps = {
     onConfirm: () => Promise<void>
     isPending: boolean
     destructive?: boolean
+    children?: React.ReactNode
 }
 
 export function ConfirmDialog(props: ConfirmDialogProps) {
@@ -68,6 +69,8 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
                         {description}
                     </DialogDescription>
                 </DialogHeader>
+
+                {props.children}
 
                 {error ? (
                     <div className="mt-3 rounded-[18px] border border-[var(--app-badge-error-border)] bg-[var(--app-badge-error-bg)] px-4 py-3 text-sm text-[var(--app-badge-error-text)]">

@@ -225,7 +225,7 @@ function GitFileRow(props: {
     onUnstage?: () => void
     onDiscard?: () => void
     onClean?: () => void
-    onRequestConfirm?: (action: () => void, type: 'discard' | 'delete') => void
+    onRequestConfirm?: (action: () => void, type: 'discard' | 'delete', filePath?: string) => void
     showDivider: boolean
     projectRootLabel: string
     actionLoading?: boolean
@@ -237,7 +237,7 @@ function GitFileRow(props: {
         e.stopPropagation()
         if (!action) return
         if (confirmType && props.onRequestConfirm) {
-            props.onRequestConfirm(action, confirmType)
+            props.onRequestConfirm(action, confirmType, props.file.filePath)
             return
         }
         action()
@@ -404,6 +404,7 @@ export default function FilesPage() {
     const [confirmDialog, setConfirmDialog] = useState<{
         isOpen: boolean
         type: 'discard' | 'delete' | 'discardAll'
+        targetFiles?: string[]
         onConfirm: () => Promise<void>
     }>({ isOpen: false, type: 'discard', onConfirm: async () => {} })
 
@@ -505,10 +506,11 @@ export default function FilesPage() {
         }
     }, [api, sessionId, refetchGit, addToast, t])
 
-    const handleRequestConfirm = useCallback((action: () => void, type: 'discard' | 'delete') => {
+    const handleRequestConfirm = useCallback((action: () => void, type: 'discard' | 'delete', filePath?: string) => {
         setConfirmDialog({
             isOpen: true,
             type,
+            targetFiles: filePath ? [filePath] : undefined,
             onConfirm: async () => {
                 await action()
             }
@@ -547,6 +549,7 @@ export default function FilesPage() {
             setConfirmDialog({
                 isOpen: true,
                 type: 'discardAll',
+                targetFiles: gitStatus?.unstagedFiles.map(f => f.filePath),
                 onConfirm: executeAction
             })
             return
@@ -852,7 +855,15 @@ export default function FilesPage() {
                 onConfirm={confirmDialog.onConfirm}
                 isPending={actionLoading}
                 destructive
-            />
+            >
+                {confirmDialog.targetFiles && confirmDialog.targetFiles.length > 0 && (
+                    <div className="mt-3 max-h-[120px] overflow-y-auto rounded-[12px] bg-[var(--app-subtle-bg)] p-3">
+                        {confirmDialog.targetFiles.map((f, i) => (
+                            <div key={i} className="text-xs text-[var(--app-hint)] py-0.5 truncate" style={{ fontFamily: 'var(--app-font-mono)' }}>{f}</div>
+                        ))}
+                    </div>
+                )}
+            </ConfirmDialog>
         </div>
     )
 }

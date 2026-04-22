@@ -12,6 +12,7 @@ import { queryKeys } from '@/lib/query-keys'
 import { langAlias, useShikiHighlighter } from '@/lib/shiki'
 import { decodeBase64 } from '@/lib/utils'
 import { useTranslation } from '@/lib/use-translation'
+import { useToast } from '@/lib/toast-context'
 
 const MAX_COPYABLE_FILE_BYTES = 1_000_000
 
@@ -120,6 +121,7 @@ function extractCommandError(result: GitCommandResponse | undefined): string | n
 
 export default function FilePage() {
     const { t } = useTranslation()
+    const { addToast } = useToast()
     const { api } = useAppContext()
     const { copied: pathCopied, copy: copyPath } = useCopyToClipboard()
     const { copied: contentCopied, copy: copyContent } = useCopyToClipboard()
@@ -237,7 +239,7 @@ export default function FilePage() {
                                             {filePath ? (
                                                 <button
                                                     type="button"
-                                                    onClick={() => copyPath(filePath)}
+                                                    onClick={() => { copyPath(filePath); addToast({ title: t('sessionFileDetail.copied') }) }}
                                                     className="inline-flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-3 py-1 text-[var(--app-fg)] transition-colors hover:bg-[var(--app-panel-muted-bg)]"
                                                     title={t('sessionFileDetail.copyPath')}
                                                 >
@@ -279,14 +281,50 @@ export default function FilePage() {
                                     </div>
                                 ) : null}
                                 {missingPath ? (
-                                    <div className="text-sm text-[var(--app-hint)]">{t('sessionFileDetail.noFilePath')}</div>
+                                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                                        <div className="w-16 h-16 rounded-full bg-[var(--app-subtle-bg)] flex items-center justify-center mb-4">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-7 h-7 text-[var(--app-hint)]">
+                                                <circle cx="12" cy="12" r="10" />
+                                                <line x1="12" y1="8" x2="12" y2="12" />
+                                                <line x1="12" y1="16" x2="12.01" y2="16" />
+                                            </svg>
+                                        </div>
+                                        <div className="text-[18px] font-medium text-[var(--app-fg)]" style={{ fontFamily: 'var(--app-font-serif)' }}>
+                                            {t('sessionFileDetail.noFilePath')}
+                                        </div>
+                                    </div>
                                 ) : loading ? (
                                     <FileContentSkeleton label={t('sessionFileDetail.loadingFile')} />
                                 ) : fileError ? (
-                                    <div className="text-sm text-[var(--app-hint)]">{fileError}</div>
+                                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                                        <div className="w-16 h-16 rounded-full bg-[rgba(181,51,51,0.08)] flex items-center justify-center mb-4">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="var(--app-error)" strokeWidth="1.5" className="w-7 h-7">
+                                                <circle cx="12" cy="12" r="10" />
+                                                <line x1="12" y1="8" x2="12" y2="12" />
+                                                <line x1="12" y1="16" x2="12.01" y2="16" />
+                                            </svg>
+                                        </div>
+                                        <div className="text-[18px] font-medium text-[var(--app-fg)]" style={{ fontFamily: 'var(--app-font-serif)' }}>
+                                            {t('sessionFileDetail.error.failedReadFile')}
+                                        </div>
+                                        <div className="text-[13px] text-[var(--app-hint)] mt-2 max-w-[280px] leading-relaxed">
+                                            {fileError}
+                                        </div>
+                                    </div>
                                 ) : binaryFile ? (
-                                    <div className="text-sm text-[var(--app-hint)]">
-                                        {t('sessionFileDetail.binaryNotDisplayable')}
+                                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                                        <div className="w-16 h-16 rounded-full bg-[var(--app-subtle-bg)] flex items-center justify-center mb-4">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-7 h-7 text-[var(--app-hint)]">
+                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                                <polyline points="14 2 14 8 20 8" />
+                                            </svg>
+                                        </div>
+                                        <div className="text-[18px] font-medium text-[var(--app-fg)]" style={{ fontFamily: 'var(--app-font-serif)' }}>
+                                            Binary File
+                                        </div>
+                                        <div className="text-[13px] text-[var(--app-hint)] mt-2 max-w-[280px] leading-relaxed">
+                                            {t('sessionFileDetail.binaryNotDisplayable')}
+                                        </div>
                                     </div>
                                 ) : displayMode === 'diff' && diffContent ? (
                                     <DiffDisplay diffContent={diffContent} />
@@ -298,7 +336,7 @@ export default function FilePage() {
                                             {canCopyContent ? (
                                                 <button
                                                     type="button"
-                                                    onClick={() => copyContent(decodedContent)}
+                                                    onClick={() => { copyContent(decodedContent); addToast({ title: t('button.copy') }) }}
                                                     className="absolute right-2 top-2 z-10 inline-flex items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2.5 py-1 text-[11px] text-[var(--app-hint)] shadow-[var(--app-shadow-sm)] transition-colors hover:bg-[var(--app-panel-muted-bg)] hover:text-[var(--app-fg)]"
                                                     title={t('sessionFileDetail.copyFileContent')}
                                                 >
