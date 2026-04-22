@@ -91,7 +91,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 function SettingsCard({ children }: { children: React.ReactNode }) {
     return (
-        <div className="border border-[var(--app-border)] rounded-[var(--app-radius-2xl)] overflow-hidden bg-[var(--app-panel-bg)]">
+        <div className="border border-[var(--app-border)] rounded-[var(--app-radius-2xl)] bg-[var(--app-panel-bg)]">
             {children}
         </div>
     )
