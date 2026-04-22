@@ -39,6 +39,7 @@ export default {
   'login.footer.copyright': '©',
 
   // Sessions page
+  'sessions.title': 'Sessions',
   'sessions.count': '{n} sessions in {m} projects',
   'sessions.new': 'New Session',
 
@@ -354,6 +355,14 @@ export default {
 
   // Settings page
   'settings.title': 'Settings',
+
+  // Tab bar labels
+  'machines.title': 'Machines',
+  'history.title': 'History',
+
+  // Theme
+  'theme.light': 'Light mode',
+  'theme.dark': 'Dark mode',
   'settings.eyebrow': 'Preferences',
   'settings.description': 'Keep language, appearance, font, terminal, voice, and version details in one polished preference center without changing any setting behavior.',
   'settings.language.title': 'Language',

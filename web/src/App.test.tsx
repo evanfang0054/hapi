@@ -53,6 +53,8 @@ vi.mock('@/hooks/useTelegram', () => ({
 
 vi.mock('@/hooks/useTheme', () => ({
     initializeTheme: vi.fn(),
+    useTheme: () => ({ colorScheme: 'light', isDark: false }),
+    useAppearance: () => ({ appearance: 'system', setAppearance: vi.fn() }),
 }))
 
 vi.mock('@/hooks/useAuth', () => ({
@@ -118,6 +120,12 @@ vi.mock('@/hooks/useAppGoBack', () => ({
 
 vi.mock('@/lib/app-context', () => ({
     AppContextProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+    useAppContext: () => ({
+        api: {},
+        token: 'token',
+        baseUrl: 'https://example.com',
+        connectionState: 'connected',
+    }),
 }))
 
 vi.mock('@/lib/message-window-store', () => ({
@@ -136,6 +144,35 @@ vi.mock('@/lib/voice-context', () => ({
 
 vi.mock('@/lib/runtime-config', () => ({
     requireHubUrlForLogin: () => false,
+}))
+
+vi.mock('@/hooks/queries/useMachines', () => ({
+    useMachines: () => ({
+        machines: [],
+        isLoading: false,
+        error: null,
+    }),
+}))
+
+vi.mock('@/hooks/queries/useSessions', () => ({
+    useSessions: () => ({
+        sessions: [],
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+    }),
+}))
+
+vi.mock('@/components/NewSession', () => ({
+    NewSession: () => <div data-testid="new-session" />,
+}))
+
+vi.mock('@/components/layout/DesktopNav', () => ({
+    DesktopNav: () => <nav data-testid="desktop-nav" />,
+}))
+
+vi.mock('@/components/layout/MobileTabBar', () => ({
+    MobileTabBar: () => <nav data-testid="mobile-tab-bar" />,
 }))
 
 vi.mock('@/components/LoginPrompt', () => ({

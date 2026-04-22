@@ -9,13 +9,8 @@ export function useAppGoBack(): () => void {
 
     return useCallback(() => {
         // Use explicit path navigation for consistent behavior across all environments
-        if (pathname === '/sessions/new') {
-            navigate({ to: '/sessions' })
-            return
-        }
-
-        // Settings page always goes back to sessions
-        if (pathname === '/settings') {
+        // Settings/Machines/History page always goes back to sessions
+        if (pathname === '/settings' || pathname === '/machines' || pathname === '/history') {
             navigate({ to: '/sessions' })
             return
         }

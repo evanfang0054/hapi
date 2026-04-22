@@ -39,6 +39,7 @@ export default {
   'login.footer.copyright': '©',
 
   // Sessions page
+  'sessions.title': '会话',
   'sessions.count': '{n} 个会话，{m} 个项目',
   'sessions.new': '新建会话',
 
@@ -356,6 +357,14 @@ export default {
 
   // Settings page
   'settings.title': '设置',
+
+  // Tab bar labels
+  'machines.title': '机器',
+  'history.title': '历史',
+
+  // Theme
+  'theme.light': '浅色模式',
+  'theme.dark': '深色模式',
   'settings.eyebrow': '偏好',
   'settings.description': '将语言、外观、字体、终端、语音和版本信息集中在同一个偏好中心，不改变任何现有设置行为。',
   'settings.language.title': '语言',

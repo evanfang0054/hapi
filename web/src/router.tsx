@@ -14,7 +14,6 @@ import {
 import { App } from '@/App'
 import { SessionChat } from '@/components/SessionChat'
 import { SessionList } from '@/components/SessionList'
-import { NewSession } from '@/components/NewSession'
 import { LoadingState } from '@/components/LoadingState'
 import { useAppContext } from '@/lib/app-context'
 import { useAppGoBack } from '@/hooks/useAppGoBack'
@@ -36,71 +35,16 @@ import FilePage from '@/routes/sessions/file'
 import TerminalPage from '@/routes/sessions/terminal'
 import SettingsPage from '@/routes/settings'
 
-function BackIcon(props: { className?: string }) {
-    return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={props.className}
-        >
-            <polyline points="15 18 9 12 15 6" />
-        </svg>
-    )
-}
-
-function PlusIcon(props: { className?: string }) {
-    return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={props.className}
-        >
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-        </svg>
-    )
-}
-
-function SettingsIcon(props: { className?: string }) {
-    return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={props.className}
-        >
-            <circle cx="12" cy="12" r="3" />
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-        </svg>
-    )
-}
-
 function getMachineTitle(machine: Machine): string {
     if (machine.metadata?.displayName) return machine.metadata.displayName
     if (machine.metadata?.host) return machine.metadata.host
     return machine.id.slice(0, 8)
 }
 
+/**
+ * SessionsShell — Desktop: left panel (SessionList ~420px) + right panel (Outlet)
+ * Mobile: full-width content
+ */
 function SessionsPage() {
     const { api } = useAppContext()
     const navigate = useNavigate()
@@ -125,11 +69,12 @@ function SessionsPage() {
         return labels
     }, [machines])
     const sessionMatch = matchRoute({ to: '/sessions/$sessionId', fuzzy: true })
-    const selectedSessionId = sessionMatch && sessionMatch.sessionId !== 'new' ? sessionMatch.sessionId : null
+    const selectedSessionId = sessionMatch ? sessionMatch.sessionId : null
     const isSessionsIndex = pathname === '/sessions' || pathname === '/sessions/'
 
     return (
         <div className="flex h-full min-h-0">
+            {/* Left panel: Session List (hidden on mobile when viewing a session detail) */}
             <div
                 className={`${isSessionsIndex ? 'flex' : 'hidden lg:flex'} w-full lg:w-[420px] xl:w-[480px] shrink-0 flex-col bg-[var(--app-bg)] lg:border-r lg:border-[var(--app-divider)]`}
             >
@@ -137,24 +82,6 @@ function SessionsPage() {
                     <div className="mx-auto w-full max-w-content flex items-center justify-between px-3 py-2">
                         <div className="text-xs text-[var(--app-hint)]">
                             {t('sessions.count', { n: sessions.length, m: projectCount })}
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <button
-                                type="button"
-                                onClick={() => navigate({ to: '/settings' })}
-                                className="p-1.5 rounded-full text-[var(--app-hint)] hover:text-[var(--app-fg)] hover:bg-[var(--app-subtle-bg)] transition-colors"
-                                title={t('settings.title')}
-                            >
-                                <SettingsIcon className="h-5 w-5" />
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => navigate({ to: '/sessions/new' })}
-                                className="session-list-new-button p-1.5 rounded-full text-[var(--app-link)] transition-colors"
-                                title={t('sessions.new')}
-                            >
-                                <PlusIcon className="h-5 w-5" />
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -172,7 +99,11 @@ function SessionsPage() {
                             to: '/sessions/$sessionId',
                             params: { sessionId },
                         })}
-                        onNewSession={() => navigate({ to: '/sessions/new' })}
+                        onNewSession={() => {
+                            // Trigger NewSession modal via AppShell
+                            // This is handled by a custom event for cross-component communication
+                            window.dispatchEvent(new CustomEvent('hapi:new-session'))
+                        }}
                         onRefresh={handleRefresh}
                         isLoading={isLoading}
                         renderHeader={false}
@@ -182,6 +113,7 @@ function SessionsPage() {
                 </div>
             </div>
 
+            {/* Right panel: Session Detail or empty state */}
             <div className={`${isSessionsIndex ? 'hidden lg:flex' : 'flex'} min-w-0 flex-1 flex-col bg-[var(--app-bg)]`}>
                 <div className="flex-1 min-h-0">
                     <Outlet />
@@ -279,11 +211,9 @@ function SessionPage() {
                     url: ''
                 })
             }
-            // 'no-session' and 'pending' don't need toast - either invalid state or expected behavior
         }
     })
 
-    // Get agent type from session metadata for slash commands
     const agentType = session?.metadata?.flavor ?? 'claude'
     const {
         commands: slashCommands,
@@ -349,67 +279,47 @@ function SessionDetailRoute() {
     return isChat ? <SessionPage /> : <Outlet />
 }
 
-function NewSessionPage() {
-    const { api } = useAppContext()
-    const navigate = useNavigate()
-    const goBack = useAppGoBack()
-    const queryClient = useQueryClient()
-    const { machines, isLoading: machinesLoading, error: machinesError } = useMachines(api, true)
+/**
+ * Placeholder pages for Machines and History (to be implemented in sub-plan 3)
+ */
+function MachinesPage() {
     const { t } = useTranslation()
-
-    const handleCancel = useCallback(() => {
-        navigate({ to: '/sessions' })
-    }, [navigate])
-
-    const handleSuccess = useCallback((sessionId: string) => {
-        void queryClient.invalidateQueries({ queryKey: queryKeys.sessions })
-        // Replace current page with /sessions to clear spawn flow from history
-        navigate({ to: '/sessions', replace: true })
-        // Then navigate to new session
-        requestAnimationFrame(() => {
-            navigate({
-                to: '/sessions/$sessionId',
-                params: { sessionId },
-            })
-        })
-    }, [navigate, queryClient])
-
     return (
-        <div className="flex h-full min-h-0 flex-col">
-            <div className="flex items-center gap-2 border-b border-[var(--app-border)] bg-[var(--app-bg)] p-3 pt-[calc(0.75rem+env(safe-area-inset-top))]">
-                {!isTelegramApp() && (
-                    <button
-                        type="button"
-                        onClick={goBack}
-                        className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--app-hint)] transition-colors hover:bg-[var(--app-secondary-bg)] hover:text-[var(--app-fg)]"
-                    >
-                        <BackIcon />
-                    </button>
-                )}
-                <div className="flex-1 font-semibold">{t('newSession.title')}</div>
-            </div>
-
-            <div
-                className="app-scroll-y flex-1 min-h-0"
-                style={{ paddingBottom: 'calc(var(--app-floating-bottom-offset, 0px) + env(safe-area-inset-bottom))' }}
-            >
-                {machinesError ? (
-                    <div className="p-3 text-sm text-red-600">
-                        {machinesError}
-                    </div>
-                ) : null}
-
-                <NewSession
-                    api={api}
-                    machines={machines}
-                    isLoading={machinesLoading}
-                    onCancel={handleCancel}
-                    onSuccess={handleSuccess}
-                />
+        <div className="flex items-center justify-center h-full">
+            <div className="text-center text-[var(--app-hint)]">
+                <div className="text-2xl mb-2">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-12 h-12 mx-auto mb-4 opacity-40">
+                        <rect x="2" y="3" width="20" height="14" rx="2" />
+                        <line x1="8" y1="21" x2="16" y2="21" />
+                        <line x1="12" y1="17" x2="12" y2="21" />
+                    </svg>
+                </div>
+                <div className="font-[var(--app-font-serif)] text-lg text-[var(--app-fg)]">{t('machines.title')}</div>
+                <div className="text-sm mt-1">Coming soon</div>
             </div>
         </div>
     )
 }
+
+function HistoryPage() {
+    const { t } = useTranslation()
+    return (
+        <div className="flex items-center justify-center h-full">
+            <div className="text-center text-[var(--app-hint)]">
+                <div className="text-2xl mb-2">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-12 h-12 mx-auto mb-4 opacity-40">
+                        <circle cx="12" cy="12" r="10" />
+                        <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                </div>
+                <div className="font-[var(--app-font-serif)] text-lg text-[var(--app-fg)]">{t('history.title')}</div>
+                <div className="text-sm mt-1">Coming soon</div>
+            </div>
+        </div>
+    )
+}
+
+// ─── Route tree ──────────────────────────────────────────────────────────────
 
 const rootRoute = createRootRoute({
     component: App,
@@ -497,10 +407,16 @@ const sessionFileRoute = createRoute({
     component: FilePage,
 })
 
-const newSessionRoute = createRoute({
-    getParentRoute: () => sessionsRoute,
-    path: 'new',
-    component: NewSessionPage,
+const machinesRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/machines',
+    component: MachinesPage,
+})
+
+const historyRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/history',
+    component: HistoryPage,
 })
 
 const settingsRoute = createRoute({
@@ -513,13 +429,14 @@ export const routeTree = rootRoute.addChildren([
     indexRoute,
     sessionsRoute.addChildren([
         sessionsIndexRoute,
-        newSessionRoute,
         sessionDetailRoute.addChildren([
             sessionTerminalRoute,
             sessionFilesRoute,
             sessionFileRoute,
         ]),
     ]),
+    machinesRoute,
+    historyRoute,
     settingsRoute,
 ])
 

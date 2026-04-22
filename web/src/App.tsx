@@ -17,6 +17,7 @@ import { useAppGoBack } from '@/hooks/useAppGoBack'
 import { useTranslation } from '@/lib/use-translation'
 import { VoiceProvider } from '@/lib/voice-context'
 import { requireHubUrlForLogin } from '@/lib/runtime-config'
+import { AppShell } from '@/components/layout/AppShell'
 import { LoginPrompt } from '@/components/LoginPrompt'
 import { InstallPrompt } from '@/components/InstallPrompt'
 import { OfflineBanner } from '@/components/OfflineBanner'
@@ -398,9 +399,9 @@ function AppInner() {
                 />
                 <VoiceErrorBanner />
                 <OfflineBanner />
-                <div className="h-full min-h-0 flex flex-col">
+                <AppShell>
                     <Outlet />
-                </div>
+                </AppShell>
                 <ToastContainer />
                 <InstallPrompt />
             </VoiceProvider>
