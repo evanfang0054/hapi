@@ -189,7 +189,7 @@ export default {
   'terminal.connection.connecting': '连接中',
   'terminal.connection.offline': '离线',
   'terminal.page.eyebrow': '终端',
-  'terminal.page.title': '实时控制台',
+  'terminal.page.title': '终端',
   'terminal.page.description': '在同一视图中查看远程终端、连接状态、快捷输入和粘贴操作，且不改变终端行为。',
   'terminal.sessionInactiveBadge': '会话未激活',
   'terminal.sessionInactiveMessage': '当前会话未激活，终端不可用。',

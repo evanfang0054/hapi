@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { getSessionModelLabel } from '@/lib/sessionModelLabel'
 import { useTranslation } from '@/lib/use-translation'
 import { useToast } from '@/lib/toast-context'
+import { useTheme, useAppearance } from '@/hooks/useTheme'
 
 type SessionGroup = {
     key: string
@@ -450,6 +451,8 @@ export function SessionList(props: {
     selectedSessionId?: string | null
 }) {
     const { t } = useTranslation()
+    const { isDark } = useTheme()
+    const { setAppearance } = useAppearance()
     const { renderHeader = true, api, selectedSessionId, machineLabelsById = {} } = props
     const groups = useMemo(
         () => groupSessionsByDirectory(props.sessions),
@@ -579,6 +582,24 @@ export function SessionList(props: {
 
     return (
         <div className={`mx-auto flex w-full max-w-content flex-col gap-4 px-3 pt-4 md:px-5 md:pt-6 ${selectionMode ? 'pb-24' : 'pb-4'}`}>
+            {/* Mobile theme toggle */}
+            <button
+                type="button"
+                onClick={() => setAppearance(isDark ? 'light' : 'dark')}
+                className="fixed top-[calc(16px+env(safe-area-inset-top))] right-4 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--app-panel-elevated-bg)] border border-[var(--app-border)] shadow-[var(--app-shadow-sm)] text-[var(--app-hint)] hover:text-[var(--app-fg)] transition-all lg:hidden"
+                aria-label={isDark ? 'Light mode' : 'Dark mode'}
+            >
+                {isDark ? (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                    </svg>
+                ) : (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                        <circle cx="12" cy="12" r="5" />
+                        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+                    </svg>
+                )}
+            </button>
             {renderHeader ? (
                 <div className="rounded-[var(--app-radius-panel)] border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-5 py-5 shadow-[var(--app-shadow-sm)]">
                     <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">

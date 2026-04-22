@@ -187,7 +187,7 @@ export default {
   'terminal.connection.connecting': 'Connecting',
   'terminal.connection.offline': 'Offline',
   'terminal.page.eyebrow': 'Terminal',
-  'terminal.page.title': 'Live console',
+  'terminal.page.title': 'Terminal',
   'terminal.page.description': 'Keep the remote terminal, connection state, quick input keys, and paste actions in one focused workspace without changing terminal behavior.',
   'terminal.sessionInactiveBadge': 'Session inactive',
   'terminal.sessionInactiveMessage': 'Session is inactive. Terminal is unavailable.',
