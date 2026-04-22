@@ -13,6 +13,7 @@ import { useSessionFileSearch } from '@/hooks/queries/useSessionFileSearch'
 import { encodeBase64 } from '@/lib/utils'
 import { queryKeys } from '@/lib/query-keys'
 import { useTranslation } from '@/lib/use-translation'
+import { useToast } from '@/lib/toast-context'
 import { useQueryClient } from '@tanstack/react-query'
 
 function BackIcon(props: { className?: string }) {
@@ -254,7 +255,13 @@ function GitFileRow(props: {
                 <FileIcon fileName={props.file.fileName} size={22} />
                 <div className="min-w-0 flex-1">
                     <div className="truncate font-medium">{props.file.fileName}</div>
-                    <div className="truncate text-xs text-[var(--app-hint)]">{subtitle}</div>
+                    {props.file.status === 'renamed' && props.file.oldPath ? (
+                        <div className="truncate text-[11px] text-[var(--app-hint)]" style={{ fontFamily: 'var(--app-font-mono)' }}>
+                            {props.file.oldPath} → {props.file.filePath}
+                        </div>
+                    ) : (
+                        <div className="truncate text-xs text-[var(--app-hint)]" style={{ fontFamily: 'var(--app-font-mono)' }}>{subtitle}</div>
+                    )}
                 </div>
             </button>
             <div className="flex items-center gap-2 shrink-0">
@@ -289,7 +296,10 @@ function GitFileRow(props: {
                                     disabled={props.actionLoading}
                                     className="p-1.5 rounded hover:bg-[var(--app-panel-muted-bg)] text-[var(--app-hint)] hover:text-[var(--app-git-deleted-color)] transition-colors disabled:opacity-50"
                                 >
-                                    <UndoIcon />
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
+                                        <polyline points="3 6 5 6 21 6" />
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                    </svg>
                                 </button>
                             ) : (
                                 <button
@@ -320,7 +330,7 @@ function HighlightedText(props: { text: string; query: string }) {
             {parts.map((part, i) => {
                 const isMatch = part.toLowerCase() === props.query.toLowerCase() && part.length > 0
                 return isMatch
-                    ? <span key={i} className="rounded-sm bg-[rgba(201,100,66,0.2)] px-0.5 text-[var(--app-fg)]">{part}</span>
+                    ? <span key={i} className="rounded-sm bg-[rgba(201,100,66,0.25)] px-0.5 text-[var(--app-link)]">{part}</span>
                     : <span key={i}>{part}</span>
             })}
         </>
@@ -381,6 +391,7 @@ function FileListSkeleton(props: { label: string; rows?: number }) {
 
 export default function FilesPage() {
     const { t } = useTranslation()
+    const { addToast } = useToast()
     const { api } = useAppContext()
     const navigate = useNavigate()
     const queryClient = useQueryClient()
@@ -480,14 +491,19 @@ export default function FilesPage() {
             }
             if (!result.success) {
                 console.error('Git action failed:', result.error || result.stderr)
+                addToast({ title: t('sessionFiles.toast.failed'), body: result.error || result.stderr })
+            } else {
+                const toastMap = { stage: 'sessionFiles.toast.staged', unstage: 'sessionFiles.toast.unstaged', discard: 'sessionFiles.toast.discarded', clean: 'sessionFiles.toast.deleted' }
+                addToast({ title: t(toastMap[action]) })
             }
             await refetchGit()
         } catch (err) {
             console.error('Git action error:', err)
+            addToast({ title: t('sessionFiles.toast.failed') })
         } finally {
             setActionLoading(false)
         }
-    }, [api, sessionId, refetchGit])
+    }, [api, sessionId, refetchGit, addToast, t])
 
     const handleRequestConfirm = useCallback((action: () => void, type: 'discard' | 'delete') => {
         setConfirmDialog({
@@ -513,10 +529,15 @@ export default function FilesPage() {
                 }
                 if (!result.success) {
                     console.error('Git bulk action failed:', result.error || result.stderr)
+                    addToast({ title: t('sessionFiles.toast.failed'), body: result.error || result.stderr })
+                } else {
+                    const toastMap = { stageAll: 'sessionFiles.toast.stageAll', unstageAll: 'sessionFiles.toast.unstageAll', discardAll: 'sessionFiles.toast.discardedAll' }
+                    addToast({ title: t(toastMap[action]) })
                 }
                 await refetchGit()
             } catch (err) {
                 console.error('Git bulk action error:', err)
+                addToast({ title: t('sessionFiles.toast.failed') })
             } finally {
                 setActionLoading(false)
             }
@@ -532,7 +553,7 @@ export default function FilesPage() {
         }
 
         await executeAction()
-    }, [api, sessionId, refetchGit])
+    }, [api, sessionId, refetchGit, addToast, t])
 
     return (
         <div className="flex h-full min-h-0 flex-col bg-[var(--app-bg)]">
@@ -666,8 +687,19 @@ export default function FilesPage() {
                                     ) : searchResults.error ? (
                                         <div className="px-5 py-10 text-sm text-[var(--app-hint)] sm:px-6">{searchResults.error}</div>
                                     ) : searchResults.files.length === 0 ? (
-                                        <div className="px-5 py-10 text-sm text-[var(--app-hint)] sm:px-6">
-                                            {searchQuery ? t('sessionFiles.noSearchResult') : t('sessionFiles.noProjectFiles')}
+                                        <div className="flex flex-col items-center justify-center py-12 text-center">
+                                            <div className="w-16 h-16 rounded-full bg-[var(--app-subtle-bg)] flex items-center justify-center mb-4">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-7 h-7 text-[var(--app-hint)]">
+                                                    <circle cx="11" cy="11" r="8" />
+                                                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                                </svg>
+                                            </div>
+                                            <div className="text-[18px] font-medium text-[var(--app-fg)]" style={{ fontFamily: 'var(--app-font-serif)' }}>
+                                                {t('sessionFiles.noSearchResult')}
+                                            </div>
+                                            <div className="text-[13px] text-[var(--app-hint)] mt-2 max-w-[280px] leading-relaxed">
+                                                {searchQuery ? t('sessionFiles.noSearchResult') : t('sessionFiles.noProjectFiles')}
+                                            </div>
                                         </div>
                                     ) : (
                                         <div>
@@ -778,8 +810,18 @@ export default function FilesPage() {
                                         ) : null}
 
                                         {gitStatus && gitStatus.stagedFiles.length === 0 && gitStatus.unstagedFiles.length === 0 ? (
-                                            <div className="px-5 py-10 text-sm text-[var(--app-hint)] sm:px-6">
-                                                {t('sessionFiles.noChangesDetected')}
+                                            <div className="flex flex-col items-center justify-center py-12 text-center">
+                                                <div className="w-16 h-16 rounded-full bg-[var(--app-subtle-bg)] flex items-center justify-center mb-4">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-7 h-7 text-[var(--app-hint)]">
+                                                        <polyline points="20 6 9 17 4 12" />
+                                                    </svg>
+                                                </div>
+                                                <div className="text-[18px] font-medium text-[var(--app-fg)]" style={{ fontFamily: 'var(--app-font-serif)' }}>
+                                                    {t('sessionFiles.noChangesDetected')}
+                                                </div>
+                                                <div className="text-[13px] text-[var(--app-hint)] mt-2 max-w-[280px] leading-relaxed">
+                                                    {t('sessionFiles.gitUnavailable')}
+                                                </div>
                                             </div>
                                         ) : null}
                                     </div>
