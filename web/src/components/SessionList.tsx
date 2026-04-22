@@ -268,7 +268,7 @@ function SessionItem(props: {
     const modelLabel = getSessionModelLabel(s)
     const statusDotClass = s.active
         ? (s.thinking ? 'bg-[#007AFF] shadow-[0_0_8px_#007AFF]' : 'bg-[var(--app-badge-success-text)] shadow-[0_0_6px_var(--app-badge-success-text)]')
-        : 'bg-[var(--app-hint)]'
+        : 'bg-[var(--app-hint)] opacity-40'
     const todoProgress = getTodoProgress(s)
     const sessionContent = (
         <>
@@ -285,40 +285,37 @@ function SessionItem(props: {
                         </div>
                     ) : null}
                 </div>
-                <div className="shrink-0 rounded-full bg-[var(--app-subtle-bg)] px-2.5 py-1 text-[11px] text-[var(--app-hint)]">
+                <div className="shrink-0 font-mono text-[11px] text-[var(--app-hint)]">
                     {formatRelativeTime(s.updatedAt, t)}
                 </div>
             </div>
             <div className="flex flex-wrap items-center gap-2 text-xs">
                 {s.thinking ? (
-                    <span className="rounded-full border border-[var(--app-link)]/20 bg-[var(--app-link)]/10 px-2.5 py-1 text-[var(--app-link)] animate-pulse">
-                        {t('session.item.thinking')}
+                    <span className="rounded-[6px] border border-[var(--app-link)]/20 bg-[var(--app-link)]/10 px-2 py-0.5 font-mono text-[10px] text-[var(--app-link)] animate-pulse">
+                        ● {t('session.item.thinking')}
                     </span>
                 ) : null}
                 {todoProgress ? (
-                    <span className="flex items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2.5 py-1 text-[var(--app-hint)]">
+                    <span className="flex items-center gap-1 rounded-[6px] border border-[var(--app-badge-success-border)] bg-[var(--app-badge-success-bg)] px-2 py-0.5 font-mono text-[10px] text-[var(--app-badge-success-text)]">
                         <BulbIcon className="h-3 w-3" />
                         {todoProgress.completed}/{todoProgress.total}
                     </span>
                 ) : null}
                 {s.pendingRequestsCount > 0 ? (
-                    <span className="rounded-full border border-[var(--app-badge-warning-border)] bg-[var(--app-badge-warning-bg)] px-2.5 py-1 text-[var(--app-badge-warning-text)]">
+                    <span className="rounded-[6px] border border-[var(--app-badge-warning-border)] bg-[var(--app-badge-warning-bg)] px-2 py-0.5 font-mono text-[10px] text-[var(--app-badge-warning-text)]">
                         {t('session.item.pending')} {s.pendingRequestsCount}
                     </span>
                 ) : null}
             </div>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-[var(--app-hint)]">
-                <span className="inline-flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2.5 py-1">
-                    <span className="flex h-4 w-4 items-center justify-center" aria-hidden="true">
-                        ❖
-                    </span>
+                <span className="font-mono text-[10px] text-[var(--app-hint)]">
                     {getAgentLabel(s)}
                 </span>
                 {modelLabel ? (
-                    <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2.5 py-1">{t(modelLabel.key)}: {modelLabel.value}</span>
+                    <span className="rounded-[6px] border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2 py-0.5 font-mono text-[10px] text-[var(--app-hint)]">{t(modelLabel.key)}: {modelLabel.value}</span>
                 ) : null}
                 {s.metadata?.worktree?.branch ? (
-                    <span className="rounded-full border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2.5 py-1">{t('session.item.worktree')}: {s.metadata.worktree.branch}</span>
+                    <span className="rounded-[6px] border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2 py-0.5 font-mono text-[10px] text-[var(--app-hint)]">{t('session.item.worktree')}: {s.metadata.worktree.branch}</span>
                 ) : null}
             </div>
         </>
@@ -654,7 +651,7 @@ export function SessionList(props: {
                             <button
                                 type="button"
                                 onClick={() => toggleGroup(group.key, isCollapsed)}
-                                className="flex w-full items-center justify-between gap-4 rounded-[var(--app-radius-control)] px-4 py-3 text-left transition-colors hover:bg-[var(--app-subtle-bg)]"
+                                className={`flex w-full items-center justify-between gap-4 rounded-[var(--app-radius-control)] px-4 py-3 text-left transition-colors hover:bg-[var(--app-subtle-bg)] ${!isCollapsed ? 'border-b border-[var(--app-border)]' : ''}`}
                             >
                                 <div className="min-w-0">
                                     <div className="flex min-w-0 items-center gap-2">
