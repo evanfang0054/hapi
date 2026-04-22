@@ -246,8 +246,8 @@ export default function HistoryPage() {
         active: s.active ?? false,
         updatedAt: s.updatedAt ?? 0,
         projectPath: s.metadata?.path ?? s.metadata?.worktree?.basePath ?? null,
-        archived: false,
-        deleted: false,
+        archived: (s.metadata as Record<string, unknown>)?.archived === true,
+        deleted: (s.metadata as Record<string, unknown>)?.deleted === true,
     })), [sessions])
 
     const filteredSessions = useMemo(() => {
@@ -374,23 +374,36 @@ export default function HistoryPage() {
                         </div>
                     ) : groups.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-12 text-center">
-                            <div className="w-12 h-12 flex items-center justify-center mb-3 opacity-50">
-                                {searchQuery ? (
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-12 h-12 text-[var(--app-hint)]">
+                            <div className="w-16 h-16 rounded-full bg-[var(--app-subtle-bg)] flex items-center justify-center mb-4">
+                                {filterMode === 'archived' ? (
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-7 h-7 text-[var(--app-hint)]">
+                                        <path d="M21 8v13H3V8" />
+                                        <path d="M1 3h22v5H1z" />
+                                        <path d="M10 12h4" />
+                                    </svg>
+                                ) : filterMode === 'deleted' ? (
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-7 h-7 text-[var(--app-hint)]">
+                                        <polyline points="3 6 5 6 21 6" />
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                    </svg>
+                                ) : searchQuery ? (
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-7 h-7 text-[var(--app-hint)]">
                                         <circle cx="11" cy="11" r="8" />
                                         <line x1="21" y1="21" x2="16.65" y2="16.65" />
                                     </svg>
                                 ) : (
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-16 h-16 text-[var(--app-hint)]">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-7 h-7 text-[var(--app-hint)]">
                                         <circle cx="12" cy="12" r="10" />
                                         <polyline points="12 6 12 12 16 14" />
                                     </svg>
                                 )}
                             </div>
-                            <div className="text-[15px] font-medium text-[var(--app-fg)]">
-                                {searchQuery ? t('history.noResults') : t('history.empty')}
+                            <div className="text-[18px] font-medium text-[var(--app-fg)]" style={{ fontFamily: 'var(--app-font-serif)' }}>
+                                {filterMode === 'archived' ? t('history.noArchived') : filterMode === 'deleted' ? t('history.noDeleted') : searchQuery ? t('history.noResults') : t('history.empty')}
                             </div>
-                            <div className="text-[13px] text-[var(--app-hint)] mt-1">{searchQuery ? t('history.noResults.description') : t('history.empty.description')}</div>
+                            <div className="text-[13px] text-[var(--app-hint)] mt-2 max-w-[280px] leading-relaxed">
+                                {filterMode === 'archived' ? t('history.noArchived.description') : filterMode === 'deleted' ? t('history.noDeleted.description') : searchQuery ? t('history.noResults.description') : t('history.empty.description')}
+                            </div>
                         </div>
                     ) : (
                         <div className="space-y-6">
