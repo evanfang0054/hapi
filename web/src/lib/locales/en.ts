@@ -360,7 +360,18 @@ export default {
 
   // Tab bar labels
   'machines.title': 'Machines',
+  'machines.newSession': 'New Session',
+  'machines.online.singular': 'machine online',
+  'machines.online.plural': 'machines online',
+  'machines.empty': 'No machines',
+  'machines.empty.description': 'Start hapi CLI on a machine to see it here',
   'history.title': 'History',
+  'history.search': 'Search sessions…',
+  'history.total': 'total',
+  'history.active': 'active',
+  'history.noResults': 'No matching sessions',
+  'history.empty': 'No sessions yet',
+  'history.empty.description': 'Your conversation history will appear here',
 
   // Theme
   'theme.light': 'Light mode',

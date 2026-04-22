@@ -362,7 +362,18 @@ export default {
 
   // Tab bar labels
   'machines.title': '机器',
+  'machines.newSession': '新建会话',
+  'machines.online.singular': '台机器在线',
+  'machines.online.plural': '台机器在线',
+  'machines.empty': '没有机器',
+  'machines.empty.description': '在机器上启动 hapi CLI 即可在此处查看',
   'history.title': '历史',
+  'history.search': '搜索会话…',
+  'history.total': '总计',
+  'history.active': '活跃',
+  'history.noResults': '没有匹配的会话',
+  'history.empty': '暂无会话',
+  'history.empty.description': '你的会话历史将显示在这里',
 
   // Theme
   'theme.light': '浅色模式',
