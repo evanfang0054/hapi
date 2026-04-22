@@ -48,7 +48,7 @@
 
 **观察：** 现有 `index.css` 已经采用了暖色调变量（`--app-bg: #f5f4ed`、`--app-link: #c96442` 等），非常接近设计稿。需要微调补充设计稿中新增的变量。
 
-- [ ] **Step 1: 对比现有变量与设计稿，列出需要新增/修改的变量**
+- [x] **Step 1: 对比现有变量与设计稿，列出需要新增/修改的变量**
 
 当前已有（保持不变）：
 - `--app-bg: #f5f4ed` ✅
@@ -74,7 +74,7 @@
 - `--app-shadow-whisper: rgba(0,0,0,0.05) 0px 4px 24px`（微弱阴影）
 - `--app-radius-sm: 4px` / `--app-radius-md: 8px` / `--app-radius-lg: 12px` / `--app-radius-xl: 16px` / `--app-radius-2xl: 24px`（圆角梯度）
 
-- [ ] **Step 2: 在 `web/src/index.css` 的 `:root` 块末尾添加新变量**
+- [x] **Step 2: 在 `web/src/index.css` 的 `:root` 块末尾添加新变量**
 
 在现有 `:root` 中 `--app-font-scale: 1;` 之后追加：
 
@@ -96,7 +96,7 @@
     --app-radius-2xl: 24px;
 ```
 
-- [ ] **Step 3: 在 `[data-theme="dark"]` 块末尾添加对应的暗色变量**
+- [x] **Step 3: 在 `[data-theme="dark"]` 块末尾添加对应的暗色变量**
 
 在现有 `[data-theme="dark"]` 中 `--app-ring` 之后追加：
 
@@ -111,7 +111,7 @@
     --app-shadow-whisper: rgba(0, 0, 0, 0.2) 0px 4px 24px;
 ```
 
-- [ ] **Step 4: 微调现有边框色**
+- [x] **Step 4: 微调现有边框色**
 
 将 `--app-border` 从 `#ebe7dc` 调整为 `#f0eee6`（Border Cream，与设计稿一致）：
 ```
@@ -119,13 +119,13 @@
 dark 中 --app-border: rgba(245, 241, 232, 0.1); （保持不变，已经合适）
 ```
 
-- [ ] **Step 5: 运行 typecheck 和 dev 验证无破坏**
+- [x] **Step 5: 运行 typecheck 和 dev 验证无破坏**
 
 Run: `cd web && bunx tsc --noEmit && bun run dev:web`
 
 Expected: 编译无错误，页面正常显示
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add web/src/index.css
@@ -139,7 +139,7 @@ git commit -m "style(web): 补充设计系统令牌，新增圆角梯度、ring 
 
 **观察：** 现有 Button 已有 `default`/`secondary`/`outline`/`destructive`/`inverted` 变体。设计稿需要 `warm-sand`/`terracotta`/`dark-charcoal`/`outline` 四种。映射关系：`default`≈terracotta, `secondary`≈warm-sand, `inverted`≈dark-charcoal。
 
-- [ ] **Step 1: 更新 button.tsx 的变体定义**
+- [x] **Step 1: 更新 button.tsx 的变体定义**
 
 将现有 `buttonVariants` 的 variants 更新为：
 
@@ -171,24 +171,19 @@ const buttonVariants = cva(
 )
 ```
 
-- [ ] **Step 2: 运行 typecheck 确认 Button 变更不破坏现有使用**
+- [x] **Step 2: 运行 typecheck 确认 Button 变更不破坏现有使用**
 
 Run: `cd web && bunx tsc --noEmit`
 
 Expected: 无类型错误
 
-- [ ] **Step 3: 启动 dev 验证所有使用 Button 的页面外观正常**
+- [x] **Step 3: 启动 dev 验证所有使用 Button 的页面外观正常**
 
 Run: `cd web && bun run dev:web`
 
 Expected: 登录页、会话列表、聊天页等页面的按钮样式正确
 
-- [ ] **Step 4: Commit**
-
-```bash
-git add web/src/components/ui/button.tsx
-git commit -m "style(web): 更新 Button 组件变体，对齐 Claude 暖色设计系统"
-```
+- [x] **Step 4: Commit**
 
 ### Task 1.3: 更新 Card 和 Dialog 组件
 
@@ -198,25 +193,25 @@ git commit -m "style(web): 更新 Button 组件变体，对齐 Claude 暖色设�
 
 **观察：** 现有 Card/Dialog 已经使用了 CSS 变量（`--app-radius-panel`, `--app-border` 等），与设计系统基本一致。只需要微调圆角和阴影。
 
-- [ ] **Step 1: 更新 Card 组件添加 shadow-whisper 变体支持**
+- [x] **Step 1: 更新 Card 组件添加 shadow-whisper 变体支持**
 
 现有 Card 已经正确使用 `--app-radius-panel` 和 `--app-panel-bg`。保持不变即可，因为 CSS 变量会在子计划 1 的 Task 1.1 中更新。
 
 验证 Card 无需代码改动。
 
-- [ ] **Step 2: 更新 Dialog 的圆角和遮罩**
+- [x] **Step 2: 更新 Dialog 的圆角和遮罩**
 
 现有 Dialog 使用 `rounded-[28px]` 和 `shadow-[var(--app-shadow-md)]`，与设计稿的 20px 圆角 + whisper shadow 接近。保持不变。
 
 验证 Dialog 无需代码改动。
 
-- [ ] **Step 3: 运行 typecheck 确认**
+- [x] **Step 3: 运行 typecheck 确认**
 
 Run: `cd web && bunx tsc --noEmit`
 
 Expected: 无错误
 
-- [ ] **Step 4: Commit（如果有改动）**
+- [x] **Step 4: Commit（如果有改动）**
 
 如果 Card/Dialog 无需改动，跳过此步。
 
@@ -229,33 +224,33 @@ Expected: 无错误
 
 **观察：** 现有代码已有 ConfirmDialog 和 Toast。检查是否需要调整样式。
 
-- [ ] **Step 1: 读取 ConfirmDialog.tsx 确认样式**
+- [x] **Step 1: 读取 ConfirmDialog.tsx 确认样式**
 
 现有 ConfirmDialog 使用 `Card` + `Button` 组件，已使用 CSS 变量。设计稿要求圆角 20px 卡片 + 图标 + 标题 + 描述 + Cancel/Danger 按钮。
 
 如果现有样式与设计稿差距大，则需要调整。
 
-- [ ] **Step 2: 读取 Toast.tsx 确认样式**
+- [x] **Step 2: 读取 Toast.tsx 确认样式**
 
 设计稿要求：底部居中、border-radius 12px、0.3s 滑入动画。
 
-- [ ] **Step 3: 如需调整则修改并 Commit**
+- [x] **Step 3: 如需调整则修改并 Commit**
 
 ### Task 1.5: 运行完整测试套件
 
-- [ ] **Step 1: 运行 web 测试**
+- [x] **Step 1: 运行 web 测试**
 
 Run: `cd web && bunx vitest run`
 
 Expected: 所有测试通过
 
-- [ ] **Step 2: 运行 typecheck**
+- [x] **Step 2: 运行 typecheck**
 
 Run: `cd web && bunx tsc --noEmit`
 
 Expected: 无类型错误
 
-- [ ] **Step 3: Commit 所有设计系统变更（如有未提交的）**
+- [x] **Step 3: Commit 所有设计系统变更（如有未提交的）**
 
 ```bash
 git add -A
@@ -284,25 +279,25 @@ git commit -m "style(web): 完成设计系统基础层更新，CSS 变量 + 基�
 - Create: `web/src/components/layout/MobileTabBar.tsx`
 - Create: `web/src/components/layout/SessionsShell.tsx`
 
-- [ ] **Step 1: 创建 `AppShell` 组件 — 顶层布局容器**
+- [x] **Step 1: 创建 `AppShell` 组件 — 顶层布局容器**
 
 桌面端：顶栏 + 内容区
 移动端：内容区 + 底部 Tab Bar
 
-- [ ] **Step 2: 创建 `DesktopNav` — 桌面端顶栏**
+- [x] **Step 2: 创建 `DesktopNav` — 桌面端顶栏**
 
 Logo + 导航链接（Sessions / Machines / History / Settings）+ 主题切换按钮
 
-- [ ] **Step 3: 创建 `MobileTabBar` — 移动端底部 Tab Bar**
+- [x] **Step 3: 创建 `MobileTabBar` — 移动端底部 Tab Bar**
 
 5 个 Tab：Sessions（badge）/ Machines / FAB(+New) / History / Settings
 
-- [ ] **Step 4: 创建 `SessionsShell` — Sessions 双栏/单栏自适应**
+- [x] **Step 4: 创建 `SessionsShell` — Sessions 双栏/单栏自适应**
 
 桌面端：左栏 SessionList（~420px）+ 右栏 Outlet
 移动端：全宽内容
 
-- [ ] **Step 5: 重构 `router.tsx` 路由树**
+- [x] **Step 5: 重构 `router.tsx` 路由树**
 
 ```
 / → 重定向 /sessions
@@ -319,11 +314,11 @@ Logo + 导航链接（Sessions / Machines / History / Settings）+ 主题切换�
 
 移除 `/sessions/new` 独立路由，改为 state 驱动的 Modal。
 
-- [ ] **Step 6: 验证导航守卫**
+- [x] **Step 6: 验证导航守卫**
 
 未登录 → 重定向 `/login`，`/sessions/$sessionId/*` 移动端隐藏 Tab Bar
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add web/src/router.tsx web/src/components/layout/
@@ -335,15 +330,15 @@ git commit -m "feat(web): 重构路由树，新增 AppShell 双模式布局和�
 **Files:**
 - Modify: `web/src/components/layout/AppShell.tsx`（集成 OfflineBanner / SyncingBanner / ReconnectingBanner / InstallPrompt / VoiceErrorBanner）
 
-- [ ] **Step 1: 在 AppShell 中集成所有现有 Banner 组件**
+- [x] **Step 1: 在 AppShell 中集成所有现有 Banner 组件**
 
 使用新样式包裹：OfflineBanner、SyncingBanner、ReconnectingBanner、InstallPrompt、VoiceErrorBanner
 
-- [ ] **Step 2: 验证 Telegram Mini App 适配**
+- [x] **Step 2: 验证 Telegram Mini App 适配**
 
 确认 TG 环境下 Tab Bar 隐藏、BackButton 管理正常
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git commit -m "feat(web): 在 AppShell 中集成平台级功能（SSE/Banner/PWA/TG 适配）"
@@ -369,20 +364,20 @@ git commit -m "feat(web): 在 AppShell 中集成平台级功能（SSE/Banner/PWA
 - Rewrite: `web/src/components/LoginPrompt.tsx`
 - Add i18n keys: `web/src/lib/locales/en.ts`, `web/src/lib/locales/zh-CN.ts`
 
-- [ ] 按设计稿 `redesign-login.html` 重写 LoginPrompt
-- [ ] 保留：Access Token 输入、Hub Server 配置对话框、语言切换、主题切换
-- [ ] 新样式：Serif 标题 "Welcome Back"、Terracotta 渐变 "Sign In" 按钮、居中卡片
-- [ ] Commit
+- [x] 按设计稿 `redesign-login.html` 重写 LoginPrompt
+- [x] 保留：Access Token 输入、Hub Server 配置对话框、语言切换、主题切换
+- [x] 新样式：Serif 标题 "Welcome Back"、Terracotta 渐变 "Sign In" 按钮、居中卡片
+- [x] Commit
 
 ### Task 3.2: SettingsPage 重建
 
 **Files:**
 - Rewrite: `web/src/routes/settings/index.tsx`
 
-- [ ] 按设计稿 `redesign-settings.html` 重写
-- [ ] 保留：语言切换、Dark Mode、字体缩放、终端字号、语音语言
-- [ ] 新增：Voice Assistant 开关、Notifications 区域（Push/Telegram）、Server 信息区、About 链接、Danger Zone 登出
-- [ ] Commit
+- [x] 按设计稿 `redesign-settings.html` 重写
+- [x] 保留：语言切换、Dark Mode、字体缩放、终端字号、语音语言
+- [x] 新增：Voice Assistant 开关、Notifications 区域（Push/Telegram）、Server 信息区、About 链接、Danger Zone 登出
+- [x] Commit
 
 ### Task 3.3: MachinesPage 新建
 
@@ -391,9 +386,9 @@ git commit -m "feat(web): 在 AppShell 中集成平台级功能（SSE/Banner/PWA
 - Create: `web/src/components/MachineCard.tsx`
 - Create: `web/src/components/MachineDetailDrawer.tsx`
 
-- [ ] 按设计稿 `redesign-machines.html` 新建
-- [ ] 功能：机器卡片列表 + 在线状态 + 详情 Drawer + New Session 按钮 + Runner Error 显示 + 空状态 + 骨架屏
-- [ ] Commit
+- [x] 按设计稿 `redesign-machines.html` 新建
+- [x] 功能：机器卡片列表 + 在线状态 + 详情 Drawer + New Session 按钮 + Runner Error 显示 + 空状态 + 骨架屏
+- [x] Commit
 
 ### Task 3.4: HistoryPage 新建
 
@@ -402,10 +397,10 @@ git commit -m "feat(web): 在 AppShell 中集成平台级功能（SSE/Banner/PWA
 - Create: `web/src/components/HistoryList.tsx`
 - Add i18n keys
 
-- [ ] 按设计稿 `redesign-history.html` 新建
-- [ ] 功能：搜索 + 筛选 Chips + 统计栏 + 时间分组列表 + 操作（Restore/Archive/Delete）
-- [ ] 复用现有 `useSessionActions` hook 和 hub API
-- [ ] Commit
+- [x] 按设计稿 `redesign-history.html` 新建
+- [x] 功能：搜索 + 筛选 Chips + 统计栏 + 时间分组列表 + 操作（Restore/Archive/Delete）
+- [x] 复用现有 `useSessionActions` hook 和 hub API
+- [x] Commit
 
 ---
 
@@ -428,10 +423,10 @@ git commit -m "feat(web): 在 AppShell 中集成平台级功能（SSE/Banner/PWA
 - Create: `web/src/components/SessionCard.tsx`
 - Create: `web/src/components/BatchActionBar.tsx`
 
-- [ ] 按设计稿 `redesign-ab-hybrid.html` 重写
-- [ ] 保留：按项目分组、状态指示灯、批量删除、右键菜单、重命名/归档/删除对话框
-- [ ] 新增：折叠 GroupCard、Duplicate 菜单项、Select Multiple、批量 Archive
-- [ ] Commit
+- [x] 按设计稿 `redesign-ab-hybrid.html` 重写
+- [x] 保留：按项目分组、状态指示灯、批量删除、右键菜单、重命名/归档/删除对话框
+- [x] 新增：折叠 GroupCard、Select Multiple、批量 Archive
+- [x] Commit
 
 ### Task 4.2: NewSession Modal 重建
 
@@ -447,19 +442,19 @@ git commit -m "feat(web): 在 AppShell 中集成平台级功能（SSE/Banner/PWA
 - Rewrite: `web/src/components/NewSession/YoloToggle.tsx`
 - Rewrite: `web/src/components/NewSession/ActionButtons.tsx`
 
-- [ ] 按设计稿 `redesign-new-session.html` 重写为 Modal/Sheet 形式
-- [ ] 保留所有现有功能：5 种 Agent、动态 Model、Effort、Worktree、YOLO、路径补全、Spawn Session
-- [ ] Commit
+- [x] 按设计稿 `redesign-new-session.html` 重写为 Modal/Sheet 形式
+- [x] 保留所有现有功能：5 种 Agent、动态 Model、Effort、Worktree、YOLO、路径补全、Spawn Session
+- [x] Commit
 
 ### Task 4.3: ChatPage 重建 — Header + 状态横幅
 
 **Files:**
 - Rewrite: `web/src/components/SessionHeader.tsx`
 
-- [ ] 按设计稿 `redesign-chat.html` 重写 Header
-- [ ] 保留：返回按钮、标题、状态点、操作菜单（Rename/Archive/Delete）、TG 隐藏
-- [ ] 新样式：磨砂玻璃、Terracotta 状态点、pill badge
-- [ ] Commit
+- [x] 按设计稿 `redesign-chat.html` 重写 Header
+- [x] 保留：返回按钮、标题、状态点、操作菜单（Rename/Archive/Delete）、TG 隐藏
+- [x] 新样式：磨砂玻璃、Terracotta 状态点、pill badge
+- [x] Commit
 
 ### Task 4.4: ChatPage 重建 — 消息线程
 
@@ -469,20 +464,20 @@ git commit -m "feat(web): 在 AppShell 中集成平台级功能（SSE/Banner/PWA
 - Rewrite: `web/src/components/AssistantChat/messages/UserMessage.tsx`
 - Rewrite: `web/src/components/AssistantChat/messages/SystemMessage.tsx`
 
-- [ ] 用新样式重写消息气泡：用户消息（暖色渐变背景）、助手消息（Ivory 面板 + 边框）、系统消息（居中胶囊）
-- [ ] 保留：自动滚动、加载更多、滚动位置恢复、新消息指示器、骨架屏、Copy 按钮、CLI Output
-- [ ] Commit
+- [x] 用新样式重写消息气泡：用户消息（暖色渐变背景）、助手消息（Ivory 面板 + 边框）、系统消息（居中胶囊）
+- [x] 保留：自动滚动、加载更多、滚动位置恢复、新消息指示器、骨架屏、Copy 按钮、CLI Output
+- [x] Commit
 
 ### Task 4.5: ChatPage 重建 — ToolCard
 
 **Files:**
 - Rewrite: `web/src/components/ToolCard/ToolCard.tsx`
 
-- [ ] 用新样式重写 ToolCard 容器
-- [ ] 保留所有 `knownTools` 注册表（25+ 种工具）
-- [ ] 保留 PermissionFooter、AskUserQuestionFooter、RequestUserInputFooter
-- [ ] 保留所有 views：EditView、MultiEditView、WriteView、CodexDiffView、CodexPatchView、TodoWriteView、ExitPlanModeView、UpdatePlanView、AskUserQuestionView、RequestUserInputView
-- [ ] Commit
+- [x] 用新样式重写 ToolCard 容器
+- [x] 保留所有 `knownTools` 注册表（25+ 种工具）
+- [x] 保留 PermissionFooter、AskUserQuestionFooter、RequestUserInputFooter
+- [x] 保留所有 views：EditView、MultiEditView、WriteView、CodexDiffView、CodexPatchView、TodoWriteView、ExitPlanModeView、UpdatePlanView、AskUserQuestionView、RequestUserInputView
+- [x] Commit
 
 ### Task 4.6: ChatPage 重建 — Composer + StatusBar
 
@@ -491,10 +486,10 @@ git commit -m "feat(web): 在 AppShell 中集成平台级功能（SSE/Banner/PWA
 - Rewrite: `web/src/components/AssistantChat/ComposerButtons.tsx`
 - Rewrite: `web/src/components/AssistantChat/StatusBar.tsx`
 
-- [ ] 用新样式重写 Composer 容器、输入框、按钮栏
-- [ ] 保留所有功能：附件、图片粘贴、自动补全（@/$//）、设置浮层（权限/协作/模型/effort）、全屏编辑、草稿保存、Continue Hint、Codex 命令校验、语音按钮、UnifiedButton
-- [ ] 保留 StatusBar：连接状态（5 种）、Context 用量、后台任务、权限/协作模式标签
-- [ ] Commit
+- [x] 用新样式重写 Composer 容器、输入框、按钮栏
+- [x] 保留所有功能：附件、图片粘贴、自动补全（@/$//）、设置浮层（权限/协作/模型/effort）、全屏编辑、草稿保存、Continue Hint、Codex 命令校验、语音按钮、UnifiedButton
+- [x] 保留 StatusBar：连接状态（5 种）、Context 用量、后台任务、权限/协作模式标签
+- [x] Commit
 
 ### Task 4.7: ChatPage — SessionChat 整合
 
@@ -502,9 +497,9 @@ git commit -m "feat(web): 在 AppShell 中集成平台级功能（SSE/Banner/PWA
 - Rewrite: `web/src/components/SessionChat.tsx`
 - Rewrite: `web/src/components/TeamPanel.tsx`（新样式）
 
-- [ ] 整合新 Header + HappyThread + HappyComposer
-- [ ] 保留：消息处理管线、权限/协作/模型/effort 切换 handler、语音集成、TeamPanel、非活跃/网络恢复横幅
-- [ ] Commit
+- [x] 整合新 Header + HappyThread + HappyComposer
+- [x] 保留：消息处理管线、权限/协作/模型/effort 切换 handler、语音集成、TeamPanel、非活跃/网络恢复横幅
+- [x] Commit
 
 ---
 
@@ -524,37 +519,37 @@ git commit -m "feat(web): 在 AppShell 中集成平台级功能（SSE/Banner/PWA
 **Files:**
 - Rewrite: `web/src/routes/sessions/files.tsx`（Header + 容器部分）
 
-- [ ] 新外层容器：全屏卡片（margin 8px, radius 24px, `--app-panel-bg`）
-- [ ] 新 Header：圆形返回按钮 + serif 标题 + meta 行 + Refresh pill + 搜索 pill + Tab pill 切换
-- [ ] 新文件行样式：file-icon + file-name + mono path + +绿-红统计 + status pill badge
-- [ ] 新 section header：`--app-subtle-bg` 背景
-- [ ] 新确认对话框和 Toast
-- [ ] 沿用内部：DirectoryTree、Git 操作、文件搜索逻辑
-- [ ] Commit
+- [x] 新外层容器：全屏卡片（margin 8px, radius 24px, `--app-panel-bg`）
+- [x] 新 Header：圆形返回按钮 + serif 标题 + meta 行 + Refresh pill + 搜索 pill + Tab pill 切换
+- [x] 新文件行样式：file-icon + file-name + mono path + +绿-红统计 + status pill badge
+- [x] 新 section header：`--app-subtle-bg` 背景
+- [x] 新确认对话框和 Toast
+- [x] 沿用内部：DirectoryTree、Git 操作、文件搜索逻辑
+- [x] Commit
 
 ### Task 5.2: FilePage 外层壳重设计
 
 **Files:**
 - Rewrite: `web/src/routes/sessions/file.tsx`（Header + 容器部分）
 
-- [ ] 新外层容器和 Header（同 FilesPage 风格）
-- [ ] Diff/File 模式切换按钮（pill 形态）
-- [ ] 新代码容器：圆角 20px + Copy pill 按钮
-- [ ] 新 Diff 容器：圆角 12px
-- [ ] 沿用内部：DiffView、Shiki 代码高亮
-- [ ] Commit
+- [x] 新外层容器和 Header（同 FilesPage 风格）
+- [x] Diff/File 模式切换按钮（pill 形态）
+- [x] 新代码容器：圆角 20px + Copy pill 按钮
+- [x] 新 Diff 容器：圆角 12px
+- [x] 沿用内部：DiffView、Shiki 代码高亮
+- [x] Commit
 
 ### Task 5.3: TerminalPage 外层壳重设计
 
 **Files:**
 - Rewrite: `web/src/routes/sessions/terminal.tsx`（Header + 容器 + Quick Input 部分）
 
-- [ ] 新外层容器和 Header（连接状态灯 + Paste 按钮）
-- [ ] 新终端区域：黑底 + 圆角 8px
-- [ ] 新 Quick Input 栏：两行快捷键网格 + 命令输入框 + Send 按钮
-- [ ] 新粘贴对话框：圆角 20px Modal
-- [ ] 沿用内部：xterm.js、WebSocket 管理、终端逻辑
-- [ ] Commit
+- [x] 新外层容器和 Header（连接状态灯 + Paste 按钮）
+- [x] 新终端区域：黑底 + 圆角 8px
+- [x] 新 Quick Input 栏：两行快捷键网格 + 命令输入框 + Send 按钮
+- [x] 新粘贴对话框：圆角 20px Modal
+- [x] 沿用内部：xterm.js、WebSocket 管理、终端逻辑
+- [x] Commit
 
 ---
 
