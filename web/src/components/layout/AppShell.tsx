@@ -74,7 +74,7 @@ export function AppShell({ children }: AppShellProps) {
 
             {/* New Session Modal */}
             <Dialog open={newSessionOpen} onOpenChange={setNewSessionOpen}>
-                <DialogContent className="max-w-lg max-h-[85vh] flex flex-col">
+                <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
                     <DialogHeader>
                         <DialogTitle>{t('newSession.title')}</DialogTitle>
                     </DialogHeader>

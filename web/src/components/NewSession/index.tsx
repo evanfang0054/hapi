@@ -10,7 +10,6 @@ import { useDirectorySuggestions } from '@/hooks/useDirectorySuggestions'
 import { useRecentPaths } from '@/hooks/useRecentPaths'
 import { useTranslation } from '@/lib/use-translation'
 import type { AgentType, ClaudeEffort, CodexReasoningEffort, SessionType } from './types'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ActionButtons } from './ActionButtons'
 import { AgentSelector } from './AgentSelector'
 import { DirectorySection } from './DirectorySection'
@@ -382,159 +381,117 @@ export function NewSession(props: {
     const canCreate = Boolean(machineId && trimmedDirectory && !isFormDisabled && !missingWorktreeDirectory)
 
     return (
-        <div className="mx-auto w-full max-w-5xl px-3 py-4 md:px-5 md:py-6">
-            <div className="space-y-4">
-                <Card className="overflow-hidden border-[color:color-mix(in_srgb,var(--app-border)_82%,transparent)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--app-link)_7%,var(--app-panel-bg))_0%,var(--app-panel-bg)_100%)]">
-                    <CardHeader className="gap-3 p-5 md:p-6">
-                        <div className="flex flex-wrap items-start justify-between gap-4">
-                            <div className="space-y-3">
-                                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--app-hint)]">
-                                    {t('newSession.hero.eyebrow')}
-                                </p>
-                                <div className="space-y-2">
-                                    <CardTitle className="text-3xl leading-none md:text-4xl" data-ui-heading="serif">
-                                        {t('newSession.hero.title')}
-                                    </CardTitle>
-                                    <CardDescription className="max-w-2xl text-sm leading-6">
-                                        {t('newSession.hero.description')}
-                                    </CardDescription>
-                                </div>
-                            </div>
-                            <div className="grid min-w-44 gap-2 rounded-[var(--app-radius-control)] border border-[var(--app-border)] bg-[color:color-mix(in_srgb,var(--app-panel-elevated-bg)_88%,transparent)] px-4 py-3 text-xs text-[var(--app-hint)] shadow-[var(--app-shadow-sm)]">
-                                <span>{t('newSession.hero.step.machineDirectory')}</span>
-                                <span>{t('newSession.hero.step.agentModelEffort')}</span>
-                                <span>{t('newSession.hero.step.sessionApprovals')}</span>
-                            </div>
-                        </div>
-                    </CardHeader>
-                </Card>
-
+        <div className="px-1 py-2">
+            <div className="space-y-5">
                 {runnerSpawnError ? (
-                    <div className="rounded-[var(--app-radius-control)] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
+                    <div className="rounded-[var(--app-radius-lg)] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
                         {t('newSession.runnerLastSpawnError', { error: runnerSpawnError })}
                     </div>
                 ) : null}
 
-                <div className="grid gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.9fr)]">
+                {/* Workspace: Machine + Directory */}
+                <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--app-hint)] mb-3">
+                        {t('newSession.workspace.title')}
+                    </p>
                     <div className="space-y-4">
-                        <Card>
-                            <CardHeader className="p-5 pb-4">
-                                <CardTitle className="text-lg" data-ui-heading="serif">{t('newSession.workspace.title')}</CardTitle>
-                                <CardDescription>
-                                    {t('newSession.workspace.description')}
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-5 p-5 pt-0">
-                                <MachineSelector
-                                    machines={props.machines}
-                                    machineId={machineId}
-                                    isLoading={props.isLoading}
-                                    isDisabled={isFormDisabled}
-                                    onChange={handleMachineChange}
-                                />
-                                <DirectorySection
-                                    directory={directory}
-                                    suggestions={suggestions}
-                                    selectedIndex={selectedIndex}
-                                    isDisabled={isFormDisabled}
-                                    recentPaths={recentPaths}
-                                    statusMessage={directoryStatusMessage}
-                                    statusTone={directoryStatusTone}
-                                    onDirectoryChange={handleDirectoryChange}
-                                    onDirectoryFocus={handleDirectoryFocus}
-                                    onDirectoryBlur={handleDirectoryBlur}
-                                    onDirectoryKeyDown={handleDirectoryKeyDown}
-                                    onSuggestionSelect={handleSuggestionSelect}
-                                    onPathClick={handlePathClick}
-                                />
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardHeader className="p-5 pb-4">
-                                <CardTitle className="text-lg" data-ui-heading="serif">{t('newSession.runtime.title')}</CardTitle>
-                                <CardDescription>
-                                    {t('newSession.runtime.description')}
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-5 p-5 pt-0">
-                                <AgentSelector
-                                    agent={agent}
-                                    isDisabled={isFormDisabled}
-                                    onAgentChange={setAgent}
-                                />
-                                <ModelSelector
-                                    agent={agent}
-                                    model={model}
-                                    isDisabled={isFormDisabled}
-                                    onModelChange={setModel}
-                                />
-                                <ClaudeEffortSelector
-                                    agent={agent}
-                                    effort={effort}
-                                    isDisabled={isFormDisabled}
-                                    onEffortChange={setEffort}
-                                />
-                                <ReasoningEffortSelector
-                                    agent={agent}
-                                    value={modelReasoningEffort}
-                                    isDisabled={isFormDisabled}
-                                    onChange={setModelReasoningEffort}
-                                />
-                            </CardContent>
-                        </Card>
+                        <MachineSelector
+                            machines={props.machines}
+                            machineId={machineId}
+                            isLoading={props.isLoading}
+                            isDisabled={isFormDisabled}
+                            onChange={handleMachineChange}
+                        />
+                        <DirectorySection
+                            directory={directory}
+                            suggestions={suggestions}
+                            selectedIndex={selectedIndex}
+                            isDisabled={isFormDisabled}
+                            recentPaths={recentPaths}
+                            statusMessage={directoryStatusMessage}
+                            statusTone={directoryStatusTone}
+                            onDirectoryChange={handleDirectoryChange}
+                            onDirectoryFocus={handleDirectoryFocus}
+                            onDirectoryBlur={handleDirectoryBlur}
+                            onDirectoryKeyDown={handleDirectoryKeyDown}
+                            onSuggestionSelect={handleSuggestionSelect}
+                            onPathClick={handlePathClick}
+                        />
                     </div>
+                </div>
 
+                {/* Runtime: Agent + Model + Effort */}
+                <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--app-hint)] mb-3">
+                        {t('newSession.runtime.title')}
+                    </p>
                     <div className="space-y-4">
-                        <Card>
-                            <CardHeader className="p-5 pb-4">
-                                <CardTitle className="text-lg" data-ui-heading="serif">{t('newSession.behavior.title')}</CardTitle>
-                                <CardDescription>
-                                    {t('newSession.behavior.description')}
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-5 p-5 pt-0">
-                                <SessionTypeSelector
-                                    sessionType={sessionType}
-                                    worktreeName={worktreeName}
-                                    worktreeInputRef={worktreeInputRef}
-                                    isDisabled={isFormDisabled}
-                                    onSessionTypeChange={setSessionType}
-                                    onWorktreeNameChange={setWorktreeName}
-                                />
-                                <YoloToggle
-                                    yoloMode={yoloMode}
-                                    isDisabled={isFormDisabled}
-                                    onToggle={setYoloMode}
-                                />
-                            </CardContent>
-                        </Card>
-
-                        {(error ?? spawnError) ? (
-                            <div className="rounded-[var(--app-radius-control)] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
-                                {error ?? spawnError}
-                            </div>
-                        ) : null}
-
-                        <Card>
-                            <CardHeader className="p-5 pb-4">
-                                <CardTitle className="text-lg" data-ui-heading="serif">{t('newSession.review.title')}</CardTitle>
-                                <CardDescription>
-                                    {t('newSession.review.description')}
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="p-5 pt-0">
-                                <ActionButtons
-                                    isPending={isPending}
-                                    canCreate={canCreate}
-                                    isDisabled={isFormDisabled}
-                                    createLabel={createLabel}
-                                    onCancel={props.onCancel}
-                                    onCreate={handleCreate}
-                                />
-                            </CardContent>
-                        </Card>
+                        <AgentSelector
+                            agent={agent}
+                            isDisabled={isFormDisabled}
+                            onAgentChange={setAgent}
+                        />
+                        <div className="grid grid-cols-2 gap-3">
+                            <ModelSelector
+                                agent={agent}
+                                model={model}
+                                isDisabled={isFormDisabled}
+                                onModelChange={setModel}
+                            />
+                            <ClaudeEffortSelector
+                                agent={agent}
+                                effort={effort}
+                                isDisabled={isFormDisabled}
+                                onEffortChange={setEffort}
+                            />
+                        </div>
+                        <ReasoningEffortSelector
+                            agent={agent}
+                            value={modelReasoningEffort}
+                            isDisabled={isFormDisabled}
+                            onChange={setModelReasoningEffort}
+                        />
                     </div>
+                </div>
+
+                {/* Behavior: Session Type + YOLO */}
+                <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--app-hint)] mb-3">
+                        {t('newSession.behavior.title')}
+                    </p>
+                    <div className="space-y-4">
+                        <SessionTypeSelector
+                            sessionType={sessionType}
+                            worktreeName={worktreeName}
+                            worktreeInputRef={worktreeInputRef}
+                            isDisabled={isFormDisabled}
+                            onSessionTypeChange={setSessionType}
+                            onWorktreeNameChange={setWorktreeName}
+                        />
+                        <YoloToggle
+                            yoloMode={yoloMode}
+                            isDisabled={isFormDisabled}
+                            onToggle={setYoloMode}
+                        />
+                    </div>
+                </div>
+
+                {(error ?? spawnError) ? (
+                    <div className="rounded-[var(--app-radius-lg)] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
+                        {error ?? spawnError}
+                    </div>
+                ) : null}
+
+                {/* Actions */}
+                <div className="pt-2 border-t border-[var(--app-border)]">
+                    <ActionButtons
+                        isPending={isPending}
+                        canCreate={canCreate}
+                        isDisabled={isFormDisabled}
+                        createLabel={createLabel}
+                        onCancel={props.onCancel}
+                        onCreate={handleCreate}
+                    />
                 </div>
             </div>
         </div>
