@@ -9,8 +9,8 @@ export default {
   'loading.machines': '加载机器…',
 
   // Login / Auth
-  'login.title': 'HAPI',
-  'login.subtitle': '随时随地，Vibe Coding',
+  'login.title': '欢迎回来',
+  'login.subtitle': '请输入访问令牌以继续',
   'login.bind.title': '绑定 Telegram',
   'login.submit': '登录',
   'login.bind.submit': '绑定',
@@ -25,8 +25,8 @@ export default {
   'login.error.bindFailed': '绑定失败',
   'login.error.authFailed': '认证失败',
   'login.help': '需要帮助？',
-  'login.server.default': '(默认)',
-  'login.server.custom': '(自定义)',
+  'login.server.default': '默认',
+  'login.server.custom': '自定义',
   'login.server.title': '服务器地址',
   'login.server.description': '设置 HAPI 服务器地址以使用 API 和实时更新。',
   'login.server.current': '当前：',
@@ -36,8 +36,8 @@ export default {
   'login.server.required': '必须先填写服务器地址才能登录。',
   'login.server.useSameOrigin': '使用同源',
   'login.server.save': '保存',
-  'login.footer': '用',
-  'login.footer.for': '设计，Vibe Coding',
+  'login.footer': 'Made with',
+  'login.footer.for': 'by Epoch2023',
   'login.footer.copyright': '©',
 
   // Sessions page

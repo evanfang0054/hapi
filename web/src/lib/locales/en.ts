@@ -9,8 +9,8 @@ export default {
   'loading.machines': 'Loading machines…',
 
   // Login / Auth
-  'login.title': 'HAPI',
-  'login.subtitle': 'Vibe Coding Anytime, Anywhere',
+  'login.title': 'Welcome Back',
+  'login.subtitle': 'Enter your access token to continue',
   'login.bind.title': 'Bind Telegram',
   'login.submit': 'Sign In',
   'login.bind.submit': 'Bind',
@@ -24,9 +24,9 @@ export default {
   'login.error.loginUnavailable': 'Login is unavailable.',
   'login.error.bindFailed': 'Binding failed',
   'login.error.authFailed': 'Authentication failed',
-  'login.help': 'Needs help?',
-  'login.server.default': '(Default)',
-  'login.server.custom': '(Custom)',
+  'login.help': 'Need help?',
+  'login.server.default': 'Default',
+  'login.server.custom': 'Custom',
   'login.server.title': 'Hub URL',
   'login.server.description': 'Set hapi hub origin for API and live updates.',
   'login.server.current': 'Current:',
@@ -36,8 +36,8 @@ export default {
   'login.server.required': 'Hub URL required. Please set it before signing in.',
   'login.server.useSameOrigin': 'Use same origin',
   'login.server.save': 'Save hub',
-  'login.footer': 'Designed with',
-  'login.footer.for': 'for Vibe Coding',
+  'login.footer': 'Made with',
+  'login.footer.for': 'by Epoch2023',
   'login.footer.copyright': '©',
 
   // Sessions page

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ApiClient } from '@/api/client'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
-import { Spinner } from '@/components/Spinner'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { useTranslation } from '@/lib/use-translation'
@@ -116,7 +115,7 @@ export function LoginPrompt(props: LoginPromptProps) {
     return (
         <div className="relative min-h-[100dvh] flex items-center justify-center p-6">
             {/* Top controls bar */}
-            <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 py-4" style={{ paddingTop: 'calc(16px + env(safe-area-inset-top))' }}>
+            <div className="fixed top-0 left-0 right-0 z-100 flex items-center justify-between px-5 py-4" style={{ paddingTop: 'calc(16px + env(safe-area-inset-top))' }}>
                 <button
                     type="button"
                     onClick={() => setAppearance(isDark ? 'light' : 'dark')}
@@ -152,7 +151,7 @@ export function LoginPrompt(props: LoginPromptProps) {
                     >
                         {title}
                     </h1>
-                    <p className="text-[15px] text-[var(--app-hint)]">{subtitle}</p>
+                    <p className="text-[15px] text-[var(--app-hint)] leading-relaxed">{subtitle}</p>
                 </div>
 
                 {/* Card */}
@@ -183,7 +182,7 @@ export function LoginPrompt(props: LoginPromptProps) {
                         {/* Error */}
                         {displayError && (
                             <div className="flex items-center gap-1.5 text-[13px] text-[var(--app-error)]">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 shrink-0">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5 shrink-0">
                                     <circle cx="12" cy="12" r="10" />
                                     <line x1="12" y1="8" x2="12" y2="12" />
                                     <line x1="12" y1="16" x2="12.01" y2="16" />
@@ -197,7 +196,7 @@ export function LoginPrompt(props: LoginPromptProps) {
                             type="submit"
                             disabled={isLoading || !accessToken.trim()}
                             aria-busy={isLoading}
-                            className="w-full py-3.5 rounded-[16px] text-[var(--app-button-text)] font-semibold disabled:opacity-50 hover:opacity-90 hover:-translate-y-px active:translate-y-0 transition-all inline-flex items-center justify-center gap-2"
+                            className="w-full py-3.5 rounded-[16px] text-[var(--app-button-text)] font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 hover:-translate-y-px active:translate-y-0 transition-all inline-flex items-center justify-center gap-2"
                             style={{
                                 background: 'linear-gradient(135deg, var(--app-link) 0%, #d97757 100%)',
                                 fontSize: '15px',
@@ -205,7 +204,7 @@ export function LoginPrompt(props: LoginPromptProps) {
                         >
                             {isLoading ? (
                                 <>
-                                    <Spinner size="sm" label={null} className="text-[var(--app-button-text)]" />
+                                    <span className="inline-block h-[18px] w-[18px] animate-spin rounded-full border-2 border-white/30 border-t-white" />
                                     {isBindMode ? t('login.bind.submitting') : t('login.submitting')}
                                 </>
                             ) : (
@@ -287,8 +286,8 @@ export function LoginPrompt(props: LoginPromptProps) {
 
             {/* Footer */}
             <div className="fixed bottom-0 left-0 right-0 text-center text-xs text-[var(--app-hint)] space-y-1 px-5 py-4" style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}>
-                <div>{t('login.footer')} <span className="text-red-500">&#9829;</span> {t('login.footer.for')}</div>
-                <div>&copy; {new Date().getFullYear()} HAPI</div>
+                <div>{t('login.footer')} <span style={{ color: '#e25555' }}>&#9829;</span> {t('login.footer.for')}</div>
+                <div>&copy; {new Date().getFullYear()} Epoch2023</div>
             </div>
         </div>
     )
