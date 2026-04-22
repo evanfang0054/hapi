@@ -239,7 +239,7 @@ export default function FilePage() {
                                             {filePath ? (
                                                 <button
                                                     type="button"
-                                                    onClick={() => { copyPath(filePath); addToast({ title: t('sessionFileDetail.copied') }) }}
+                                                    onClick={() => { copyPath(filePath); addToast({ title: t('sessionFileDetail.copied'), body: '' }) }}
                                                     className="inline-flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-3 py-1 text-[var(--app-fg)] transition-colors hover:bg-[var(--app-panel-muted-bg)]"
                                                     title={t('sessionFileDetail.copyPath')}
                                                 >
@@ -336,7 +336,7 @@ export default function FilePage() {
                                             {canCopyContent ? (
                                                 <button
                                                     type="button"
-                                                    onClick={() => { copyContent(decodedContent); addToast({ title: t('button.copy') }) }}
+                                                    onClick={() => { copyContent(decodedContent); addToast({ title: t('button.copy'), body: '' }) }}
                                                     className="absolute right-2 top-2 z-10 inline-flex items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2.5 py-1 text-[11px] text-[var(--app-hint)] shadow-[var(--app-shadow-sm)] transition-colors hover:bg-[var(--app-panel-muted-bg)] hover:text-[var(--app-fg)]"
                                                     title={t('sessionFileDetail.copyFileContent')}
                                                 >

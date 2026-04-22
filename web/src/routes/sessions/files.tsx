@@ -492,15 +492,15 @@ export default function FilesPage() {
             }
             if (!result.success) {
                 console.error('Git action failed:', result.error || result.stderr)
-                addToast({ title: t('sessionFiles.toast.failed'), body: result.error || result.stderr })
+                addToast({ title: t('sessionFiles.toast.failed'), body: result.error || result.stderr || '' })
             } else {
                 const toastMap = { stage: 'sessionFiles.toast.staged', unstage: 'sessionFiles.toast.unstaged', discard: 'sessionFiles.toast.discarded', clean: 'sessionFiles.toast.deleted' }
-                addToast({ title: t(toastMap[action]) })
+                addToast({ title: t(toastMap[action]), body: '' })
             }
             await refetchGit()
         } catch (err) {
             console.error('Git action error:', err)
-            addToast({ title: t('sessionFiles.toast.failed') })
+            addToast({ title: t('sessionFiles.toast.failed'), body: '' })
         } finally {
             setActionLoading(false)
         }
@@ -531,15 +531,15 @@ export default function FilesPage() {
                 }
                 if (!result.success) {
                     console.error('Git bulk action failed:', result.error || result.stderr)
-                    addToast({ title: t('sessionFiles.toast.failed'), body: result.error || result.stderr })
+                    addToast({ title: t('sessionFiles.toast.failed'), body: result.error || result.stderr || '' })
                 } else {
                     const toastMap = { stageAll: 'sessionFiles.toast.stageAll', unstageAll: 'sessionFiles.toast.unstageAll', discardAll: 'sessionFiles.toast.discardedAll' }
-                    addToast({ title: t(toastMap[action]) })
+                    addToast({ title: t(toastMap[action]), body: '' })
                 }
                 await refetchGit()
             } catch (err) {
                 console.error('Git bulk action error:', err)
-                addToast({ title: t('sessionFiles.toast.failed') })
+                addToast({ title: t('sessionFiles.toast.failed'), body: '' })
             } finally {
                 setActionLoading(false)
             }
