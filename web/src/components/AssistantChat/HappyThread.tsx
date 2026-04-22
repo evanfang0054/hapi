@@ -20,13 +20,12 @@ function NewMessagesIndicator(props: { count: number; onClick: () => void }) {
     return (
         <button
             onClick={props.onClick}
-            className="absolute bottom-20 left-1/2 z-10 inline-flex -translate-x-1/2 items-center gap-2 rounded-full border border-[var(--app-border)] bg-[color:color-mix(in_srgb,var(--app-panel-elevated-bg)_92%,transparent)] px-3 py-1.5 text-xs font-medium text-[var(--app-fg)] shadow-[var(--app-shadow-sm)] backdrop-blur md:bottom-24 md:px-4 md:py-2 md:text-sm"
+            className="fixed bottom-[140px] right-5 z-10 w-10 h-10 rounded-full bg-[var(--app-panel-elevated-bg)] border border-[var(--app-border)] shadow-[var(--app-shadow-sm)] flex items-center justify-center text-[var(--app-hint)] hover:text-[var(--app-fg)] transition-all"
+            aria-label={t('misc.newMessage', { n: props.count })}
         >
-            <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--app-panel-muted-bg)] px-1 text-xs text-[var(--app-hint)]">
-                {props.count}
-            </span>
-            <span>{t('misc.newMessage', { n: props.count })}</span>
-            <span aria-hidden="true">↓</span>
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="6 9 12 15 18 9" />
+            </svg>
         </button>
     )
 }

@@ -783,7 +783,7 @@ export function HappyComposer(props: {
 
                     {overlays}
 
-                    <div className="overflow-hidden rounded-[var(--app-radius-panel)] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] shadow-[var(--app-shadow-sm)]">
+                    <div className="overflow-hidden rounded-[20px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)]">
                         <StatusBar
                             active={active}
                             thinking={thinking}

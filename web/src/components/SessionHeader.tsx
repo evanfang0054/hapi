@@ -135,12 +135,13 @@ export function SessionHeader(props: {
                 <button
                     type="button"
                     onClick={props.onBack}
-                    className="flex items-center gap-2 text-[var(--app-hint)] hover:text-[var(--app-fg)] transition-colors"
+                    className="w-9 h-9 rounded-[10px] flex items-center justify-center text-[var(--app-fg)] hover:bg-[var(--app-subtle-bg)] transition-colors"
+                    aria-label="Back"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
+                        width="20"
+                        height="20"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
@@ -150,13 +151,12 @@ export function SessionHeader(props: {
                     >
                         <polyline points="15 18 9 12 15 6" />
                     </svg>
-                    <span className="text-sm">Back</span>
                 </button>
 
                 <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                         <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${session.active ? 'bg-[var(--app-git-staged-color)] animate-pulse' : 'bg-[var(--app-hint)] opacity-40'}`} />
-                        <div className="truncate text-[16px] font-semibold leading-tight text-[var(--app-fg)]">
+                        <div className="truncate text-[16px] font-medium italic leading-tight text-[var(--app-fg)]" style={{ fontFamily: 'var(--app-font-serif)' }}>
                             {title}
                         </div>
                     </div>
@@ -184,10 +184,10 @@ export function SessionHeader(props: {
                             variant="secondary"
                             size="sm"
                             onClick={props.onViewFiles}
-                            className="h-8 w-8 rounded-[10px] p-0 text-[var(--app-hint)] hover:text-[var(--app-fg)]"
+                            className="w-9 h-9 rounded-[10px] p-0 text-[var(--app-hint)] hover:text-[var(--app-fg)]"
                             title={t('session.title')}
                         >
-                            <FilesIcon className="h-4 w-4" />
+                            <FilesIcon className="w-[18px] h-[18px]" />
                         </Button>
                     ) : null}
 
@@ -197,11 +197,11 @@ export function SessionHeader(props: {
                             variant="secondary"
                             size="sm"
                             onClick={props.onRefresh}
-                            className="h-8 w-8 rounded-[10px] p-0 text-[var(--app-hint)] hover:text-[var(--app-fg)]"
+                            className="w-9 h-9 rounded-[10px] p-0 text-[var(--app-hint)] hover:text-[var(--app-fg)]"
                             title="刷新"
                             aria-label="刷新"
                         >
-                            <RefreshIcon className="h-4 w-4" />
+                            <RefreshIcon className="w-[18px] h-[18px]" />
                         </Button>
                     ) : null}
 
@@ -215,10 +215,10 @@ export function SessionHeader(props: {
                         aria-haspopup="menu"
                         aria-expanded={menuOpen}
                         aria-controls={menuOpen ? menuId : undefined}
-                        className="h-8 w-8 rounded-[10px] p-0 text-[var(--app-hint)] hover:text-[var(--app-fg)]"
+                        className="w-9 h-9 rounded-[10px] p-0 text-[var(--app-hint)] hover:text-[var(--app-fg)]"
                         title={t('session.more')}
                     >
-                        <MoreVerticalIcon className="h-4 w-4" />
+                        <MoreVerticalIcon className="w-[18px] h-[18px]" />
                     </Button>
                 </div>
             </div>
