@@ -4,6 +4,7 @@ import { useAppContext } from '@/lib/app-context'
 import { useMachines } from '@/hooks/queries/useMachines'
 import { useTranslation } from '@/lib/use-translation'
 import { queryKeys } from '@/lib/query-keys'
+import { formatRunnerSpawnError } from '@/utils/formatRunnerSpawnError'
 import type { Machine } from '@/types/api'
 
 function getMachineTitle(machine: Machine): string {
@@ -114,7 +115,7 @@ function MachineCard({ machine, onClick }: { machine: Machine; onClick: () => vo
     const platform = machine.metadata?.platform ?? 'Unknown'
     const cliVersion = machine.metadata?.happyCliVersion
     const isActive = machine.active
-    const runnerError = machine.runnerState?.lastSpawnError?.message
+    const runnerError = formatRunnerSpawnError(machine)
 
     return (
         <div
@@ -280,13 +281,18 @@ export default function MachinesPage() {
                                 <div className="text-[13px] text-[var(--app-hint)] mt-2 max-w-[280px] leading-relaxed">{t('machines.empty.description')}</div>
                             </div>
                         ) : (
-                            machines.map((machine) => (
-                                <MachineCard
-                                    key={machine.id}
-                                    machine={machine}
-                                    onClick={() => setDrawerMachine(machine)}
-                                />
-                            ))
+                            <>
+                                <div className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[var(--app-hint)] mb-3">
+                                    {t('machines.activeMachines')}
+                                </div>
+                                {machines.map((machine) => (
+                                    <MachineCard
+                                        key={machine.id}
+                                        machine={machine}
+                                        onClick={() => setDrawerMachine(machine)}
+                                    />
+                                ))}
+                            </>
                         )}
 
                         {/* Bottom padding for mobile tab bar */}

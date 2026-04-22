@@ -394,6 +394,7 @@ export default {
   'machines.empty': '暂无可用机器',
   'machines.empty.description': '在本地机器上启动 HAPI CLI 以连接并远程管理会话。',
   'machines.refresh': '刷新',
+  'machines.activeMachines': '活跃机器',
   'history.title': '历史',
   'history.subtitle': '已归档和过去的会话',
   'history.search': '搜索会话…',

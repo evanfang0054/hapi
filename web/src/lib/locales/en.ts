@@ -392,6 +392,7 @@ export default {
   'machines.empty': 'No machines available',
   'machines.empty.description': 'Start the HAPI CLI on your machine to connect and manage sessions remotely.',
   'machines.refresh': 'Refresh',
+  'machines.activeMachines': 'Active Machines',
   'history.title': 'History',
   'history.subtitle': 'Archived and past sessions',
   'history.search': 'Search sessions…',
