@@ -94,6 +94,7 @@ export default {
   'selection.deleted': '已删除 {n} 个会话',
   'selection.failureCount': '{n} 个删除失败',
   'dialog.error.default': '操作失败，请重试。',
+  'dialog.destructiveWarning': '此操作无法撤销。',
 
   // Common buttons
   'button.cancel': '取消',

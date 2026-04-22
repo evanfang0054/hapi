@@ -162,13 +162,13 @@ function MachineCard({ machine, onClick }: { machine: Machine; onClick: () => vo
 
             {/* Runner error */}
             {runnerError ? (
-                <div className="mt-3 rounded-[12px] border border-[rgba(181,51,51,0.2)] bg-[rgba(181,51,51,0.08)] p-3 flex items-start gap-2">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--app-error)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 shrink-0 mt-0.5">
+                <div className="mt-3 rounded-[12px] border border-[var(--app-badge-error-border)] bg-[var(--app-badge-error-bg)] p-3 flex items-start gap-2">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--app-badge-error-text)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 shrink-0 mt-0.5">
                         <circle cx="12" cy="12" r="10" />
                         <line x1="12" y1="8" x2="12" y2="12" />
                         <line x1="12" y1="16" x2="12.01" y2="16" />
                     </svg>
-                    <span className="text-[12px] text-[var(--app-error)]">{runnerError}</span>
+                    <span className="text-[12px] text-[var(--app-badge-error-text)]">{runnerError}</span>
                 </div>
             ) : null}
         </div>

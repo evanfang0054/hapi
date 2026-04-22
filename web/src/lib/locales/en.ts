@@ -92,6 +92,7 @@ export default {
   'selection.deleted': 'Deleted {n} session(s)',
   'selection.failureCount': '{n} deletions failed',
   'dialog.error.default': 'Operation failed. Please try again.',
+  'dialog.destructiveWarning': 'This action cannot be undone.',
 
   // Common buttons
   'button.cancel': 'Cancel',

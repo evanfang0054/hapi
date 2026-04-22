@@ -13,11 +13,11 @@ export const DialogContent = React.forwardRef<
     React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
 >(({ className, ...props }, ref) => (
     <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-[rgba(20,20,19,0.38)] backdrop-blur-[2px]" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-[rgba(0,0,0,0.4)] dark:bg-[rgba(0,0,0,0.6)]" />
         <DialogPrimitive.Content
             ref={ref}
             className={cn(
-                'fixed left-1/2 top-1/2 z-50 w-[calc(100vw-24px)] max-w-xl -translate-x-1/2 -translate-y-1/2 rounded-[28px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] p-5 shadow-[var(--app-shadow-md)]',
+                'fixed left-1/2 top-1/2 z-50 w-[calc(100vw-24px)] max-w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-[24px] border border-[var(--app-border)] bg-[var(--app-panel-bg)] p-6 shadow-[var(--app-shadow-md)]',
                 className
             )}
             {...props}
@@ -36,7 +36,8 @@ export const DialogTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
     <DialogPrimitive.Title
         ref={ref}
-        className={cn('text-xl font-semibold leading-none tracking-tight', className)}
+        className={cn('text-xl font-medium leading-none tracking-tight', className)}
+        style={{ fontFamily: 'var(--app-font-serif)', fontStyle: 'italic' }}
         {...props}
     />
 ))

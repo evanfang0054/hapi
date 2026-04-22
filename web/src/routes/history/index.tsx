@@ -15,6 +15,7 @@ type SessionItem = {
     active: boolean
     updatedAt: number
     projectPath: string | null
+    summary: string | null
     archived: boolean
     deleted: boolean
 }
@@ -98,7 +99,7 @@ function HistorySessionItem({ session, api, onOpen }: {
     return (
         <div
             ref={itemRef}
-            className={`border rounded-[16px] bg-[var(--app-panel-bg)] p-3.5 transition-all cursor-pointer ${actionsOpen ? 'border-[var(--app-link)] shadow-[var(--app-shadow-sm)]' : 'border-[var(--app-border)] hover:border-[var(--app-link)] hover:shadow-[var(--app-shadow-sm)]'}`}
+            className={`border rounded-[16px] bg-[var(--app-panel-elevated-bg)] p-3.5 transition-all cursor-pointer ${actionsOpen ? 'border-[var(--app-link)] shadow-[var(--app-shadow-sm)]' : 'border-[var(--app-border)] hover:border-[var(--app-link)] hover:shadow-[var(--app-shadow-sm)]'}`}
         >
             <div className="flex items-start gap-3" onClick={() => { if (!actionsOpen) onOpen() }}>
                 {/* Icon */}
@@ -124,9 +125,9 @@ function HistorySessionItem({ session, api, onOpen }: {
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                     <div className="text-[14px] font-medium text-[var(--app-fg)] truncate">{session.name}</div>
-                    {session.projectPath && (
+                    {(session.summary || session.projectPath) && (
                         <div className="text-[12px] text-[var(--app-hint)] line-clamp-2 mt-0.5 leading-snug">
-                            {session.projectPath}
+                            {session.summary || session.projectPath}
                         </div>
                     )}
                     <div className="flex items-center gap-1.5 text-[11px] text-[var(--app-hint)] mt-1 font-mono">
@@ -246,6 +247,7 @@ export default function HistoryPage() {
         active: s.active ?? false,
         updatedAt: s.updatedAt ?? 0,
         projectPath: s.metadata?.path ?? s.metadata?.worktree?.basePath ?? null,
+        summary: s.metadata?.summary?.text ?? null,
         archived: (s.metadata as Record<string, unknown>)?.archived === true,
         deleted: (s.metadata as Record<string, unknown>)?.deleted === true,
     })), [sessions])
@@ -326,12 +328,24 @@ export default function HistoryPage() {
                             key={mode}
                             type="button"
                             onClick={() => setFilterMode(mode)}
-                            className={`px-3.5 py-2 rounded-[20px] text-[13px] font-medium transition-colors active:scale-95 ${
+                            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-[20px] text-[13px] font-medium transition-colors active:scale-95 ${
                                 filterMode === mode
                                     ? 'bg-[var(--app-link)] text-white border border-[var(--app-link)]'
                                     : 'bg-[var(--app-subtle-bg)] text-[var(--app-fg)] border border-[var(--app-border)] hover:bg-[var(--app-panel-muted-bg)]'
                             }`}
                         >
+                            {mode === 'archived' ? (
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5">
+                                    <path d="M21 8v13H3V8" />
+                                    <path d="M1 3h22v5H1z" />
+                                    <path d="M10 12h4" />
+                                </svg>
+                            ) : mode === 'deleted' ? (
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5">
+                                    <polyline points="3 6 5 6 21 6" />
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                </svg>
+                            ) : null}
                             {filterLabel(mode)}
                         </button>
                     ))}

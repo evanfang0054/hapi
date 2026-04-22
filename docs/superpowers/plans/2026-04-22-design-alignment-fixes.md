@@ -261,16 +261,16 @@ Task 9-11 相互独立可并行。Task 12-17 为第二轮对齐，相互独立�
 
 ### 实施步骤
 
-- [ ] **Step 1: Dialog overlay** — 移除 `backdrop-blur`, 改为 `rgba(0,0,0,0.4)`, dark 模式 `rgba(0,0,0,0.6)`
-- [ ] **Step 2: Dialog 圆角** — `rounded-[28px]` → `rounded-[24px]`
-- [ ] **Step 3: Dialog 面板背景** — panel-elevated-bg → panel-bg
-- [ ] **Step 4: Dialog max-width** — max-w-md → max-w-[420px]
-- [ ] **Step 5: Dialog title** — 添加 serif + weight 500
-- [ ] **Step 6: Dialog padding** — p-5 → p-6
+- [x] **Step 1: Dialog overlay** — 移除 `backdrop-blur`, 改为 `rgba(0,0,0,0.4)`, dark 模式 `rgba(0,0,0,0.6)`
+- [x] **Step 2: Dialog 圆角** — `rounded-[28px]` → `rounded-[24px]`
+- [x] **Step 3: Dialog 面板背景** — panel-elevated-bg → panel-bg
+- [x] **Step 4: Dialog max-width** — max-w-xl → max-w-[420px]
+- [x] **Step 5: Dialog title** — 添加 serif italic + weight 500
+- [x] **Step 6: Dialog padding** — p-5 → p-6
 - [ ] **Step 7: Dialog 按钮样式** — secondary: subtle-bg + border + fg 12px radius; primary: link + white 12px radius
 - [ ] **Step 8: Dialog 滑入动画** — 添加 translateY + opacity 过渡
-- [ ] **Step 9: 运行测试和构建**
-- [ ] **Step 10: 提交**
+- [x] **Step 9: 运行测试和构建**
+- [x] **Step 10: 提交**
 
 ---
 
@@ -299,15 +299,15 @@ Task 9-11 相互独立可并行。Task 12-17 为第二轮对齐，相互独立�
 
 ### 实施步骤
 
-- [ ] **Step 1: 终端背景色** — light 模式下改为固定深色或使用独立 CSS 变量
-- [ ] **Step 2: 连接状态指示器** — `bg-emerald-500` → `bg-[var(--app-success)]`, `bg-amber-400` → `bg-[var(--app-warning)]`
-- [ ] **Step 3: 终端区域圆角** — 添加 `rounded-lg` (8px)
-- [ ] **Step 4: Header title** — 添加 italic + serif, 18px
-- [ ] **Step 5: Quick Input** — 移除外框 rounded/shadow, 只保留 border-top
-- [ ] **Step 6: Send 按钮** — 使用 link 色背景, 移除 ring-warm
-- [ ] **Step 7: 指示器尺寸** — `h-2.5 w-2.5` → `h-2 w-2` (8px)
-- [ ] **Step 8: 运行测试和构建**
-- [ ] **Step 9: 提交**
+- [x] **Step 1: 终端背景色** — light 模式下改为固定深色或使用独立 CSS 变量 (使用 --app-code-bg)
+- [x] **Step 2: 连接状态指示器** — `bg-emerald-500` → `bg-[var(--app-badge-success-text)]`, `bg-amber-400` → `bg-[var(--app-badge-warning-text)]`
+- [x] **Step 3: 终端区域圆角** — 添加 `rounded-lg` (8px)
+- [x] **Step 4: Header title** — 已使用 data-ui-heading="serif"
+- [x] **Step 5: Quick Input** — 移除 rounded/shadow, 改为 border-top
+- [x] **Step 6: Send 按钮** — 使用 link 色背景 12px radius
+- [x] **Step 7: 指示器尺寸** — `h-2.5 w-2.5` → `h-2 w-2` (8px)
+- [x] **Step 8: 运行测试和构建**
+- [x] **Step 9: 提交**
 
 ---
 
@@ -332,12 +332,12 @@ Task 9-11 相互独立可并行。Task 12-17 为第二轮对齐，相互独立�
 
 ### 实施步骤
 
-- [ ] **Step 1: Confirm dialog 居中对齐** — 添加 `text-center`
-- [ ] **Step 2: 按钮布局** — 改为等宽 `flex: 1`
-- [ ] **Step 3: Danger 图标** — 添加 56px 圆形 danger 色图标
-- [ ] **Step 4: Delete warning** — 添加黄色提示块
-- [ ] **Step 5: 运行测试和构建**
-- [ ] **Step 6: 提交**
+- [x] **Step 1: Confirm dialog 居中对齐** — 添加 `text-center`
+- [x] **Step 2: 按钮布局** — 改为等宽 `flex: 1`
+- [x] **Step 3: Danger 图标** — 添加 56px 圆形 danger 色图标
+- [x] **Step 4: Delete warning** — 添加黄色提示块
+- [x] **Step 5: 运行测试和构建**
+- [x] **Step 6: 提交**
 
 ---
 
@@ -361,10 +361,10 @@ Task 9-11 相互独立可并行。Task 12-17 为第二轮对齐，相互独立�
 
 ### 实施步骤
 
-- [ ] **Step 1: Session badges** — 检查 Machine 类型是否含 sessions 数据, 有则添加
-- [ ] **Step 2: Runner error dark mode** — dark 模式使用暖色系背景/边框
-- [ ] **Step 3: 运行测试和构建**
-- [ ] **Step 4: 提交**
+- [x] **Step 1: Session badges** — Machine 类型不包含 sessions 数据，跳过
+- [x] **Step 2: Runner error dark mode** — dark 模式使用 CSS 变量 badge-error-*
+- [x] **Step 3: 运行测试和构建**
+- [x] **Step 4: 提交**
 
 ---
 
@@ -389,12 +389,12 @@ Task 9-11 相互独立可并行。Task 12-17 为第二轮对齐，相互独立�
 
 ### 实施步骤
 
-- [ ] **Step 1: Preview content** — 优先显示最后一条消息摘要, fallback 路径
-- [ ] **Step 2: Filter chip 图标** — 添加 Archived (archive icon) / Deleted (trash icon)
-- [ ] **Step 3: 卡片背景** — panel-bg → panel-elevated-bg
+- [x] **Step 1: Preview content** — 优先显示 summary.text, fallback 路径
+- [x] **Step 2: Filter chip 图标** — 添加 Archived (archive icon) / Deleted (trash icon)
+- [x] **Step 3: 卡片背景** — panel-bg → panel-elevated-bg
 - [ ] **Step 4: Action buttons** — 添加 SVG 图标
-- [ ] **Step 5: 运行测试和构建**
-- [ ] **Step 6: 提交**
+- [x] **Step 5: 运行测试和构建**
+- [x] **Step 6: 提交**
 
 ---
 

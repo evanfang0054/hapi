@@ -44,14 +44,14 @@ function ConnectionIndicator(props: { status: 'idle' | 'connecting' | 'connected
     const isConnecting = props.status === 'connecting'
     const label = props.label
     const colorClass = isConnected
-        ? 'bg-emerald-500'
+        ? 'bg-[var(--app-badge-success-text)]'
         : isConnecting
-          ? 'bg-amber-400 animate-pulse'
+          ? 'bg-[var(--app-badge-warning-text)] animate-pulse'
           : 'bg-[var(--app-hint)]'
 
     return (
         <div className="flex items-center" aria-label={label} title={label} role="status">
-            <span className={`h-2.5 w-2.5 rounded-full ${colorClass}`} />
+            <span className={`h-2 w-2 rounded-full ${colorClass}`} />
         </div>
     )
 }
@@ -515,7 +515,7 @@ export default function TerminalPage() {
                         </CardHeader>
 
                         <CardContent className="relative flex min-h-0 flex-1 flex-col gap-2 md:gap-4 md:px-6 md:py-5">
-                            <div className="relative min-h-0 flex-1 overflow-hidden border border-[var(--app-border)] bg-[var(--app-code-bg)]">
+                            <div className="relative min-h-0 flex-1 overflow-hidden rounded-lg border border-[var(--app-border)] bg-[var(--app-code-bg)]">
                                 {terminalSupported ? (
                                     <TerminalView onMount={handleTerminalMount} onResize={handleResize} fontSize={terminalFontSize} className="h-full w-full" />
                                 ) : (
@@ -546,7 +546,7 @@ export default function TerminalPage() {
                                 ) : null}
                             </div>
 
-                            <div className="space-y-1.5 rounded-[var(--app-radius-panel)] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] p-2 shadow-[var(--app-shadow-sm)] md:space-y-3 md:p-4">
+                            <div className="space-y-1.5 border-t border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] p-2 md:space-y-3 md:p-4">
                                 <div className="hidden md:block">
                                     <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--app-hint)]">
                                         {t('terminal.quickInput.title')}
@@ -574,14 +574,14 @@ export default function TerminalPage() {
                                         spellCheck={false}
                                         className="flex-1 rounded-[var(--app-radius-control)] border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-3 py-1.5 text-sm text-[var(--app-fg)] placeholder-[var(--app-hint)] focus:outline-none focus:ring-2 focus:ring-[var(--app-link)] focus:ring-inset disabled:cursor-not-allowed disabled:opacity-50"
                                     />
-                                    <Button
+                                    <button
                                         type="button"
-                                        size="sm"
                                         onClick={handleCommandSubmit}
                                         disabled={quickInputDisabled || !commandInput}
+                                        className="rounded-[12px] bg-[var(--app-link)] px-4 py-1.5 text-sm font-medium text-white transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                         {t('terminal.commandInput.send')}
-                                    </Button>
+                                    </button>
                                 </div>
                                 {QUICK_INPUT_ROWS.map((row, rowIndex) => (
                                     <div
