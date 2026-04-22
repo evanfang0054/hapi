@@ -203,7 +203,7 @@ export default function FilePage() {
     return (
         <div className="flex h-full min-h-0 flex-col bg-[var(--app-bg)]">
             <div className="app-scroll-y flex-1 min-h-0">
-                <div className="mx-auto w-full max-w-content px-3 py-4 md:px-5 md:py-6">
+                <div className="mx-auto w-full max-w-content px-2 py-2 md:px-3 md:py-3">
                     <div className="space-y-4">
                         <Card className="overflow-hidden border-[var(--app-border)] bg-[var(--app-panel-bg)] shadow-[var(--app-shadow-sm)]">
                             <CardHeader className="gap-4 border-b border-[var(--app-border)] px-5 py-5 sm:px-6">
