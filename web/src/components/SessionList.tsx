@@ -266,7 +266,7 @@ function SessionItem(props: {
     const sessionName = getSessionTitle(s)
     const modelLabel = getSessionModelLabel(s)
     const statusDotClass = s.active
-        ? (s.thinking ? 'bg-[#007AFF]' : 'bg-[var(--app-badge-success-text)]')
+        ? (s.thinking ? 'bg-[#007AFF] shadow-[0_0_8px_#007AFF]' : 'bg-[var(--app-badge-success-text)]')
         : 'bg-[var(--app-hint)]'
     const todoProgress = getTodoProgress(s)
     const sessionContent = (
@@ -274,7 +274,7 @@ function SessionItem(props: {
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 space-y-1.5">
                     <div className="flex min-w-0 items-center gap-2">
-                        <div className="truncate text-[15px] font-medium leading-5">
+                        <div className="truncate text-[15px] font-medium leading-5" style={{ fontFamily: 'var(--app-font-serif)', fontStyle: 'italic' }}>
                             {sessionName}
                         </div>
                     </div>
@@ -324,7 +324,7 @@ function SessionItem(props: {
     )
     return (
         <>
-            <div className={`rounded-[var(--app-radius-control)] border transition-[background-color,border-color,box-shadow,transform] ${selected ? 'border-[var(--app-border)] bg-[var(--app-subtle-bg)] shadow-[var(--app-shadow-sm)]' : 'border-transparent bg-[var(--app-panel-elevated-bg)] hover:border-[var(--app-border)] hover:bg-[var(--app-subtle-bg)]'}`}>
+            <div className={`rounded-[var(--app-radius-control)] border transition-all duration-200 ${selected ? 'border-[var(--app-link)] shadow-[0_0_0_3px_rgba(201,100,66,0.12)]' : 'border-transparent bg-[var(--app-panel-elevated-bg)] hover:border-[var(--app-border)] hover:shadow-[var(--app-shadow-sm)] hover:-translate-y-px'}`}>
                 <div className="flex items-start gap-3 px-4 py-4">
                     {selectionMode ? (
                         <input
@@ -372,7 +372,7 @@ function SessionItem(props: {
                         <button
                             type="button"
                             aria-label={t('session.more')}
-                            className="shrink-0 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-3 py-2 text-xs text-[var(--app-hint)] transition-colors hover:bg-[var(--app-subtle-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-link)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--app-panel-bg)]"
+                            className="shrink-0 flex h-7 w-7 items-center justify-center rounded-[8px] text-xs text-[var(--app-hint)] transition-colors active:bg-[var(--app-subtle-bg)] hover:text-[var(--app-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-link)]"
                             onClick={(event) => {
                                 event.stopPropagation()
                                 const rect = event.currentTarget.getBoundingClientRect()
@@ -632,10 +632,10 @@ export function SessionList(props: {
                             >
                                 <div className="min-w-0">
                                     <div className="flex min-w-0 items-center gap-2">
-                                        <span className="font-semibold text-sm break-words min-w-0" title={group.directory}>
+                                        <span className="font-semibold text-sm break-words min-w-0" title={group.directory} style={{ fontFamily: 'var(--app-font-serif)' }}>
                                             {group.displayName}
                                         </span>
-                                        <span className="shrink-0 rounded-full bg-[var(--app-subtle-bg)] px-2 py-0.5 text-[10px] font-medium text-[var(--app-hint)]">
+                                        <span className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium text-white" style={{ background: 'var(--app-link)' }}>
                                             {group.sessions.length}
                                         </span>
                                     </div>
@@ -650,10 +650,12 @@ export function SessionList(props: {
                                         <span>{formatRelativeTime(group.latestUpdatedAt, t)}</span>
                                     </div>
                                 </div>
-                                <ChevronIcon
-                                    className="h-4 w-4 shrink-0 text-[var(--app-hint)]"
-                                    collapsed={isCollapsed}
-                                />
+                                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--app-subtle-bg)]">
+                                    <ChevronIcon
+                                        className="h-4 w-4 text-[var(--app-hint)]"
+                                        collapsed={isCollapsed}
+                                    />
+                                </span>
                             </button>
                             {!isCollapsed ? (
                                 <div className="mt-2 space-y-2">
@@ -691,17 +693,45 @@ export function SessionList(props: {
             />
 
             {selectionMode && !bulkDeleteOpen ? (
-                <div className="fixed inset-x-0 bottom-0 z-50 border-t border-[var(--app-border)] bg-[var(--app-panel-bg)] px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-2px_10px_rgba(0,0,0,0.1)]">
-                    <div className="mx-auto flex max-w-content items-center justify-between gap-3">
-                        <Button type="button" variant="secondary" onClick={cancelSelectionMode}>
-                            {t('button.cancel')}
-                        </Button>
+                <div className="fixed left-1/2 z-50 -translate-x-1/2 rounded-[16px] border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-4 py-2.5 shadow-[0_-2px_10px_rgba(0,0,0,0.1)] lg:bottom-4" style={{ bottom: 'calc(4.5rem + env(safe-area-inset-bottom))' }}>
+                    <div className="flex items-center gap-3">
+                        <span className="text-sm font-medium text-[var(--app-fg)]">
+                            {selectedCount}
+                        </span>
                         <span className="text-sm text-[var(--app-hint)]">
                             {t('selection.selected', { n: selectedCount })}
                         </span>
+                        <span className="h-5 w-px bg-[var(--app-border)]" />
+                        <button
+                            type="button"
+                            className="rounded-[8px] px-3 py-1.5 text-xs font-medium text-[var(--app-hint)] hover:bg-[var(--app-subtle-bg)] hover:text-[var(--app-fg)] transition-colors"
+                            onClick={cancelSelectionMode}
+                            aria-label={t('button.cancel')}
+                        >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                        </button>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            onClick={async () => {
+                                const ids = Array.from(selectedIds)
+                                for (const id of ids) {
+                                    try { await api?.archiveSession(id) } catch { /* skip */ }
+                                }
+                                cancelSelectionMode()
+                            }}
+                            disabled={selectedIds.size === 0}
+                        >
+                            {t('session.action.archive')}
+                        </Button>
                         <Button
                             type="button"
                             variant="destructive"
+                            size="sm"
                             onClick={() => setBulkDeleteOpen(true)}
                             disabled={selectedIds.size === 0}
                         >
