@@ -17,6 +17,8 @@ export default {
   'login.submitting': 'Signing in…',
   'login.bind.submitting': 'Binding…',
   'login.placeholder': 'Access token',
+  'login.tokenLabel': 'Access Token',
+  'login.tokenHint': 'You can find your token in the CLI or Hub settings',
   'login.error.enterToken': 'Please enter an access token',
   'login.error.bindingUnavailable': 'Binding is unavailable.',
   'login.error.loginUnavailable': 'Login is unavailable.',

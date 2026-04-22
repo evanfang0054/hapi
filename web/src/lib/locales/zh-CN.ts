@@ -17,6 +17,8 @@ export default {
   'login.submitting': '登录中…',
   'login.bind.submitting': '绑定中…',
   'login.placeholder': '访问令牌',
+  'login.tokenLabel': '访问令牌',
+  'login.tokenHint': '你可以在 CLI 或 Hub 设置中找到你的令牌',
   'login.error.enterToken': '请输入访问令牌',
   'login.error.bindingUnavailable': '绑定服务不可用。',
   'login.error.loginUnavailable': '登录服务不可用。',
