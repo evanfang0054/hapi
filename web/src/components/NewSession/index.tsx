@@ -10,7 +10,6 @@ import { useDirectorySuggestions } from '@/hooks/useDirectorySuggestions'
 import { useRecentPaths } from '@/hooks/useRecentPaths'
 import { useTranslation } from '@/lib/use-translation'
 import type { AgentType, ClaudeEffort, CodexReasoningEffort, SessionType } from './types'
-import { ActionButtons } from './ActionButtons'
 import { AgentSelector } from './AgentSelector'
 import { DirectorySection } from './DirectorySection'
 import { MachineSelector } from './MachineSelector'
@@ -381,20 +380,48 @@ export function NewSession(props: {
     const canCreate = Boolean(machineId && trimmedDirectory && !isFormDisabled && !missingWorktreeDirectory)
 
     return (
-        <div className="px-4 py-5">
-            <div className="space-y-5">
-                {runnerSpawnError ? (
-                    <div className="rounded-[var(--app-radius-lg)] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
-                        {t('newSession.runnerLastSpawnError', { error: runnerSpawnError })}
-                    </div>
-                ) : null}
+        <div className="flex h-full min-h-0 flex-col bg-[var(--app-bg)]">
+            {/* Sticky Header — aligned with design mockup modal-header */}
+            <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 bg-[var(--app-panel-bg)] border-b border-[var(--app-border)]" style={{ paddingTop: 'calc(12px + env(safe-area-inset-top))' }}>
+                <button
+                    type="button"
+                    onClick={props.onCancel}
+                    disabled={isFormDisabled}
+                    className="px-4 py-2 rounded-[10px] text-[14px] font-medium text-[var(--app-hint)] hover:text-[var(--app-fg)] transition-colors disabled:opacity-50"
+                >
+                    {t('button.cancel')}
+                </button>
+                <h1 className="text-[18px] font-medium italic" style={{ fontFamily: 'var(--app-font-serif)' }}>
+                    {t('newSession.title')}
+                </h1>
+                <button
+                    type="button"
+                    onClick={handleCreate}
+                    disabled={!canCreate || isPending}
+                    className="px-4 py-2 rounded-[10px] text-[14px] font-medium bg-[var(--app-link)] text-white hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                    {isPending ? (
+                        <span className="inline-flex items-center gap-2">
+                            <span className="inline-block h-[18px] w-[18px] animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                            {t('newSession.creating')}
+                        </span>
+                    ) : (
+                        createLabel ?? t('newSession.create')
+                    )}
+                </button>
+            </div>
 
-                {/* Workspace: Machine + Directory */}
-                <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--app-hint)] mb-3">
-                        {t('newSession.workspace.title')}
-                    </p>
-                    <div className="space-y-4">
+            {/* Scrollable Content */}
+            <div className="app-scroll-y flex-1 min-h-0">
+                <div className="mx-auto w-full max-w-[600px] px-4 py-5">
+                    <div className="space-y-6">
+                        {runnerSpawnError ? (
+                            <div className="rounded-[var(--app-radius-lg)] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
+                                {t('newSession.runnerLastSpawnError', { error: runnerSpawnError })}
+                            </div>
+                        ) : null}
+
+                        {/* Machine */}
                         <MachineSelector
                             machines={props.machines}
                             machineId={machineId}
@@ -402,6 +429,8 @@ export function NewSession(props: {
                             isDisabled={isFormDisabled}
                             onChange={handleMachineChange}
                         />
+
+                        {/* Working Directory */}
                         <DirectorySection
                             directory={directory}
                             suggestions={suggestions}
@@ -417,52 +446,44 @@ export function NewSession(props: {
                             onSuggestionSelect={handleSuggestionSelect}
                             onPathClick={handlePathClick}
                         />
-                    </div>
-                </div>
 
-                {/* Runtime: Agent + Model + Effort */}
-                <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--app-hint)] mb-3">
-                        {t('newSession.runtime.title')}
-                    </p>
-                    <div className="space-y-4">
+                        {/* Agent */}
                         <AgentSelector
                             agent={agent}
                             isDisabled={isFormDisabled}
                             onAgentChange={setAgent}
                         />
-                        <div className="grid grid-cols-2 gap-3">
-                            <ModelSelector
-                                agent={agent}
-                                model={model}
-                                isDisabled={isFormDisabled}
-                                onModelChange={setModel}
-                            />
-                            {agent === 'claude' ? (
-                                <ClaudeEffortSelector
-                                    agent={agent}
-                                    effort={effort}
-                                    isDisabled={isFormDisabled}
-                                    onEffortChange={setEffort}
-                                />
-                            ) : agent === 'codex' ? (
-                                <ReasoningEffortSelector
-                                    agent={agent}
-                                    value={modelReasoningEffort}
-                                    isDisabled={isFormDisabled}
-                                    onChange={setModelReasoningEffort}
-                                />
-                            ) : null}
-                        </div>
-                    </div>
-                </div>
 
-                {/* Behavior: Session Type + YOLO */}
-                <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--app-hint)] mb-3">
-                        {t('newSession.behavior.title')}
-                    </p>
-                    <div className="space-y-4">
+                        {/* Model & Effort — side by side */}
+                        <div className="flex gap-3">
+                            <div className="flex-1">
+                                <ModelSelector
+                                    agent={agent}
+                                    model={model}
+                                    isDisabled={isFormDisabled}
+                                    onModelChange={setModel}
+                                />
+                            </div>
+                            <div className="flex-1">
+                                {agent === 'claude' ? (
+                                    <ClaudeEffortSelector
+                                        agent={agent}
+                                        effort={effort}
+                                        isDisabled={isFormDisabled}
+                                        onEffortChange={setEffort}
+                                    />
+                                ) : agent === 'codex' ? (
+                                    <ReasoningEffortSelector
+                                        agent={agent}
+                                        value={modelReasoningEffort}
+                                        isDisabled={isFormDisabled}
+                                        onChange={setModelReasoningEffort}
+                                    />
+                                ) : null}
+                            </div>
+                        </div>
+
+                        {/* Session Type */}
                         <SessionTypeSelector
                             sessionType={sessionType}
                             worktreeName={worktreeName}
@@ -471,30 +492,23 @@ export function NewSession(props: {
                             onSessionTypeChange={setSessionType}
                             onWorktreeNameChange={setWorktreeName}
                         />
+
+                        {/* Behavior */}
                         <YoloToggle
                             yoloMode={yoloMode}
                             isDisabled={isFormDisabled}
                             onToggle={setYoloMode}
                         />
-                    </div>
-                </div>
 
-                {(error ?? spawnError) ? (
-                    <div className="rounded-[var(--app-radius-lg)] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
-                        {error ?? spawnError}
-                    </div>
-                ) : null}
+                        {(error ?? spawnError) ? (
+                            <div className="rounded-[var(--app-radius-lg)] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
+                                {error ?? spawnError}
+                            </div>
+                        ) : null}
 
-                {/* Actions */}
-                <div className="pt-2 border-t border-[var(--app-border)]">
-                    <ActionButtons
-                        isPending={isPending}
-                        canCreate={canCreate}
-                        isDisabled={isFormDisabled}
-                        createLabel={createLabel}
-                        onCancel={props.onCancel}
-                        onCreate={handleCreate}
-                    />
+                        {/* Bottom padding for mobile tab bar */}
+                        <div className="h-20 lg:h-4" />
+                    </div>
                 </div>
             </div>
         </div>

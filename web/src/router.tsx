@@ -36,6 +36,7 @@ import TerminalPage from '@/routes/sessions/terminal'
 import MachinesPage from '@/routes/machines'
 import HistoryPage from '@/routes/history'
 import SettingsPage from '@/routes/settings'
+import NewSessionPage from '@/routes/new-session'
 
 function getMachineTitle(machine: Machine): string {
     if (machine.metadata?.displayName) return machine.metadata.displayName
@@ -369,6 +370,12 @@ const sessionFileRoute = createRoute({
     component: FilePage,
 })
 
+const newSessionRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/new-session',
+    component: NewSessionPage,
+})
+
 const machinesRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/machines',
@@ -389,6 +396,7 @@ const settingsRoute = createRoute({
 
 export const routeTree = rootRoute.addChildren([
     indexRoute,
+    newSessionRoute,
     sessionsRoute.addChildren([
         sessionsIndexRoute,
         sessionDetailRoute.addChildren([
