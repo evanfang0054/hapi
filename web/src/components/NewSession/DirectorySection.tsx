@@ -27,6 +27,9 @@ export function DirectorySection(props: {
                 {t('newSession.directory')}
             </label>
             <div className="relative">
+                <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--app-hint)] pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                </svg>
                 <input
                     type="text"
                     placeholder={t('newSession.placeholder')}
@@ -36,7 +39,7 @@ export function DirectorySection(props: {
                     onFocus={props.onDirectoryFocus}
                     onBlur={props.onDirectoryBlur}
                     disabled={props.isDisabled}
-                    className="min-h-12 w-full rounded-[18px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-4 py-3 text-sm text-[var(--app-fg)] shadow-[var(--app-shadow-sm)] focus:outline-none focus:ring-2 focus:ring-[var(--app-link)] disabled:opacity-50"
+                    className="min-h-12 w-full rounded-[18px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] pl-10 pr-4 py-3 text-sm text-[var(--app-fg)] shadow-[var(--app-shadow-sm)] focus:outline-none focus:ring-2 focus:ring-[var(--app-link)] disabled:opacity-50"
                 />
                 {props.suggestions.length > 0 && (
                     <div className="absolute top-full left-0 right-0 z-10 mt-1">

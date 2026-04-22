@@ -438,19 +438,22 @@ export function NewSession(props: {
                                 isDisabled={isFormDisabled}
                                 onModelChange={setModel}
                             />
-                            <ClaudeEffortSelector
-                                agent={agent}
-                                effort={effort}
-                                isDisabled={isFormDisabled}
-                                onEffortChange={setEffort}
-                            />
+                            {agent === 'claude' ? (
+                                <ClaudeEffortSelector
+                                    agent={agent}
+                                    effort={effort}
+                                    isDisabled={isFormDisabled}
+                                    onEffortChange={setEffort}
+                                />
+                            ) : agent === 'codex' ? (
+                                <ReasoningEffortSelector
+                                    agent={agent}
+                                    value={modelReasoningEffort}
+                                    isDisabled={isFormDisabled}
+                                    onChange={setModelReasoningEffort}
+                                />
+                            ) : null}
                         </div>
-                        <ReasoningEffortSelector
-                            agent={agent}
-                            value={modelReasoningEffort}
-                            isDisabled={isFormDisabled}
-                            onChange={setModelReasoningEffort}
-                        />
                     </div>
                 </div>
 
