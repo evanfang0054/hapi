@@ -54,6 +54,16 @@ vi.mock('@/lib/languages', () => ({
     getLanguageDisplayName: (lang: { code: string | null; name: string }) => lang.name,
 }))
 
+// Mock app context
+vi.mock('@/lib/app-context', () => ({
+    useAppContext: () => ({
+        api: {},
+        token: 'test-token',
+        baseUrl: 'https://example.com',
+        connectionState: 'connected',
+    }),
+}))
+
 function renderWithProviders(ui: React.ReactElement) {
     return render(
         <I18nProvider>
@@ -115,8 +125,7 @@ describe('SettingsPage', () => {
 
     it('displays the website link with correct URL and security attributes', () => {
         renderWithProviders(<SettingsPage />)
-        expect(screen.getAllByText('Website').length).toBeGreaterThanOrEqual(1)
-        const links = screen.getAllByRole('link', { name: 'hapi.run' })
+        const links = screen.getAllByRole('link', { name: 'Website' })
         expect(links.length).toBeGreaterThanOrEqual(1)
         const link = links[0]
         expect(link).toHaveAttribute('href', 'https://hapi.run')

@@ -383,8 +383,13 @@ export default {
   'settings.voice.autoDetect': '自动检测',
   'settings.about.title': '关于',
   'settings.about.website': '官方网站',
+  'settings.about.documentation': '文档',
   'settings.about.appVersion': '应用版本',
   'settings.about.protocolVersion': '协议版本',
+  'settings.server.title': '服务器',
+  'settings.server.status': '状态',
+  'settings.server.connected': '已连接',
+  'settings.server.disconnected': '未连接',
 
   // Misc
   'misc.noMachines': '无可用机器',

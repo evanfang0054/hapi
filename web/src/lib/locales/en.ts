@@ -381,8 +381,13 @@ export default {
   'settings.voice.autoDetect': 'Auto-detect',
   'settings.about.title': 'About',
   'settings.about.website': 'Website',
+  'settings.about.documentation': 'Documentation',
   'settings.about.appVersion': 'App Version',
   'settings.about.protocolVersion': 'Protocol Version',
+  'settings.server.title': 'Server',
+  'settings.server.status': 'Status',
+  'settings.server.connected': 'Connected',
+  'settings.server.disconnected': 'Disconnected',
 
   // Misc
   'misc.noMachines': 'No machines available',

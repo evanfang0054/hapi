@@ -1,12 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
 import { useTranslation, type Locale } from '@/lib/use-translation'
-import { useAppGoBack } from '@/hooks/useAppGoBack'
 import { getElevenLabsSupportedLanguages, getLanguageDisplayName, type Language } from '@/lib/languages'
 import { getFontScaleOptions, useFontScale, type FontScale } from '@/hooks/useFontScale'
 import { getTerminalFontSizeOptions, useTerminalFontSize, type TerminalFontSize } from '@/hooks/useTerminalFontSize'
 import { useAppearance, getAppearanceOptions, type AppearancePreference } from '@/hooks/useTheme'
+import { useAppContext } from '@/lib/app-context'
 import { PROTOCOL_VERSION } from '@hapi/protocol'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 const locales: { value: Locale; nativeLabel: string }[] = [
     { value: 'en', nativeLabel: 'English' },
@@ -15,66 +14,101 @@ const locales: { value: Locale; nativeLabel: string }[] = [
 
 const voiceLanguages = getElevenLabsSupportedLanguages()
 
-function BackIcon(props: { className?: string }) {
+function CheckIcon() {
     return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={props.className}
-        >
-            <polyline points="15 18 9 12 15 6" />
-        </svg>
-    )
-}
-
-function CheckIcon(props: { className?: string }) {
-    return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={props.className}
-        >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
             <polyline points="20 6 9 17 4 12" />
         </svg>
     )
 }
 
-function ChevronDownIcon(props: { className?: string }) {
+function ChevronDownIcon(props: { open?: boolean }) {
     return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={props.className}
-        >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`w-4 h-4 transition-transform ${props.open ? 'rotate-180' : ''}`}>
             <polyline points="6 9 12 15 18 9" />
         </svg>
     )
 }
 
+function ChevronRightIcon() {
+    return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-[var(--app-hint)]">
+            <polyline points="9 18 15 12 9 6" />
+        </svg>
+    )
+}
+
+function SettingIconBox({ children, variant }: { children: React.ReactNode; variant?: 'default' | 'accent' | 'danger' }) {
+    const bgClass = variant === 'accent'
+        ? 'bg-[rgba(201,100,66,0.12)] text-[var(--app-link)] [html[data-theme=dark]_&]:bg-[rgba(217,119,87,0.15)]'
+        : variant === 'danger'
+            ? 'bg-[rgba(181,51,51,0.12)] text-[var(--app-error)]'
+            : 'bg-[var(--app-subtle-bg)] text-[var(--app-hint)]'
+
+    return (
+        <div className={`w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0 ${bgClass}`}>
+            {children}
+        </div>
+    )
+}
+
+function SettingRow({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) {
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            className="flex w-full items-center justify-between px-4 py-3.5 border-b border-[var(--app-border)] last:border-b-0 text-left hover:bg-[var(--app-panel-muted-bg)] transition-colors"
+        >
+            {children}
+        </button>
+    )
+}
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+    return (
+        <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[var(--app-hint)] px-4 mb-2">
+            {children}
+        </p>
+    )
+}
+
+function SettingsCard({ children }: { children: React.ReactNode }) {
+    return (
+        <div className="border border-[var(--app-border)] rounded-[var(--app-radius-xl)] overflow-hidden bg-[var(--app-panel-bg)]">
+            {children}
+        </div>
+    )
+}
+
+function DropdownMenu({ open, children }: { open: boolean; children: React.ReactNode }) {
+    if (!open) return null
+    return (
+        <div className="absolute right-0 top-full z-50 mt-1 min-w-[180px] overflow-hidden rounded-[var(--app-radius-lg)] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] shadow-[var(--app-shadow-md)]">
+            {children}
+        </div>
+    )
+}
+
+function DropdownOption({ selected, onClick, children }: { selected: boolean; onClick: () => void; children: React.ReactNode }) {
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            className={`flex w-full items-center justify-between px-3 py-2.5 text-sm text-left transition-colors ${
+                selected
+                    ? 'bg-[var(--app-panel-muted-bg)] text-[var(--app-link)]'
+                    : 'text-[var(--app-fg)] hover:bg-[var(--app-panel-muted-bg)]'
+            }`}
+        >
+            <span>{children}</span>
+            {selected ? <span className="text-[var(--app-link)] ml-2"><CheckIcon /></span> : null}
+        </button>
+    )
+}
+
 export default function SettingsPage() {
     const { t, locale, setLocale } = useTranslation()
-    const goBack = useAppGoBack()
+    const { api, connectionState } = useAppContext()
     const [isOpen, setIsOpen] = useState(false)
     const [isAppearanceOpen, setIsAppearanceOpen] = useState(false)
     const [isFontOpen, setIsFontOpen] = useState(false)
@@ -89,7 +123,6 @@ export default function SettingsPage() {
     const { terminalFontSize, setTerminalFontSize } = useTerminalFontSize()
     const { appearance, setAppearance } = useAppearance()
 
-    // Voice language state - read from localStorage
     const [voiceLanguage, setVoiceLanguage] = useState<string | null>(() => {
         return localStorage.getItem('hapi-voice-lang')
     })
@@ -177,348 +210,264 @@ export default function SettingsPage() {
         return () => document.removeEventListener('keydown', handleEscape)
     }, [isOpen, isAppearanceOpen, isFontOpen, isTerminalFontOpen, isVoiceOpen])
 
-    const sectionTitleClassName = 'text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--app-hint)]'
-    const rowButtonClassName = 'flex w-full items-center justify-between rounded-[var(--app-radius-control)] border border-transparent px-4 py-3 text-left transition-colors hover:border-[var(--app-border)] hover:bg-[var(--app-panel-muted-bg)]'
-    const valueClassName = 'flex items-center gap-1 text-[var(--app-hint)]'
-    const menuClassName = 'absolute right-0 top-full z-50 mt-2 min-w-[180px] overflow-hidden rounded-[var(--app-radius-control)] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] shadow-[var(--app-shadow-md)]'
-    const menuOptionClassName = 'flex w-full items-center justify-between px-3 py-2 text-base text-left transition-colors'
+    const voiceLanguageDisplay = currentVoiceLanguage
+        ? currentVoiceLanguage.code === null
+            ? t('settings.voice.autoDetect')
+            : getLanguageDisplayName(currentVoiceLanguage)
+        : t('settings.voice.autoDetect')
+
+    const isConnected = connectionState === 'connected'
 
     return (
         <div className="flex h-full min-h-0 flex-col bg-[var(--app-bg)]">
+            {/* Sticky header */}
+            <div className="sticky top-0 z-10 bg-[var(--app-bg)] border-b border-[var(--app-border)] px-5 py-3">
+                <h1 className="text-[20px] font-medium text-[var(--app-fg)]" style={{ fontFamily: 'var(--app-font-serif)' }}>
+                    {t('settings.title')}
+                </h1>
+            </div>
+
+            {/* Scrollable content */}
             <div className="app-scroll-y flex-1 min-h-0">
-                <div className="mx-auto w-full max-w-content px-3 py-4 md:px-5 md:py-6">
-                    <div className="space-y-4">
-                        <Card className="overflow-visible border-[var(--app-border)] bg-[var(--app-panel-bg)] shadow-[var(--app-shadow-sm)]">
-                            <CardHeader className="gap-4 border-b border-[var(--app-border)] px-5 py-5 sm:px-6">
-                                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                                    <div className="min-w-0 flex-1 space-y-3">
-                                        <div className="flex items-center gap-3">
-                                            <button
-                                                type="button"
-                                                onClick={goBack}
-                                                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] text-[var(--app-hint)] transition-colors hover:bg-[var(--app-panel-muted-bg)] hover:text-[var(--app-fg)]"
-                                            >
-                                                <BackIcon />
-                                            </button>
-                                            <div className="min-w-0">
-                                                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--app-hint)]">
-                                                    {t('settings.eyebrow')}
-                                                </p>
-                                                <CardTitle className="mt-2 text-3xl leading-none" data-ui-heading="serif">
-                                                    {t('settings.title')}
-                                                </CardTitle>
-                                            </div>
+                <div className="mx-auto w-full max-w-[600px] px-4 py-6 space-y-6">
+                    {/* Appearance Section */}
+                    <div>
+                        <SectionTitle>{t('settings.display.title')}</SectionTitle>
+                        <SettingsCard>
+                            {/* Appearance (Dark Mode) */}
+                            <div ref={appearanceContainerRef} className="relative">
+                                <SettingRow onClick={() => setIsAppearanceOpen(!isAppearanceOpen)}>
+                                    <div className="flex items-center gap-3.5">
+                                        <SettingIconBox variant="accent">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
+                                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                                            </svg>
+                                        </SettingIconBox>
+                                        <div>
+                                            <div className="text-[15px] font-medium text-[var(--app-fg)]">{t('settings.display.appearance')}</div>
                                         </div>
-                                        <CardDescription className="max-w-3xl text-sm leading-6 text-[var(--app-hint)]">
-                                            {t('settings.description')}
-                                        </CardDescription>
                                     </div>
-                                </div>
-                            </CardHeader>
-
-                            <CardContent className="px-5 py-5 sm:px-6">
-                                <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(300px,0.9fr)]">
-                                    <div className="space-y-4">
-                                        <section className="rounded-[var(--app-radius-panel)] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] p-4 shadow-[var(--app-shadow-sm)]">
-                                            <div className="space-y-3">
-                                                <div>
-                                                    <p className={sectionTitleClassName}>{t('settings.language.title')}</p>
-                                                </div>
-                                                <div ref={containerRef} className="relative">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setIsOpen(!isOpen)}
-                                                        className={rowButtonClassName}
-                                                        aria-expanded={isOpen}
-                                                        aria-haspopup="listbox"
-                                                    >
-                                                        <span className="text-[var(--app-fg)]">{t('settings.language.label')}</span>
-                                                        <span className={valueClassName}>
-                                                            <span>{currentLocale?.nativeLabel}</span>
-                                                            <ChevronDownIcon className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-                                                        </span>
-                                                    </button>
-
-                                                    {isOpen && (
-                                                        <div
-                                                            className={menuClassName}
-                                                            role="listbox"
-                                                            aria-label={t('settings.language.title')}
-                                                        >
-                                                            {locales.map((loc) => {
-                                                                const isSelected = locale === loc.value
-                                                                return (
-                                                                    <button
-                                                                        key={loc.value}
-                                                                        type="button"
-                                                                        role="option"
-                                                                        aria-selected={isSelected}
-                                                                        onClick={() => handleLocaleChange(loc.value)}
-                                                                        className={`${menuOptionClassName} ${isSelected
-                                                                            ? 'bg-[var(--app-panel-muted-bg)] text-[var(--app-link)]'
-                                                                            : 'text-[var(--app-fg)] hover:bg-[var(--app-panel-muted-bg)]'}`}
-                                                                    >
-                                                                        <span>{loc.nativeLabel}</span>
-                                                                        {isSelected ? (
-                                                                            <span className="ml-2 text-[var(--app-link)]">
-                                                                                <CheckIcon />
-                                                                            </span>
-                                                                        ) : null}
-                                                                    </button>
-                                                                )
-                                                            })}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </section>
-
-                                        <section className="rounded-[var(--app-radius-panel)] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] p-4 shadow-[var(--app-shadow-sm)]">
-                                            <div className="space-y-3">
-                                                <div>
-                                                    <p className={sectionTitleClassName}>{t('settings.display.title')}</p>
-                                                </div>
-                                                <div ref={appearanceContainerRef} className="relative">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setIsAppearanceOpen(!isAppearanceOpen)}
-                                                        className={rowButtonClassName}
-                                                        aria-expanded={isAppearanceOpen}
-                                                        aria-haspopup="listbox"
-                                                    >
-                                                        <span className="text-[var(--app-fg)]">{t('settings.display.appearance')}</span>
-                                                        <span className={valueClassName}>
-                                                            <span>{t(currentAppearanceLabel)}</span>
-                                                            <ChevronDownIcon className={`transition-transform ${isAppearanceOpen ? 'rotate-180' : ''}`} />
-                                                        </span>
-                                                    </button>
-
-                                                    {isAppearanceOpen && (
-                                                        <div
-                                                            className={menuClassName}
-                                                            role="listbox"
-                                                            aria-label={t('settings.display.appearance')}
-                                                        >
-                                                            {appearanceOptions.map((opt) => {
-                                                                const isSelected = appearance === opt.value
-                                                                return (
-                                                                    <button
-                                                                        key={opt.value}
-                                                                        type="button"
-                                                                        role="option"
-                                                                        aria-selected={isSelected}
-                                                                        onClick={() => handleAppearanceChange(opt.value)}
-                                                                        className={`${menuOptionClassName} ${isSelected
-                                                                            ? 'bg-[var(--app-panel-muted-bg)] text-[var(--app-link)]'
-                                                                            : 'text-[var(--app-fg)] hover:bg-[var(--app-panel-muted-bg)]'}`}
-                                                                    >
-                                                                        <span>{t(opt.labelKey)}</span>
-                                                                        {isSelected ? (
-                                                                            <span className="ml-2 text-[var(--app-link)]">
-                                                                                <CheckIcon />
-                                                                            </span>
-                                                                        ) : null}
-                                                                    </button>
-                                                                )
-                                                            })}
-                                                        </div>
-                                                    )}
-                                                </div>
-
-                                                <div ref={fontContainerRef} className="relative">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setIsFontOpen(!isFontOpen)}
-                                                        className={rowButtonClassName}
-                                                        aria-expanded={isFontOpen}
-                                                        aria-haspopup="listbox"
-                                                    >
-                                                        <span className="text-[var(--app-fg)]">{t('settings.display.fontSize')}</span>
-                                                        <span className={valueClassName}>
-                                                            <span>{currentFontScaleLabel}</span>
-                                                            <ChevronDownIcon className={`transition-transform ${isFontOpen ? 'rotate-180' : ''}`} />
-                                                        </span>
-                                                    </button>
-
-                                                    {isFontOpen && (
-                                                        <div
-                                                            className={menuClassName}
-                                                            role="listbox"
-                                                            aria-label={t('settings.display.fontSize')}
-                                                        >
-                                                            {fontScaleOptions.map((opt) => {
-                                                                const isSelected = fontScale === opt.value
-                                                                return (
-                                                                    <button
-                                                                        key={opt.value}
-                                                                        type="button"
-                                                                        role="option"
-                                                                        aria-selected={isSelected}
-                                                                        onClick={() => handleFontScaleChange(opt.value)}
-                                                                        className={`${menuOptionClassName} ${isSelected
-                                                                            ? 'bg-[var(--app-panel-muted-bg)] text-[var(--app-link)]'
-                                                                            : 'text-[var(--app-fg)] hover:bg-[var(--app-panel-muted-bg)]'}`}
-                                                                    >
-                                                                        <span>{opt.label}</span>
-                                                                        {isSelected ? (
-                                                                            <span className="ml-2 text-[var(--app-link)]">
-                                                                                <CheckIcon />
-                                                                            </span>
-                                                                        ) : null}
-                                                                    </button>
-                                                                )
-                                                            })}
-                                                        </div>
-                                                    )}
-                                                </div>
-
-                                                <div ref={terminalFontContainerRef} className="relative">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setIsTerminalFontOpen(!isTerminalFontOpen)}
-                                                        className={rowButtonClassName}
-                                                        aria-expanded={isTerminalFontOpen}
-                                                        aria-haspopup="listbox"
-                                                    >
-                                                        <span className="text-[var(--app-fg)]">{t('settings.display.terminalFontSize')}</span>
-                                                        <span className={valueClassName}>
-                                                            <span>{currentTerminalFontSizeLabel}</span>
-                                                            <ChevronDownIcon className={`transition-transform ${isTerminalFontOpen ? 'rotate-180' : ''}`} />
-                                                        </span>
-                                                    </button>
-
-                                                    {isTerminalFontOpen && (
-                                                        <div
-                                                            className={menuClassName}
-                                                            role="listbox"
-                                                            aria-label={t('settings.display.terminalFontSize')}
-                                                        >
-                                                            {terminalFontSizeOptions.map((opt) => {
-                                                                const isSelected = terminalFontSize === opt.value
-                                                                return (
-                                                                    <button
-                                                                        key={opt.value}
-                                                                        type="button"
-                                                                        role="option"
-                                                                        aria-selected={isSelected}
-                                                                        onClick={() => handleTerminalFontSizeChange(opt.value)}
-                                                                        className={`${menuOptionClassName} ${isSelected
-                                                                            ? 'bg-[var(--app-panel-muted-bg)] text-[var(--app-link)]'
-                                                                            : 'text-[var(--app-fg)] hover:bg-[var(--app-panel-muted-bg)]'}`}
-                                                                    >
-                                                                        <span>{opt.label}</span>
-                                                                        {isSelected ? (
-                                                                            <span className="ml-2 text-[var(--app-link)]">
-                                                                                <CheckIcon />
-                                                                            </span>
-                                                                        ) : null}
-                                                                    </button>
-                                                                )
-                                                            })}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </section>
+                                    <div className="flex items-center gap-1 text-[13px] text-[var(--app-hint)]">
+                                        <span>{t(currentAppearanceLabel)}</span>
+                                        <ChevronDownIcon open={isAppearanceOpen} />
                                     </div>
+                                </SettingRow>
+                                <DropdownMenu open={isAppearanceOpen}>
+                                    {appearanceOptions.map((opt) => (
+                                        <DropdownOption key={opt.value} selected={appearance === opt.value} onClick={() => handleAppearanceChange(opt.value)}>
+                                            {t(opt.labelKey)}
+                                        </DropdownOption>
+                                    ))}
+                                </DropdownMenu>
+                            </div>
 
-                                    <div className="space-y-4">
-                                        <section className="rounded-[var(--app-radius-panel)] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] p-4 shadow-[var(--app-shadow-sm)]">
-                                            <div className="space-y-3">
-                                                <div>
-                                                    <p className={sectionTitleClassName}>{t('settings.voice.title')}</p>
-                                                </div>
-                                                <div ref={voiceContainerRef} className="relative">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setIsVoiceOpen(!isVoiceOpen)}
-                                                        className={rowButtonClassName}
-                                                        aria-expanded={isVoiceOpen}
-                                                        aria-haspopup="listbox"
-                                                    >
-                                                        <span className="text-[var(--app-fg)]">{t('settings.voice.language')}</span>
-                                                        <span className={valueClassName}>
-                                                            <span>
-                                                                {currentVoiceLanguage
-                                                                    ? currentVoiceLanguage.code === null
-                                                                        ? t('settings.voice.autoDetect')
-                                                                        : getLanguageDisplayName(currentVoiceLanguage)
-                                                                    : t('settings.voice.autoDetect')}
-                                                            </span>
-                                                            <ChevronDownIcon className={`transition-transform ${isVoiceOpen ? 'rotate-180' : ''}`} />
-                                                        </span>
-                                                    </button>
-
-                                                    {isVoiceOpen && (
-                                                        <div
-                                                            className={`${menuClassName} max-h-[300px] overflow-y-auto min-w-[220px]`}
-                                                            role="listbox"
-                                                            aria-label={t('settings.voice.title')}
-                                                        >
-                                                            {voiceLanguages.map((lang) => {
-                                                                const isSelected = voiceLanguage === lang.code
-                                                                const displayName = lang.code === null
-                                                                    ? t('settings.voice.autoDetect')
-                                                                    : getLanguageDisplayName(lang)
-                                                                return (
-                                                                    <button
-                                                                        key={lang.code ?? 'auto'}
-                                                                        type="button"
-                                                                        role="option"
-                                                                        aria-selected={isSelected}
-                                                                        onClick={() => handleVoiceLanguageChange(lang)}
-                                                                        className={`${menuOptionClassName} ${isSelected
-                                                                            ? 'bg-[var(--app-panel-muted-bg)] text-[var(--app-link)]'
-                                                                            : 'text-[var(--app-fg)] hover:bg-[var(--app-panel-muted-bg)]'}`}
-                                                                    >
-                                                                        <span>{displayName}</span>
-                                                                        {isSelected ? (
-                                                                            <span className="ml-2 text-[var(--app-link)]">
-                                                                                <CheckIcon />
-                                                                            </span>
-                                                                        ) : null}
-                                                                    </button>
-                                                                )
-                                                            })}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </section>
-
-                                        <section className="rounded-[var(--app-radius-panel)] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] p-4 shadow-[var(--app-shadow-sm)]">
-                                            <div className="space-y-3">
-                                                <div>
-                                                    <p className={sectionTitleClassName}>{t('settings.about.title')}</p>
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <div className="flex items-center justify-between rounded-[var(--app-radius-control)] px-4 py-3">
-                                                        <span className="text-[var(--app-fg)]">{t('settings.about.website')}</span>
-                                                        <a
-                                                            href="https://hapi.run"
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="text-[var(--app-link)] hover:underline"
-                                                        >
-                                                            hapi.run
-                                                        </a>
-                                                    </div>
-                                                    <div className="flex items-center justify-between rounded-[var(--app-radius-control)] px-4 py-3">
-                                                        <span className="text-[var(--app-fg)]">{t('settings.about.appVersion')}</span>
-                                                        <span className="text-[var(--app-hint)]">{__APP_VERSION__}</span>
-                                                    </div>
-                                                    <div className="flex items-center justify-between rounded-[var(--app-radius-control)] px-4 py-3">
-                                                        <span className="text-[var(--app-fg)]">{t('settings.about.protocolVersion')}</span>
-                                                        <span className="text-[var(--app-hint)]">{PROTOCOL_VERSION}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </section>
+                            {/* Language */}
+                            <div ref={containerRef} className="relative">
+                                <SettingRow onClick={() => setIsOpen(!isOpen)}>
+                                    <div className="flex items-center gap-3.5">
+                                        <SettingIconBox>
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
+                                                <circle cx="12" cy="12" r="10" />
+                                                <line x1="2" y1="12" x2="22" y2="12" />
+                                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                                            </svg>
+                                        </SettingIconBox>
+                                        <div>
+                                            <div className="text-[15px] font-medium text-[var(--app-fg)]">{t('settings.language.label')}</div>
+                                        </div>
                                     </div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                                    <div className="flex items-center gap-1 text-[13px] text-[var(--app-hint)]">
+                                        <span>{currentLocale?.nativeLabel}</span>
+                                        <ChevronDownIcon open={isOpen} />
+                                    </div>
+                                </SettingRow>
+                                <DropdownMenu open={isOpen}>
+                                    {locales.map((loc) => (
+                                        <DropdownOption key={loc.value} selected={locale === loc.value} onClick={() => handleLocaleChange(loc.value)}>
+                                            {loc.nativeLabel}
+                                        </DropdownOption>
+                                    ))}
+                                </DropdownMenu>
+                            </div>
+
+                            {/* Font Scale */}
+                            <div ref={fontContainerRef} className="relative">
+                                <SettingRow onClick={() => setIsFontOpen(!isFontOpen)}>
+                                    <div className="flex items-center gap-3.5">
+                                        <SettingIconBox>
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
+                                                <polyline points="4 7 4 4 20 4 20 7" />
+                                                <line x1="9" y1="20" x2="15" y2="20" />
+                                                <line x1="12" y1="4" x2="12" y2="20" />
+                                            </svg>
+                                        </SettingIconBox>
+                                        <div>
+                                            <div className="text-[15px] font-medium text-[var(--app-fg)]">{t('settings.display.fontSize')}</div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-1 text-[13px] text-[var(--app-hint)]">
+                                        <span>{currentFontScaleLabel}</span>
+                                        <ChevronDownIcon open={isFontOpen} />
+                                    </div>
+                                </SettingRow>
+                                <DropdownMenu open={isFontOpen}>
+                                    {fontScaleOptions.map((opt) => (
+                                        <DropdownOption key={opt.value} selected={fontScale === opt.value} onClick={() => handleFontScaleChange(opt.value)}>
+                                            {opt.label}
+                                        </DropdownOption>
+                                    ))}
+                                </DropdownMenu>
+                            </div>
+
+                            {/* Terminal Font Size */}
+                            <div ref={terminalFontContainerRef} className="relative">
+                                <SettingRow onClick={() => setIsTerminalFontOpen(!isTerminalFontOpen)}>
+                                    <div className="flex items-center gap-3.5">
+                                        <SettingIconBox>
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
+                                                <rect x="3" y="4" width="18" height="16" rx="2" ry="2" />
+                                                <polyline points="7 9 10 12 7 15" />
+                                                <line x1="12" y1="15" x2="17" y2="15" />
+                                            </svg>
+                                        </SettingIconBox>
+                                        <div>
+                                            <div className="text-[15px] font-medium text-[var(--app-fg)]">{t('settings.display.terminalFontSize')}</div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-1 text-[13px] text-[var(--app-hint)]">
+                                        <span>{currentTerminalFontSizeLabel}</span>
+                                        <ChevronDownIcon open={isTerminalFontOpen} />
+                                    </div>
+                                </SettingRow>
+                                <DropdownMenu open={isTerminalFontOpen}>
+                                    {terminalFontSizeOptions.map((opt) => (
+                                        <DropdownOption key={opt.value} selected={terminalFontSize === opt.value} onClick={() => handleTerminalFontSizeChange(opt.value)}>
+                                            {opt.label}
+                                        </DropdownOption>
+                                    ))}
+                                </DropdownMenu>
+                            </div>
+                        </SettingsCard>
                     </div>
+
+                    {/* Voice Section */}
+                    <div>
+                        <SectionTitle>{t('settings.voice.title')}</SectionTitle>
+                        <SettingsCard>
+                            <div ref={voiceContainerRef} className="relative">
+                                <SettingRow onClick={() => setIsVoiceOpen(!isVoiceOpen)}>
+                                    <div className="flex items-center gap-3.5">
+                                        <SettingIconBox>
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
+                                                <path d="M12 6v12" />
+                                                <path d="M8 9v6" />
+                                                <path d="M16 9v6" />
+                                                <path d="M4 11v2" />
+                                                <path d="M20 11v2" />
+                                            </svg>
+                                        </SettingIconBox>
+                                        <div>
+                                            <div className="text-[15px] font-medium text-[var(--app-fg)]">{t('settings.voice.language')}</div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-1 text-[13px] text-[var(--app-hint)]">
+                                        <span>{voiceLanguageDisplay}</span>
+                                        <ChevronDownIcon open={isVoiceOpen} />
+                                    </div>
+                                </SettingRow>
+                                <DropdownMenu open={isVoiceOpen}>
+                                    <div className="max-h-[300px] overflow-y-auto min-w-[220px]">
+                                        {voiceLanguages.map((lang) => (
+                                            <DropdownOption key={lang.code ?? 'auto'} selected={voiceLanguage === lang.code} onClick={() => handleVoiceLanguageChange(lang)}>
+                                                {lang.code === null ? t('settings.voice.autoDetect') : getLanguageDisplayName(lang)}
+                                            </DropdownOption>
+                                        ))}
+                                    </div>
+                                </DropdownMenu>
+                            </div>
+                        </SettingsCard>
+                    </div>
+
+                    {/* Server Info Section */}
+                    <div>
+                        <SectionTitle>{t('settings.server.title')}</SectionTitle>
+                        <SettingsCard>
+                            <div className="px-4 py-3 space-y-2" style={{ fontFamily: 'var(--app-font-mono)', fontSize: '12px' }}>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[var(--app-hint)]">{t('settings.server.status')}</span>
+                                    <span className="flex items-center gap-1.5">
+                                        <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-[var(--app-git-staged-color)]' : 'bg-[var(--app-error)]'}`} />
+                                        <span className={isConnected ? 'text-[var(--app-git-staged-color)]' : 'text-[var(--app-error)]'}>
+                                            {isConnected ? t('settings.server.connected') : t('settings.server.disconnected')}
+                                        </span>
+                                    </span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[var(--app-hint)]">{t('settings.about.appVersion')}</span>
+                                    <span className="text-[var(--app-fg)]">{__APP_VERSION__}</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[var(--app-hint)]">{t('settings.about.protocolVersion')}</span>
+                                    <span className="text-[var(--app-fg)]">{PROTOCOL_VERSION}</span>
+                                </div>
+                            </div>
+                        </SettingsCard>
+                    </div>
+
+                    {/* About Section */}
+                    <div>
+                        <SectionTitle>{t('settings.about.title')}</SectionTitle>
+                        <SettingsCard>
+                            <a
+                                href="https://hapi.run"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-between px-4 py-3.5 border-b border-[var(--app-border)] hover:bg-[var(--app-panel-muted-bg)] transition-colors"
+                            >
+                                <div className="flex items-center gap-3.5">
+                                    <SettingIconBox>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
+                                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                                        </svg>
+                                    </SettingIconBox>
+                                    <span className="text-[15px] font-medium text-[var(--app-fg)]">{t('settings.about.website')}</span>
+                                </div>
+                                <ChevronRightIcon />
+                            </a>
+                            <a
+                                href="https://hapi.run/docs"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-between px-4 py-3.5 border-b border-[var(--app-border)] hover:bg-[var(--app-panel-muted-bg)] transition-colors"
+                            >
+                                <div className="flex items-center gap-3.5">
+                                    <SettingIconBox>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
+                                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                                        </svg>
+                                    </SettingIconBox>
+                                    <span className="text-[15px] font-medium text-[var(--app-fg)]">{t('settings.about.documentation')}</span>
+                                </div>
+                                <ChevronRightIcon />
+                            </a>
+                            <div className="flex items-center justify-between px-4 py-3.5">
+                                <div className="flex items-center gap-3.5">
+                                    <SettingIconBox>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
+                                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                                        </svg>
+                                    </SettingIconBox>
+                                    <span className="text-[15px] font-medium text-[var(--app-fg)]">{t('settings.about.protocolVersion')}</span>
+                                </div>
+                                <span className="text-[13px] text-[var(--app-hint)]">{PROTOCOL_VERSION}</span>
+                            </div>
+                        </SettingsCard>
+                    </div>
+
+                    {/* Bottom padding for mobile tab bar */}
+                    <div className="h-20 lg:h-4" />
                 </div>
             </div>
         </div>
