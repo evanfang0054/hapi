@@ -50,7 +50,7 @@ export function HappyAssistantMessage() {
     if (isCliOutput) {
         return (
             <MessagePrimitive.Root className="mr-auto min-w-0 max-w-full overflow-x-hidden">
-                <div className="w-full max-w-[min(82ch,100%)] rounded-[24px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-4 py-3 shadow-[var(--app-shadow-sm)]">
+                <div className="w-full max-w-[min(82ch,100%)] rounded-[20px] rounded-bl-[6px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-4 py-3 shadow-[var(--app-shadow-sm)]">
                     <CliOutputBlock text={cliText} />
                 </div>
             </MessagePrimitive.Root>
@@ -59,7 +59,7 @@ export function HappyAssistantMessage() {
 
     return (
         <MessagePrimitive.Root className={rootClass}>
-            <div className="relative w-full max-w-[min(82ch,100%)] rounded-[24px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-4 py-3 shadow-[var(--app-shadow-sm)]">
+            <div className="relative w-full max-w-[min(82ch,100%)] rounded-[20px] rounded-bl-[6px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-4 py-3 shadow-[var(--app-shadow-sm)]">
                 {copyableText ? (
                     <button
                         type="button"

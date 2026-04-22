@@ -45,7 +45,7 @@ export function HappyUserMessage() {
     const canRetry = status === 'failed' && typeof localId === 'string' && Boolean(ctx.onRetryMessage)
     const onRetry = canRetry ? () => ctx.onRetryMessage!(localId) : undefined
 
-    const userBubbleClass = 'ml-auto w-fit min-w-0 max-w-[min(78ch,85%)] rounded-[22px] border border-transparent bg-[var(--app-subtle-bg)] px-4 py-3 text-[var(--app-fg)] shadow-[var(--app-shadow-xs)]'
+    const userBubbleClass = 'ml-auto w-fit min-w-0 max-w-[min(78ch,85%)] rounded-[20px] rounded-br-[6px] bg-[var(--app-link)] px-4 py-3 text-white'
 
     if (isCliOutput) {
         return (
@@ -73,7 +73,7 @@ export function HappyUserMessage() {
                             <button
                                 type="button"
                                 title="Copy"
-                                className="opacity-60 sm:opacity-0 sm:group-hover/msg:opacity-100 transition-[opacity,background-color] p-0.5 rounded hover:bg-[var(--app-subtle-bg)]"
+                                className="opacity-60 sm:opacity-0 sm:group-hover/msg:opacity-100 transition-[opacity,background-color] p-0.5 rounded hover:bg-white/20"
                                 onClick={() => copy(text)}
                             >
                                 {copied

@@ -19,7 +19,7 @@ export function HappySystemMessage() {
 
     return (
         <div className="py-1.5">
-            <div className="mx-auto flex w-fit max-w-[72ch] items-center rounded-full border border-[var(--app-border)] bg-[var(--app-panel-muted-bg)] px-4 py-2 text-center text-xs text-[var(--app-hint)] shadow-[var(--app-shadow-xs)]">
+            <div className="mx-auto flex w-fit max-w-[72ch] items-center rounded-full bg-[var(--app-subtle-bg)] px-4 py-2 text-center text-xs text-[var(--app-hint)]">
                 <span className="inline-flex items-center gap-1.5">
                     {icon ? <span aria-hidden="true">{icon}</span> : null}
                     <span>{text}</span>

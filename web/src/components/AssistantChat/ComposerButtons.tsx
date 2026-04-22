@@ -260,19 +260,19 @@ function UnifiedButton(props: {
 
     if (isConnecting) {
         icon = <LoadingIcon />
-        className = 'bg-black text-white'
+        className = 'bg-[var(--app-link)] text-white'
         ariaLabel = t('voice.connecting')
     } else if (isConnected) {
         icon = <StopIcon />
-        className = 'bg-black text-white'
+        className = 'bg-[var(--app-link)] text-white'
         ariaLabel = t('composer.stop')
     } else if (hasText) {
         icon = <SendIcon />
-        className = 'bg-black text-white'
+        className = 'bg-[var(--app-link)] text-white'
         ariaLabel = t('composer.send')
     } else if (props.voiceEnabled) {
         icon = <VoiceAssistantIcon />
-        className = 'bg-black text-white'
+        className = 'bg-[var(--app-link)] text-white'
         ariaLabel = t('composer.voice')
     } else {
         icon = <SendIcon />
