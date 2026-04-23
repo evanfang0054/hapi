@@ -223,7 +223,7 @@ export default function FilePage() {
                                                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--app-hint)]">
                                                     {t('sessionFileDetail.viewer')}
                                                 </p>
-                                                <CardTitle className="mt-2 break-all text-3xl leading-none" data-ui-heading="serif">
+                                                <CardTitle className="mt-2 break-all text-[28px] leading-[1.2]" data-ui-heading="serif">
                                                     {fileName}
                                                 </CardTitle>
                                             </div>
@@ -276,7 +276,12 @@ export default function FilePage() {
 
                             <CardContent className="px-5 py-5 sm:px-6">
                                 {diffErrorMessage ? (
-                                    <div className="mb-4 rounded-[16px] border border-amber-300/40 bg-amber-500/10 px-4 py-3 text-xs leading-5 text-[var(--app-hint)]">
+                                    <div className="mb-4 rounded-[16px] border px-4 py-3 text-xs leading-5 text-[var(--app-hint)]"
+                                        style={{
+                                            background: 'color-mix(in srgb, var(--app-warning, #e29a4b) 12%, transparent)',
+                                            borderColor: 'color-mix(in srgb, var(--app-warning, #e29a4b) 40%, transparent)',
+                                        }}
+                                    >
                                         {diffErrorMessage}
                                     </div>
                                 ) : null}

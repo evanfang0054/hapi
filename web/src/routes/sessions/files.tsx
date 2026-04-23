@@ -256,8 +256,8 @@ function GitFileRow(props: {
                 <div className="min-w-0 flex-1">
                     <div className="truncate font-medium">{props.file.fileName}</div>
                     {props.file.status === 'renamed' && props.file.oldPath ? (
-                        <div className="truncate text-[11px] text-[var(--app-hint)] font-mono" style={{ fontFamily: 'var(--app-font-mono)' }}>
-                            {props.file.oldPath} → {props.file.filePath}
+                        <div className="truncate text-[10px] text-[var(--app-hint)] font-mono mt-0.5">
+                            ← {props.file.oldPath}
                         </div>
                     ) : (
                         <div className="truncate text-xs text-[var(--app-hint)] font-mono" style={{ fontFamily: 'var(--app-font-mono)' }}>{subtitle}</div>
@@ -576,15 +576,15 @@ export default function FilesPage() {
                                                 <BackIcon />
                                             </button>
                                             <div className="min-w-0">
-                                                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--app-hint)]">
+                                                <p className="text-[10px] font-semibold uppercase tracking-[0.5px] text-[var(--app-hint)]">
                                                     {t('sessionFiles.repository')}
                                                 </p>
-                                                <CardTitle className="mt-2 text-3xl leading-none" data-ui-heading="serif">
+                                                <CardTitle className="mt-2 text-[24px] leading-tight italic" data-ui-heading="serif">
                                                     {t('sessionFiles.title')}
                                                 </CardTitle>
                                             </div>
                                         </div>
-                                        <CardDescription className="max-w-3xl text-sm leading-6 text-[var(--app-hint)]">
+                                        <CardDescription className="max-w-3xl text-[13px] leading-6 text-[var(--app-hint)]">
                                             {t('sessionFiles.description')}
                                         </CardDescription>
                                         <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-[var(--app-hint)]">
@@ -733,7 +733,7 @@ export default function FilesPage() {
                                     <div>
                                         {gitStatus?.stagedFiles.length ? (
                                             <div>
-                                                <div className="flex items-center justify-between border-b border-[var(--app-divider)] bg-[var(--app-panel-muted-bg)] px-4 py-2">
+                                                <div className="flex items-center justify-between border-b border-[var(--app-divider)] bg-[var(--app-subtle-bg)] px-4 py-2">
                                                     <span className="text-xs font-semibold text-[var(--app-git-staged-color)]">
                                                         {t('sessionFiles.section.staged', { count: gitStatus.stagedFiles.length })}
                                                     </span>
@@ -764,7 +764,7 @@ export default function FilesPage() {
 
                                         {gitStatus?.unstagedFiles.length ? (
                                             <div>
-                                                <div className="flex items-center justify-between border-b border-[var(--app-divider)] bg-[var(--app-panel-muted-bg)] px-4 py-2">
+                                                <div className="flex items-center justify-between border-b border-[var(--app-divider)] bg-[var(--app-subtle-bg)] px-4 py-2">
                                                     <span className="text-xs font-semibold text-[var(--app-git-unstaged-color)]">
                                                         {t('sessionFiles.section.unstaged', { count: gitStatus.unstagedFiles.length })}
                                                     </span>
