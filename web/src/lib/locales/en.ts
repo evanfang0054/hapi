@@ -407,7 +407,7 @@ export default {
   'machines.activeMachines': 'Active Machines',
   'history.title': 'History',
   'history.subtitle': 'Archived and past sessions',
-  'history.search': 'Search sessions…',
+  'history.search': 'Search history…',
   'history.total': 'total sessions',
   'history.active': 'active',
   'history.thisWeek': 'this week',

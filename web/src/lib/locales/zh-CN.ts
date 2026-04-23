@@ -409,7 +409,7 @@ export default {
   'machines.activeMachines': '活跃机器',
   'history.title': '历史',
   'history.subtitle': '已归档和过去的会话',
-  'history.search': '搜索会话…',
+  'history.search': '搜索历史…',
   'history.total': '个会话',
   'history.active': '活跃',
   'history.thisWeek': '本周',

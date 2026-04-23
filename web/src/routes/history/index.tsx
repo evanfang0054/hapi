@@ -79,11 +79,11 @@ function highlightText(text: string, query: string): React.ReactNode {
     return <>{before}<mark className="bg-[rgba(201,100,66,0.2)] text-[var(--app-fg)] rounded-[2px] px-[2px] bg-no-repeat">{match}</mark>{highlightText(after, q)}</>
 }
 
-function HistorySessionItem({ session, api, onOpen, searchQuery }: {
+function HistorySessionItem({ session, api, onOpen, searchInput }: {
     session: SessionItem
     api: import('@/api/client').ApiClient
     onOpen: () => void
-    searchQuery: string
+    searchInput: string
 }) {
     const { t } = useTranslation()
     const { archiveSession, deleteSession } = useSessionActions(api, session.id, session.agent)
@@ -107,6 +107,12 @@ function HistorySessionItem({ session, api, onOpen, searchQuery }: {
         setActionsOpen(false)
     }, [])
 
+    const confirmAndAct = useCallback((message: string, action: () => Promise<void>) => {
+        if (window.confirm(message)) {
+            handleAction(action)
+        }
+    }, [handleAction])
+
     // Determine status
     const status: 'normal' | 'archived' | 'deleted' = session.deleted ? 'deleted' : session.archived ? 'archived' : 'normal'
 
@@ -115,7 +121,7 @@ function HistorySessionItem({ session, api, onOpen, searchQuery }: {
             ref={itemRef}
             className={`border rounded-[16px] bg-[var(--app-panel-elevated-bg)] p-3.5 transition-all cursor-pointer ${actionsOpen ? 'border-[var(--app-link)] shadow-[var(--app-shadow-sm)]' : 'border-[var(--app-border)] hover:border-[var(--app-link)] hover:shadow-[var(--app-shadow-sm)]'}`}
         >
-            <div className="flex items-start gap-3" onClick={() => { if (!actionsOpen) onOpen() }}>
+            <div className="flex items-start gap-3" onClick={() => setActionsOpen(!actionsOpen)}>
                 {/* Icon */}
                 <div className={`w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0 ${session.archived ? 'bg-[var(--app-border)]' : 'bg-[var(--app-subtle-bg)]'}`}>
                     {status === 'deleted' ? (
@@ -138,22 +144,14 @@ function HistorySessionItem({ session, api, onOpen, searchQuery }: {
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                    <div className="text-[14px] font-medium text-[var(--app-fg)] truncate">{highlightText(session.name, searchQuery)}</div>
+                    <div className="text-[14px] font-medium text-[var(--app-fg)] truncate cursor-pointer hover:underline" onClick={(e) => { e.stopPropagation(); onOpen() }}>{highlightText(session.name, searchInput)}</div>
                     {(session.summary || session.projectPath) && (
-                        <div className="text-[12px] text-[var(--app-hint)] line-clamp-2 mt-0.5 leading-[1.4]">
-                            {highlightText(session.summary || session.projectPath || '', searchQuery)}
+                        <div className="text-[12px] text-[var(--app-hint)] line-clamp-2 mt-1 leading-[1.4]">
+                            {highlightText(session.summary || session.projectPath || '', searchInput)}
                         </div>
                     )}
-                    <div className="flex items-center gap-2 text-[11px] text-[var(--app-hint)] mt-1 font-mono">
+                    <div className="flex items-center gap-2 text-[11px] text-[var(--app-hint)] mt-2 font-mono">
                         <span>{formatRelativeTime(session.updatedAt)}</span>
-                        <span className="w-[3px] h-[3px] rounded-full bg-[var(--app-hint)]" />
-                        <span>{session.agent}</span>
-                        {session.model && (
-                            <>
-                                <span className="w-[3px] h-[3px] rounded-full bg-[var(--app-hint)]" />
-                                <span>{session.model}</span>
-                            </>
-                        )}
                         {session.archived && !session.deleted && (
                             <span className="ml-1 px-2 py-0.5 rounded-[6px] text-[10px] font-medium bg-[var(--app-border)]">Archived</span>
                         )}
@@ -187,7 +185,7 @@ function HistorySessionItem({ session, api, onOpen, searchQuery }: {
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => handleAction(archiveSession)}
+                                    onClick={() => confirmAndAct(`Archive "${session.name}"?`, archiveSession)}
                                     className="flex items-center gap-1 px-3 py-1.5 rounded-[16px] text-[12px] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] hover:bg-[var(--app-panel-muted-bg)] transition-colors active:scale-95"
                                 >
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
@@ -199,15 +197,15 @@ function HistorySessionItem({ session, api, onOpen, searchQuery }: {
                             <>
                                 <button
                                     type="button"
-                                    disabled
-                                    className="flex items-center gap-1 px-3 py-1.5 rounded-[16px] text-[12px] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] hover:bg-[var(--app-panel-muted-bg)] transition-colors active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    onClick={() => { /* TODO: implement restoreSession mutation */ }}
+                                    className="flex items-center gap-1 px-3 py-1.5 rounded-[16px] text-[12px] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] hover:bg-[var(--app-panel-muted-bg)] transition-colors active:scale-95"
                                 >
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
                                     {t('history.restore')}
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => handleAction(deleteSession)}
+                                    onClick={() => confirmAndAct(`Delete "${session.name}"? This action cannot be undone.`, deleteSession)}
                                     className="flex items-center gap-1 px-3 py-1.5 rounded-[16px] text-[12px] border border-[rgba(181,51,51,0.3)] bg-transparent text-[var(--app-error)] hover:bg-[rgba(181,51,51,0.08)] transition-colors active:scale-95"
                                 >
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
@@ -219,15 +217,15 @@ function HistorySessionItem({ session, api, onOpen, searchQuery }: {
                             <>
                                 <button
                                     type="button"
-                                    disabled
-                                    className="flex items-center gap-1 px-3 py-1.5 rounded-[16px] text-[12px] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] hover:bg-[var(--app-panel-muted-bg)] transition-colors active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    onClick={() => { /* TODO: implement restoreSession mutation */ }}
+                                    className="flex items-center gap-1 px-3 py-1.5 rounded-[16px] text-[12px] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] hover:bg-[var(--app-panel-muted-bg)] transition-colors active:scale-95"
                                 >
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
                                     {t('history.restore')}
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => handleAction(deleteSession)}
+                                    onClick={() => confirmAndAct(`Permanently delete "${session.name}"? This action cannot be undone.`, deleteSession)}
                                     className="flex items-center gap-1 px-3 py-1.5 rounded-[16px] text-[12px] border border-[rgba(181,51,51,0.3)] bg-transparent text-[var(--app-error)] hover:bg-[rgba(181,51,51,0.08)] transition-colors active:scale-95"
                                 >
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
@@ -254,9 +252,15 @@ export default function HistoryPage() {
     const { api } = useAppContext()
     const navigate = useNavigate()
     const { sessions, isLoading, error } = useSessions(api)
-    const [searchQuery, setSearchQuery] = useState('')
+    const [searchInput, setSearchInput] = useState('')
+    const [debouncedQuery, setDebouncedQuery] = useState('')
     const [filterMode, setFilterMode] = useState<FilterMode>('all')
     const [filterOpen, setFilterOpen] = useState(false)
+
+    useEffect(() => {
+        const timer = setTimeout(() => setDebouncedQuery(searchInput), 200)
+        return () => clearTimeout(timer)
+    }, [searchInput])
 
     const allSessions = useMemo(() => sessions.map(s => ({
         id: s.id,
@@ -278,8 +282,8 @@ export default function HistoryPage() {
         } else if (filterMode === 'deleted') {
             result = result.filter(s => s.deleted)
         }
-        if (searchQuery.trim()) {
-            const q = searchQuery.toLowerCase()
+        if (debouncedQuery.trim()) {
+            const q = debouncedQuery.toLowerCase()
             result = result.filter(s =>
                 s.name.toLowerCase().includes(q) ||
                 s.projectPath?.toLowerCase().includes(q) ||
@@ -287,7 +291,7 @@ export default function HistoryPage() {
             )
         }
         return result
-    }, [allSessions, filterMode, searchQuery])
+    }, [allSessions, filterMode, debouncedQuery])
 
     const groups = useMemo(() => groupSessionsByTime(filteredSessions), [filteredSessions])
 
@@ -306,7 +310,7 @@ export default function HistoryPage() {
     return (
         <div className="flex h-full min-h-0 flex-col bg-[var(--app-bg)]">
             {/* Sticky header */}
-            <div className="sticky top-0 z-10 bg-[var(--app-panel-bg)] border-b border-[var(--app-border)] px-5 py-4" style={{ paddingTop: 'calc(16px + env(safe-area-inset-top))' }}>
+            <div className="bg-[var(--app-panel-bg)] border-b border-[var(--app-border)] px-4 py-4" style={{ paddingTop: 'calc(16px + env(safe-area-inset-top))' }}>
                 <h1 className="text-[28px] font-normal italic text-[var(--app-fg)]" style={{ fontFamily: 'var(--app-font-serif)' }}>
                     {t('history.title')}
                 </h1>
@@ -322,8 +326,8 @@ export default function HistoryPage() {
                     </svg>
                     <input
                         type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        value={searchInput}
+                        onChange={(e) => setSearchInput(e.target.value)}
                         placeholder={t('history.search')}
                         className="w-full pl-10 pr-4 py-2.5 rounded-[12px] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] text-[var(--app-fg)] placeholder:text-[var(--app-hint)] focus:outline-none focus:border-[var(--app-link)] transition-colors"
                     />
@@ -341,7 +345,7 @@ export default function HistoryPage() {
 
             {/* Filter chips */}
             {filterOpen && (
-                <div className="px-4 py-2.5 border-b border-[var(--app-border)] flex gap-2 flex-wrap">
+                <div className="px-4 py-3 border-b border-[var(--app-border)] flex gap-2 flex-wrap">
                     {(['all', 'archived', 'deleted'] as FilterMode[]).map((mode) => (
                         <button
                             key={mode}
@@ -388,7 +392,7 @@ export default function HistoryPage() {
 
             {/* Content */}
             <div className="app-scroll-y flex-1 min-h-0">
-                <div className="mx-auto w-full max-w-[600px] px-4 py-5">
+                <div className="mx-auto w-full px-4 py-5">
                     {error ? (
                         <div className="text-sm text-[var(--app-error)] p-4">{error}</div>
                     ) : isLoading ? (
@@ -419,7 +423,7 @@ export default function HistoryPage() {
                                         <polyline points="3 6 5 6 21 6" />
                                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                                     </svg>
-                                ) : searchQuery ? (
+                                ) : searchInput ? (
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-7 h-7 text-[var(--app-hint)]">
                                         <circle cx="11" cy="11" r="8" />
                                         <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -432,10 +436,10 @@ export default function HistoryPage() {
                                 )}
                             </div>
                             <div className="text-[16px] font-medium text-[var(--app-fg)]">
-                                {filterMode === 'archived' ? t('history.noArchived') : filterMode === 'deleted' ? t('history.noDeleted') : searchQuery ? t('history.noResults') : t('history.empty')}
+                                {filterMode === 'archived' ? t('history.noArchived') : filterMode === 'deleted' ? t('history.noDeleted') : searchInput ? t('history.noResults') : t('history.empty')}
                             </div>
                             <div className="text-[13px] text-[var(--app-hint)] mt-2 max-w-[280px] leading-relaxed">
-                                {filterMode === 'archived' ? t('history.noArchived.description') : filterMode === 'deleted' ? t('history.noDeleted.description') : searchQuery ? t('history.noResults.description') : t('history.empty.description')}
+                                {filterMode === 'archived' ? t('history.noArchived.description') : filterMode === 'deleted' ? t('history.noDeleted.description') : searchInput ? t('history.noResults.description') : t('history.empty.description')}
                             </div>
                         </div>
                     ) : (
@@ -451,7 +455,7 @@ export default function HistoryPage() {
                                                 key={session.id}
                                                 session={session}
                                                 api={api}
-                                                searchQuery={searchQuery}
+                                                searchInput={searchInput}
                                                 onOpen={() => navigate({ to: '/sessions/$sessionId', params: { sessionId: session.id } })}
                                             />
                                         ))}
