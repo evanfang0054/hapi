@@ -372,6 +372,9 @@ export async function startRunner(): Promise<void> {
         if (yolo) {
           args.push('--yolo');
         }
+        if (options.permissionMode && agent === 'claude') {
+          args.push('--permission-mode', options.permissionMode);
+        }
 
         // sessionId reserved for future use
         const MAX_TAIL_CHARS = 4000;
