@@ -5,9 +5,11 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 const copyMock = vi.fn()
 
 const mockMessage = {
+    id: 'test-msg',
     role: 'assistant',
     content: [{ type: 'text', text: 'First line\n\nSecond line' }],
     metadata: {},
+    createdAt: new Date('2026-01-01T12:00:00Z'),
 }
 
 vi.mock('@assistant-ui/react', () => ({
@@ -26,7 +28,8 @@ vi.mock('@assistant-ui/react', () => ({
             </div>
         ),
     },
-    useAssistantState: (selector: (state: { message: typeof mockMessage }) => unknown) => selector({ message: mockMessage }),
+    useAssistantState: (selector: (state: { message: typeof mockMessage; thread: { isRunning: boolean; messages: typeof mockMessage[] } }) => unknown) =>
+        selector({ message: mockMessage, thread: { isRunning: false, messages: [mockMessage] } }),
 }))
 
 vi.mock('@/components/assistant-ui/markdown-text', () => ({

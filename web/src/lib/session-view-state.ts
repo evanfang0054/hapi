@@ -25,7 +25,20 @@ function writeAll(next: Record<string, SessionViewState>): void {
         return
     }
 
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+    try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+    } catch {
+        // localStorage quota exceeded — evict oldest entries and retry
+        const entries = Object.entries(next).sort((a, b) => a[1].savedAt - b[1].savedAt)
+        // Drop oldest half
+        const keep = entries.slice(Math.floor(entries.length / 2))
+        const trimmed = Object.fromEntries(keep)
+        try {
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed))
+        } catch {
+            try { window.localStorage.removeItem(STORAGE_KEY) } catch { /* ignore */ }
+        }
+    }
 }
 
 export function getSessionViewState(sessionId: string): SessionViewState | null {

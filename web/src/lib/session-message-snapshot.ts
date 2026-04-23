@@ -30,7 +30,24 @@ function writeAll(next: Record<string, SessionMessageSnapshot>): void {
         return
     }
 
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+    try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+    } catch {
+        // localStorage quota exceeded — evict oldest snapshots and retry
+        const entries = Object.entries(next).sort((a, b) => a[1].savedAt - b[1].savedAt)
+        // Drop oldest half
+        const keep = entries.slice(Math.floor(entries.length / 2))
+        const trimmed = Object.fromEntries(keep)
+        try {
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed))
+        } catch {
+            try {
+                window.localStorage.removeItem(STORAGE_KEY)
+            } catch {
+                // give up silently
+            }
+        }
+    }
 }
 
 export function loadSessionMessageSnapshot(sessionId: string): SessionMessageSnapshot | null {

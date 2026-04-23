@@ -32,7 +32,12 @@ function save(): void {
         return
     }
 
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(Object.fromEntries(memory)))
+    try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(Object.fromEntries(memory)))
+    } catch {
+        // localStorage quota exceeded — clear drafts and move on
+        try { window.localStorage.removeItem(STORAGE_KEY) } catch { /* ignore */ }
+    }
 }
 
 export function getSessionDraft(sessionId: string): string {
