@@ -54,17 +54,32 @@ function readWorktreeFromGit(): WorktreeInfo | null {
 
         const resolvedGitDir = normalizePath(gitDir, cwd);
         const resolvedGitCommonDir = normalizePath(gitCommonDir, cwd);
-        if (resolvedGitDir === resolvedGitCommonDir) {
-            return null;
-        }
 
         const worktreeRoot = runGit(['rev-parse', '--show-toplevel'], cwd);
         if (!worktreeRoot) {
             return null;
         }
         const worktreePath = normalizePath(worktreeRoot, cwd);
-        const basePath = dirname(resolvedGitCommonDir);
 
+        if (resolvedGitDir !== resolvedGitCommonDir) {
+            // Inside a git worktree
+            const branch = runGit(['symbolic-ref', '--short', 'HEAD'], cwd)
+                ?? runGit(['rev-parse', '--short', 'HEAD'], cwd);
+            if (!branch) {
+                return null;
+            }
+
+            result = {
+                basePath: dirname(resolvedGitCommonDir),
+                branch,
+                name: basename(worktreePath),
+                worktreePath,
+                createdAt: readCreatedAt(worktreePath)
+            };
+            return result;
+        }
+
+        // Regular git repo — also capture branch info
         const branch = runGit(['symbolic-ref', '--short', 'HEAD'], cwd)
             ?? runGit(['rev-parse', '--short', 'HEAD'], cwd);
         if (!branch) {
@@ -72,7 +87,7 @@ function readWorktreeFromGit(): WorktreeInfo | null {
         }
 
         result = {
-            basePath,
+            basePath: worktreePath,
             branch,
             name: basename(worktreePath),
             worktreePath,
