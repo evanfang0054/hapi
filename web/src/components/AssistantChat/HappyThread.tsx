@@ -95,6 +95,7 @@ export function HappyThread(props: {
     const onAtBottomChangeRef = useRef(props.onAtBottomChange)
     const onFlushPendingRef = useRef(props.onFlushPending)
     const forceScrollTokenRef = useRef(props.forceScrollToken)
+    const restoredSessionRef = useRef<string | null>(null)
 
     // Smart scroll state: autoScroll enabled when user is near bottom
     const [autoScrollEnabled, setAutoScrollEnabled] = useState(true)
@@ -287,19 +288,26 @@ export function HappyThread(props: {
     }, [props.messagesVersion, props.sessionId])
 
     useLayoutEffect(() => {
+        if (restoredSessionRef.current === props.sessionId) {
+            return
+        }
+
         const viewport = viewportRef.current
         if (!viewport) {
+            return
+        }
+        if (props.isLoadingMessages && props.rawMessagesCount === 0) {
             return
         }
 
         const state = getSessionViewState(props.sessionId)
         if (!state || state.atBottom) {
             viewport.scrollTop = viewport.scrollHeight
-            return
+        } else {
+            viewport.scrollTop = Math.max(0, viewport.scrollHeight - viewport.clientHeight - 240)
         }
-
-        viewport.scrollTop = Math.max(0, viewport.scrollHeight - viewport.clientHeight - 240)
-    }, [props.messagesVersion, props.sessionId])
+        restoredSessionRef.current = props.sessionId
+    }, [props.sessionId, props.isLoadingMessages, props.rawMessagesCount])
 
     const showSkeleton = props.isLoadingMessages && props.rawMessagesCount === 0 && props.pendingCount === 0
 

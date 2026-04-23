@@ -7,6 +7,7 @@ import { useAppearance, useTheme } from '@/hooks/useTheme'
 import { useAppContext } from '@/lib/app-context'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { PROTOCOL_VERSION } from '@hapi/protocol'
+import { getFeaturePreference, setFeaturePreference } from '@/lib/feature-preferences'
 
 const locales: { value: Locale; nativeLabel: string }[] = [
     { value: 'en', nativeLabel: 'English' },
@@ -134,12 +135,10 @@ export default function SettingsPage() {
     const [voiceLanguage, setVoiceLanguage] = useState<string | null>(() => {
         return localStorage.getItem('hapi-voice-lang')
     })
-    const [voiceEnabled, setVoiceEnabled] = useState(() => {
-        return localStorage.getItem('hapi-voice-enabled') !== 'false'
-    })
+    const [voiceEnabled, setVoiceEnabled] = useState(() => getFeaturePreference('voiceEnabled'))
     const [logoutOpen, setLogoutOpen] = useState(false)
-    const [pushNotifications, setPushNotifications] = useState(true)
-    const [telegramNotifications, setTelegramNotifications] = useState(false)
+    const [pushNotifications, setPushNotifications] = useState(() => getFeaturePreference('pushEnabled'))
+    const [telegramNotifications, setTelegramNotifications] = useState(() => getFeaturePreference('telegramEnabled'))
 
     const fontScaleOptions = getFontScaleOptions()
     const terminalFontSizeOptions = getTerminalFontSizeOptions()
@@ -392,7 +391,10 @@ export default function SettingsPage() {
                                         <div className="text-[12px] text-[var(--app-hint)] mt-0.5">{t('settings.voice.enableDesc')}</div>
                                     </div>
                                 </div>
-                                <Toggle checked={voiceEnabled} onChange={(val) => { setVoiceEnabled(val); localStorage.setItem('hapi-voice-enabled', String(val)) }} />
+                                <Toggle checked={voiceEnabled} onChange={(val) => {
+                                    setVoiceEnabled(val)
+                                    setFeaturePreference('voiceEnabled', val)
+                                }} />
                             </div>
 
                             {/* Voice Language */}
@@ -448,7 +450,10 @@ export default function SettingsPage() {
                                         <div className="text-[12px] text-[var(--app-hint)] mt-0.5">{t('settings.notifications.pushDesc')}</div>
                                     </div>
                                 </div>
-                                <Toggle checked={pushNotifications} onChange={setPushNotifications} />
+                                <Toggle checked={pushNotifications} onChange={(val) => {
+                                    setPushNotifications(val)
+                                    setFeaturePreference('pushEnabled', val)
+                                }} />
                             </div>
                             {/* Telegram Notifications Toggle */}
                             <div className="flex items-center justify-between px-4 py-3.5 max-[640px]:px-[14px] max-[640px]:py-3">
@@ -462,7 +467,10 @@ export default function SettingsPage() {
                                         <div className="text-[15px] font-medium text-[var(--app-fg)]">{t('settings.notifications.telegram')}</div>
                                     </div>
                                 </div>
-                                <Toggle checked={telegramNotifications} onChange={setTelegramNotifications} />
+                                <Toggle checked={telegramNotifications} onChange={(val) => {
+                                    setTelegramNotifications(val)
+                                    setFeaturePreference('telegramEnabled', val)
+                                }} />
                             </div>
                         </SettingsCard>
                     </div>

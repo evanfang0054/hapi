@@ -5,7 +5,7 @@ import { useSessions } from '@/hooks/queries/useSessions'
 import { useSessionActions } from '@/hooks/mutations/useSessionActions'
 import { useTranslation } from '@/lib/use-translation'
 
-type FilterMode = 'all' | 'archived' | 'deleted'
+type FilterMode = 'all' | 'archived' | 'unarchived'
 
 type SessionItem = {
     id: string
@@ -281,16 +281,16 @@ export default function HistoryPage() {
         updatedAt: s.updatedAt ?? 0,
         projectPath: s.metadata?.path ?? s.metadata?.worktree?.basePath ?? null,
         summary: null,
-        archived: (s.metadata as Record<string, unknown>)?.archived === true,
-        deleted: (s.metadata as Record<string, unknown>)?.deleted === true,
+        archived: s.metadata?.lifecycleState === 'archived' || s.active === false,
+        deleted: false,
     })), [sessions])
 
     const filteredSessions = useMemo(() => {
         let result = allSessions
         if (filterMode === 'archived') {
-            result = result.filter(s => s.archived && !s.deleted)
-        } else if (filterMode === 'deleted') {
-            result = result.filter(s => s.deleted)
+            result = result.filter(s => s.archived)
+        } else if (filterMode === 'unarchived') {
+            result = result.filter(s => !s.archived)
         }
         if (debouncedQuery.trim()) {
             const q = debouncedQuery.toLowerCase()
@@ -314,7 +314,7 @@ export default function HistoryPage() {
     const filterLabel = useCallback((mode: FilterMode): string => {
         if (mode === 'all') return t('history.filter.all')
         if (mode === 'archived') return t('history.filter.archived')
-        return t('history.filter.deleted')
+        return t('history.filter.unarchived')
     }, [t])
 
     return (
@@ -356,7 +356,7 @@ export default function HistoryPage() {
             {/* Filter chips */}
             {filterOpen && (
                 <div className="flex flex-wrap gap-2 border-b border-[var(--app-border)] bg-[var(--app-panel-bg)] px-4 py-3">
-                    {(['all', 'archived', 'deleted'] as FilterMode[]).map((mode) => (
+                    {(['all', 'archived', 'unarchived'] as FilterMode[]).map((mode) => (
                         <button
                             key={mode}
                             type="button"
@@ -373,10 +373,9 @@ export default function HistoryPage() {
                                     <path d="M1 3h22v5H1z" />
                                     <path d="M10 12h4" />
                                 </svg>
-                            ) : mode === 'deleted' ? (
+                            ) : mode === 'unarchived' ? (
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
-                                    <polyline points="3 6 5 6 21 6" />
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                                 </svg>
                             ) : null}
                             {filterLabel(mode)}

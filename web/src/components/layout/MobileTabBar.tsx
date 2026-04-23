@@ -71,7 +71,8 @@ export function MobileTabBar({ onNewSession, hidden }: MobileTabBarProps) {
     const isHistoryActive = pathname === '/history'
     const isSettingsActive = pathname === '/settings'
 
-    const activeSessionsCount = sessions.filter(s => s.active).length
+    // Total session count (matches sum of group header badges)
+    const totalSessionCount = sessions.length
 
     return (
         <nav className="fixed bottom-0 left-0 right-0 z-90 bg-[var(--app-panel-bg)] border-t border-[var(--app-border)] flex items-center justify-around transition-all duration-300 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] [html[data-theme=dark]_&]:shadow-[0_-4px_20px_rgba(0,0,0,0.3)]"
@@ -94,9 +95,9 @@ export function MobileTabBar({ onNewSession, hidden }: MobileTabBarProps) {
                     }`}>
                         <ChatIcon />
                     </span>
-                    {activeSessionsCount > 0 ? (
+                    {totalSessionCount > 0 ? (
                         <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 bg-[var(--app-link)] text-white text-[9px] font-semibold rounded-full flex items-center justify-center px-1">
-                            {activeSessionsCount}
+                            {totalSessionCount}
                         </span>
                     ) : null}
                 </span>

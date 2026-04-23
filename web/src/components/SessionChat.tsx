@@ -30,6 +30,7 @@ import { useSessionActions } from '@/hooks/mutations/useSessionActions'
 import { useVoiceOptional } from '@/lib/voice-context'
 import { RealtimeVoiceSession, registerSessionStore, registerVoiceHooksStore, voiceHooks } from '@/realtime'
 import { isRemoteTerminalSupported } from '@/utils/terminalSupport'
+import { getFeaturePreference, onFeaturePreferenceChange } from '@/lib/feature-preferences'
 
 export function SessionChat(props: {
     api: ApiClient
@@ -75,6 +76,7 @@ export function SessionChat(props: {
 
     // Voice assistant integration
     const voice = useVoiceOptional()
+    const [voiceEnabled, setVoiceEnabled] = useState(() => getFeaturePreference('voiceEnabled'))
 
     // Register session store for voice client tools
     useEffect(() => {
@@ -98,6 +100,13 @@ export function SessionChat(props: {
             (sessionId) => (sessionId === props.session.id ? props.messages : [])
         )
     }, [props.session, props.messages])
+
+    useEffect(() => {
+        setVoiceEnabled(getFeaturePreference('voiceEnabled'))
+        return onFeaturePreferenceChange(() => {
+            setVoiceEnabled(getFeaturePreference('voiceEnabled'))
+        })
+    }, [])
 
     // Track and report new messages to voice assistant
     // Note: voiceHooks internally checks isVoiceSessionStarted() so we don't need to check voice.status here
@@ -162,6 +171,16 @@ export function SessionChat(props: {
         if (!voice) return
         voice.toggleMic()
     }, [voice])
+
+    useEffect(() => {
+        if (!voice || voiceEnabled) {
+            return
+        }
+        if (voice.status !== 'connected' && voice.status !== 'connecting') {
+            return
+        }
+        void voice.stopVoice()
+    }, [voice, voiceEnabled])
 
     // Track session id to clear caches when it changes
     const prevSessionIdRef = useRef<string | null>(null)
@@ -425,8 +444,8 @@ export function SessionChat(props: {
                         autocompleteSuggestions={props.autocompleteSuggestions}
                         voiceStatus={voice?.status}
                         voiceMicMuted={voice?.micMuted}
-                        onVoiceToggle={voice ? handleVoiceToggle : undefined}
-                        onVoiceMicToggle={voice ? handleVoiceMicToggle : undefined}
+                        onVoiceToggle={voice && voiceEnabled ? handleVoiceToggle : undefined}
+                        onVoiceMicToggle={voice && voiceEnabled ? handleVoiceMicToggle : undefined}
                     />
                 </div>
             </AssistantRuntimeProvider>

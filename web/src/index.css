@@ -594,7 +594,7 @@ html[data-theme="dark"] .shiki span {
     
     /* Batch bar on mobile */
     .batch-bar {
-        bottom: calc(72px + env(safe-area-inset-bottom) + 12px) !important;
+        bottom: calc(88px + env(safe-area-inset-bottom) + 12px) !important;
         width: fit-content;
         max-width: calc(100vw - 64px);
         padding-left: 10px;

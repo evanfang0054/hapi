@@ -426,6 +426,7 @@ export default {
   'history.restore': '恢复',
   'history.filter.all': '全部',
   'history.filter.archived': '已归档',
+  'history.filter.unarchived': '未归档',
   'history.filter.deleted': '已删除',
   'history.delete': '删除',
   'history.permanentDelete': '永久删除',

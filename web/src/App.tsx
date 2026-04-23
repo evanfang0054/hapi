@@ -28,6 +28,7 @@ import { LoadingState } from '@/components/LoadingState'
 import { ToastContainer } from '@/components/ToastContainer'
 import { ToastProvider, useToast } from '@/lib/toast-context'
 import { markNotificationSeen, shouldShowNotification } from '@/lib/notification-dedupe'
+import { getFeaturePreference, onFeaturePreferenceChange } from '@/lib/feature-preferences'
 import type { SyncEvent } from '@/types/api'
 
 type ToastEvent = Extract<SyncEvent, { type: 'toast' }>
@@ -127,12 +128,14 @@ function AppInner() {
     const pushPromptedRef = useRef(false)
     const pushRetryAttemptedRef = useRef(false)
     const [pushRetryNonce, setPushRetryNonce] = useState(0)
+    const [pushEnabled, setPushEnabled] = useState(() => getFeaturePreference('pushEnabled'))
     const {
         isSupported: isPushSupported,
         permission: pushPermission,
         isSubscribed,
         requestPermission,
-        subscribe
+        subscribe,
+        unsubscribe
     } = usePushNotifications(api)
 
     useEffect(() => {
@@ -162,13 +165,30 @@ function AppInner() {
     }, [token, api, router])
 
     useEffect(() => {
+        setPushEnabled(getFeaturePreference('pushEnabled'))
+        return onFeaturePreferenceChange(() => {
+            setPushEnabled(getFeaturePreference('pushEnabled'))
+        })
+    }, [])
+
+    useEffect(() => {
+        if (!api || !token || pushEnabled) {
+            return
+        }
+        if (!isPushSupported || !isSubscribed) {
+            return
+        }
+        void unsubscribe()
+    }, [api, isPushSupported, isSubscribed, pushEnabled, token, unsubscribe])
+
+    useEffect(() => {
         if (!api || !token) {
             pushPromptedRef.current = false
             pushRetryAttemptedRef.current = false
             setPushRetryNonce(0)
             return
         }
-        if (isTelegramApp() || !isPushSupported || isSubscribed) {
+        if (!pushEnabled || isTelegramApp() || !isPushSupported || isSubscribed) {
             if (isSubscribed) {
                 pushRetryAttemptedRef.current = false
             }
@@ -208,6 +228,7 @@ function AppInner() {
         api,
         isPushSupported,
         isSubscribed,
+        pushEnabled,
         pushPermission,
         pushRetryNonce,
         requestPermission,

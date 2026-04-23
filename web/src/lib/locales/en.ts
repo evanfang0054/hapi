@@ -424,6 +424,7 @@ export default {
   'history.restore': 'Restore',
   'history.filter.all': 'All',
   'history.filter.archived': 'Archived',
+  'history.filter.unarchived': 'Unarchived',
   'history.filter.deleted': 'Deleted',
   'history.delete': 'Delete',
   'history.permanentDelete': 'Permanent Delete',

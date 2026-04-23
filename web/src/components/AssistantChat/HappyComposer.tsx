@@ -144,6 +144,7 @@ export function HappyComposer(props: {
     const [isAborting, setIsAborting] = useState(false)
     const [isSwitching, setIsSwitching] = useState(false)
     const [showContinueHint, setShowContinueHint] = useState(false)
+    const [showExpandButton, setShowExpandButton] = useState(false)
 
     const textareaRef = useRef<HTMLTextAreaElement>(null)
     const fullscreenTextareaRef = useRef<HTMLTextAreaElement>(null)
@@ -200,6 +201,24 @@ export function HappyComposer(props: {
         }
         prevControlledByUser.current = controlledByUser
     }, [controlledByUser])
+
+    // Follow redesign behavior: only show fullscreen button when text wraps to many lines.
+    useEffect(() => {
+        const textarea = textareaRef.current
+        if (!textarea) {
+            setShowExpandButton(false)
+            return
+        }
+
+        const style = window.getComputedStyle(textarea)
+        const lineHeight = Number.parseFloat(style.lineHeight) || 24
+        const paddingTop = Number.parseFloat(style.paddingTop) || 0
+        const paddingBottom = Number.parseFloat(style.paddingBottom) || 0
+        const contentHeight = Math.max(0, textarea.scrollHeight - paddingTop - paddingBottom)
+        const visualLineCount = Math.max(1, Math.ceil(contentHeight / lineHeight))
+
+        setShowExpandButton(visualLineCount >= 3)
+    }, [inputState.text, sessionId])
 
     const { haptic: platformHaptic, isTouch } = usePlatform()
     const { isStandalone, isIOS } = usePWAInstall()
@@ -331,8 +350,8 @@ export function HappyComposer(props: {
             return
         }
 
-        // Enter sends the message; modifier+Enter inserts a newline.
-        if (key === 'Enter' && !e.shiftKey && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        // Desktop: Enter sends; mobile/H5: Enter keeps newline, send via button.
+        if (!isTouch && key === 'Enter' && !e.shiftKey && !e.metaKey && !e.ctrlKey && !e.altKey) {
             e.preventDefault()
             if (!canSend) return
             api.composer().send()
@@ -394,7 +413,8 @@ export function HappyComposer(props: {
         canSend,
         api,
         haptic,
-        sessionId
+        sessionId,
+        isTouch
     ])
 
     useEffect(() => {
@@ -831,7 +851,7 @@ export function HappyComposer(props: {
                                     terminalDisabled={terminalDisabled}
                                     terminalLabel={terminalLabel}
                                     onTerminal={onTerminal ?? (() => {})}
-                                    showExpandButton
+                                    showExpandButton={showExpandButton}
                                     onExpand={handleExpandToggle}
                                     showAbortButton={showAbortButton}
                                     abortDisabled={abortDisabled}
