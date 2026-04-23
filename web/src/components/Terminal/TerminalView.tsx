@@ -54,8 +54,7 @@ export function TerminalView(props: {
                 cursor,
                 selectionBackground
             },
-            convertEol: true,
-            customGlyphs: true
+            customGlyphs: false
         })
 
         const fitAddon = new FitAddon()
@@ -106,6 +105,12 @@ export function TerminalView(props: {
         void ensureBuiltinFontLoaded().then(loaded => {
             if (!loaded) return
             refreshFont(true)
+            if (!abortController.signal.aborted) {
+                terminal.options.customGlyphs = true
+                if (terminal.rows > 0) {
+                    terminal.refresh(0, terminal.rows - 1)
+                }
+            }
         })
 
         // Cleanup on abort
