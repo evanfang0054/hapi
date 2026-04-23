@@ -10,6 +10,7 @@ import {
     getSessionsByNamespace,
     setSessionEffort,
     setSessionModel,
+    setSessionPermissionMode,
     setSessionTeamState,
     setSessionTodos,
     updateSessionAgentState,
@@ -67,6 +68,10 @@ export class SessionStore {
 
     setSessionEffort(id: string, effort: string | null, namespace: string, options?: { touchUpdatedAt?: boolean }): boolean {
         return setSessionEffort(this.db, id, effort, namespace, options)
+    }
+
+    setSessionPermissionMode(id: string, permissionMode: string | null, namespace: string, options?: { touchUpdatedAt?: boolean }): StoredSession | null {
+        return setSessionPermissionMode(this.db, id, permissionMode, namespace, options)
     }
 
     getSession(id: string): StoredSession | null {
