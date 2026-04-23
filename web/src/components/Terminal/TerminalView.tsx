@@ -54,15 +54,20 @@ export function TerminalView(props: {
                 cursor,
                 selectionBackground
             },
-            customGlyphs: false
+            customGlyphs: true,
+            scrollback: 1000
         })
 
         const fitAddon = new FitAddon()
         const webLinksAddon = new WebLinksAddon()
-        const canvasAddon = new CanvasAddon()
         terminal.loadAddon(fitAddon)
         terminal.loadAddon(webLinksAddon)
-        terminal.loadAddon(canvasAddon)
+        const canvasAddon = new CanvasAddon()
+        try {
+            terminal.loadAddon(canvasAddon)
+        } catch (e) {
+            console.warn('[Terminal] Canvas addon failed, using DOM renderer:', e)
+        }
         terminal.open(container)
 
         terminalRef.current = terminal
@@ -103,18 +108,27 @@ export function TerminalView(props: {
         }
 
         void ensureBuiltinFontLoaded().then(loaded => {
-            if (!loaded) return
+            if (!loaded || abortController.signal.aborted) return
             refreshFont(true)
-            if (!abortController.signal.aborted) {
-                terminal.options.customGlyphs = true
-                if (terminal.rows > 0) {
-                    terminal.refresh(0, terminal.rows - 1)
-                }
-            }
         })
+
+        // Mobile viewport: respond to virtual keyboard changes
+        const vpCleanup = (() => {
+            if (!window.visualViewport) return () => {}
+            const onVpResize = () => {
+                requestAnimationFrame(() => {
+                    if (abortController.signal.aborted) return
+                    fitAddon.fit()
+                    onResizeRef.current?.(terminal.cols, terminal.rows)
+                })
+            }
+            window.visualViewport.addEventListener('resize', onVpResize)
+            return () => window.visualViewport.removeEventListener('resize', onVpResize)
+        })()
 
         // Cleanup on abort
         abortController.signal.addEventListener('abort', () => {
+            vpCleanup()
             observer.disconnect()
             fitAddon.dispose()
             webLinksAddon.dispose()
@@ -147,7 +161,7 @@ export function TerminalView(props: {
     return (
         <div
             ref={containerRef}
-            className={`h-full w-full ${props.className ?? ''}`}
+            className={`h-full w-full overscroll-none touch-none ${props.className ?? ''}`}
         />
     )
 }
