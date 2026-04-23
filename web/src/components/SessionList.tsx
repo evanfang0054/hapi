@@ -211,8 +211,8 @@ function SessionItem(props: {
     selected?: boolean
     selectionMode?: boolean
     selectionChecked?: boolean
-    onEnterSelectionMode?: (sessionId: string, active: boolean) => void
-    onToggleSelected?: (sessionId: string, active: boolean) => void
+    onEnterSelectionMode?: (sessionId: string) => void
+    onToggleSelected?: (sessionId: string) => void
 }) {
     const { t } = useTranslation()
     const {
@@ -249,11 +249,11 @@ function SessionItem(props: {
             haptic.impact('medium')
             setMenuAnchorPoint(point)
             setMenuOpen(false)
-            onEnterSelectionMode?.(s.id, s.active)
+            onEnterSelectionMode?.(s.id)
         },
         onClick: () => {
             if (selectionMode) {
-                onToggleSelected?.(s.id, s.active)
+                onToggleSelected?.(s.id)
                 return
             }
             if (!menuOpen) {
@@ -353,7 +353,7 @@ function SessionItem(props: {
                             disabled={s.active}
                             onClick={(event) => {
                                 event.stopPropagation()
-                                onToggleSelected?.(s.id, s.active)
+                                onToggleSelected?.(s.id)
                             }}
                             className="mt-0.5 shrink-0 h-5 w-5 rounded-[6px] border-2 flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             style={{
@@ -404,7 +404,7 @@ function SessionItem(props: {
                 onRename={() => setRenameOpen(true)}
                 onArchive={() => setArchiveOpen(true)}
                 onDelete={() => setDeleteOpen(true)}
-                onSelectMultiple={() => onEnterSelectionMode?.(s.id, s.active)}
+                onSelectMultiple={() => onEnterSelectionMode?.(s.id)}
                 anchorPoint={menuAnchorPoint}
             />
 
@@ -473,6 +473,13 @@ export function SessionList(props: {
     const { deleteSessions, isPending } = useSessionActions(api, selectedSessionId ?? null)
     const { addToast } = useToast()
     const selectedCount = selectedIds.size
+    const activeSelectedCount = useMemo(() => {
+        return Array.from(selectedIds).filter(id => {
+            const session = props.sessions.find(s => s.id === id)
+            return session?.active
+        }).length
+    }, [selectedIds, props.sessions])
+    const inactiveSelectedCount = selectedIds.size - activeSelectedCount
     const isGroupCollapsed = (group: SessionGroup): boolean => {
         const override = collapseOverrides.get(group.key)
         if (override !== undefined) return override
@@ -490,15 +497,14 @@ export function SessionList(props: {
         })
     }
 
-    const enterSelectionMode = (sessionId: string, active: boolean) => {
+    const enterSelectionMode = (sessionId: string) => {
         setSelectionMode(true)
         setIsBatchBarClosing(false)
-        setSelectedIds(active ? new Set() : new Set([sessionId]))
+        setSelectedIds(new Set([sessionId]))
         setBulkDeleteOpen(false)
     }
 
-    const toggleSelected = (sessionId: string, active: boolean) => {
-        if (active) return
+    const toggleSelected = (sessionId: string) => {
         setSelectedIds(prev => {
             const next = new Set(prev)
             if (next.has(sessionId)) {
@@ -530,7 +536,10 @@ export function SessionList(props: {
     }
 
     const confirmBulkDelete = async () => {
-        const sessionIds = Array.from(selectedIds)
+        const sessionIds = Array.from(selectedIds).filter(id => {
+            const session = props.sessions.find(s => s.id === id)
+            return !session?.active
+        })
         setBulkDeleteOpen(false)
         try {
             const summary = await deleteSessions(sessionIds)
@@ -732,39 +741,46 @@ export function SessionList(props: {
                         <span className="batch-count text-[13px] font-medium text-[var(--app-fg)] pr-3 border-r border-[var(--app-border)]">
                             {selectedCount}
                         </span>
-                        <div className="batch-actions">
-                            <button
-                                type="button"
-                                className="batch-action-btn flex items-center gap-1.5 rounded-[10px] px-3.5 py-2 text-[13px] font-medium border border-[var(--app-border)] bg-[var(--app-subtle-bg)] text-[var(--app-fg)] transition-colors hover:bg-[var(--app-panel-elevated-bg)] disabled:opacity-50"
-                                onClick={async () => {
-                                    const ids = Array.from(selectedIds)
-                                    for (const id of ids) {
-                                        try { await api?.archiveSession(id) } catch { /* skip */ }
-                                    }
-                                    cancelSelectionMode()
-                                }}
-                                disabled={selectedIds.size === 0 || isBatchBarClosing}
-                            >
-                                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <rect width="20" height="5" x="2" y="3" rx="1" />
-                                    <path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" />
-                                    <path d="M10 12h4" />
-                                </svg>
-                                {t('session.action.archive')}
-                            </button>
-                            <button
-                                type="button"
-                                className="batch-action-btn flex items-center gap-1.5 rounded-[10px] px-3.5 py-2 text-[13px] font-medium border border-[rgba(181,51,51,0.3)] bg-[rgba(181,51,51,0.08)] text-[var(--app-error)] transition-colors hover:bg-[rgba(181,51,51,0.15)] disabled:opacity-50 [html[data-theme=dark]_&]:border-[rgba(224,140,114,0.3)] [html[data-theme=dark]_&]:bg-[rgba(224,140,114,0.1)]"
-                                onClick={() => setBulkDeleteOpen(true)}
-                                disabled={selectedIds.size === 0 || isBatchBarClosing}
-                            >
-                                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M3 6h18" />
-                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                                </svg>
-                                {t('dialog.delete.confirm')}
-                            </button>
+                        <div className="batch-actions flex items-center gap-2">
+                            {activeSelectedCount > 0 && (
+                                <button
+                                    type="button"
+                                    className="batch-action-btn flex items-center gap-1.5 rounded-[10px] px-3.5 py-2 text-[13px] font-medium border border-[var(--app-border)] bg-[var(--app-subtle-bg)] text-[var(--app-fg)] transition-colors hover:bg-[var(--app-panel-elevated-bg)] disabled:opacity-50"
+                                    onClick={async () => {
+                                        const ids = Array.from(selectedIds).filter(id => {
+                                            const session = props.sessions.find(s => s.id === id)
+                                            return session?.active
+                                        })
+                                        for (const id of ids) {
+                                            try { await api?.archiveSession(id) } catch { /* skip */ }
+                                        }
+                                        cancelSelectionMode()
+                                    }}
+                                    disabled={isBatchBarClosing}
+                                >
+                                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <rect width="20" height="5" x="2" y="3" rx="1" />
+                                        <path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" />
+                                        <path d="M10 12h4" />
+                                    </svg>
+                                    {t('session.action.archive')} ({activeSelectedCount})
+                                </button>
+                            )}
+                            {inactiveSelectedCount > 0 && (
+                                <button
+                                    type="button"
+                                    className="batch-action-btn flex items-center gap-1.5 rounded-[10px] px-3.5 py-2 text-[13px] font-medium border border-[rgba(181,51,51,0.3)] bg-[rgba(181,51,51,0.08)] text-[var(--app-error)] transition-colors hover:bg-[rgba(181,51,51,0.15)] disabled:opacity-50 [html[data-theme=dark]_&]:border-[rgba(224,140,114,0.3)] [html[data-theme=dark]_&]:bg-[rgba(224,140,114,0.1)]"
+                                    onClick={() => setBulkDeleteOpen(true)}
+                                    disabled={isBatchBarClosing}
+                                >
+                                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M3 6h18" />
+                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                    </svg>
+                                    {t('dialog.delete.confirm')} ({inactiveSelectedCount})
+                                </button>
+                            )}
                         </div>
                         <button
                             type="button"
