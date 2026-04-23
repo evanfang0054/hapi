@@ -20,7 +20,7 @@ function ScrollToBottomButton(props: { visible: boolean; onClick: () => void }) 
     return (
         <button
             onClick={props.onClick}
-            className="fixed bottom-[84px] right-3 z-10 h-9 w-9 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] shadow-[var(--app-shadow-sm)] flex items-center justify-center text-[var(--app-hint)] transition-all hover:text-[var(--app-fg)] md:bottom-6 md:right-5 md:h-10 md:w-10"
+            className="fixed bottom-[140px] right-3 z-10 h-9 w-9 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] shadow-[var(--app-shadow-sm)] flex items-center justify-center text-[var(--app-hint)] transition-all hover:text-[var(--app-fg)] md:bottom-6 md:right-5 md:h-10 md:w-10"
             aria-label={t('misc.scrollToBottom')}
         >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
