@@ -19,6 +19,7 @@
 | Modify | `web/src/routes/sessions/file.tsx` | 添加编辑/保存 UI |
 | Create | `web/src/components/SessionFiles/FileEditor.tsx` | CodeMirror 编辑器组件 |
 | Modify | `web/src/api/client.ts` | 新增 writeSessionFile 方法 |
+| Modify | `cli/src/modules/common/handlers/files.ts` | writeFile 无 hash 时改为覆盖而非报错 |
 | Modify | `hub/src/sync/rpcGateway.ts` | 新增 writeFile RPC 中转 |
 | Modify | `hub/src/web/routes/git.ts` | 新增 PUT file 路由 |
 | Modify | `hub/src/sync/syncEngine.ts` | 新增 writeSessionFile + resume 传 permissionMode |
@@ -440,7 +441,37 @@ export function FileEditor(props: FileEditorProps) {
 export { MAX_EDITABLE_FILE_BYTES }
 ```
 
-### Task 4c: 后端 — 添加 writeFile RPC 中转
+### Task 4c: CLI — 修改 writeFile 支持覆盖已有文件
+
+**Files:**
+- Modify: `cli/src/modules/common/handlers/files.ts:75-85`
+
+- [ ] **Step: 修改 writeFile handler 无 hash 时直接覆盖**
+
+将 `cli/src/modules/common/handlers/files.ts` 第 75-85 行的 else 分支（检查文件不存在）改为直接写入（跳过检查）:
+
+原代码:
+```ts
+} else {
+    try {
+        await stat(data.path)
+        return rpcError('File already exists but was expected to be new')
+    } catch (error) {
+        const nodeError = error as NodeJS.ErrnoException
+        if (nodeError.code !== 'ENOENT') {
+            throw error
+        }
+    }
+}
+```
+
+替换为:
+```ts
+}
+// No hash provided — allow overwriting existing files (used by web file editor)
+```
+
+### Task 4d: 后端 — 添加 writeFile RPC 中转
 
 **Files:**
 - Modify: `hub/src/sync/rpcGateway.ts:12-17,227-229`
@@ -489,10 +520,7 @@ export type {
 } from './rpcGateway'
 ```
 
-### Task 4d: 后端 — 添加 HTTP 路由
-
-**Files:**
-- Modify: `hub/src/web/routes/git.ts`
+### Task 4e: 后端 — 添加 HTTP 路由
 
 - [ ] **Step 5: 添加 PUT /sessions/:id/file 路由**
 
@@ -516,7 +544,7 @@ app.put('/sessions/:id/file', async (c) => {
 })
 ```
 
-### Task 4e: 前端 — API Client + 编辑 UI
+### Task 4f: 前端 — API Client + 编辑 UI
 
 **Files:**
 - Modify: `web/src/api/client.ts:286-289`
