@@ -45,8 +45,8 @@ export function AgentSelector(props: {
                             >
                                 {color.letter}
                             </div>
-                            <span className="text-[13px] font-medium capitalize">
-                                {agentType}
+                            <span className="text-[13px] font-medium">
+                                {agentType === 'opencode' ? 'OpenCode' : agentType.charAt(0).toUpperCase() + agentType.slice(1)}
                             </span>
                         </button>
                     )

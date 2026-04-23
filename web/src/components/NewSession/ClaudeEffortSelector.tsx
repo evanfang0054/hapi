@@ -16,9 +16,8 @@ export function ClaudeEffortSelector(props: {
 
     return (
         <div className="space-y-3">
-            <label className="block text-[12px] font-medium tracking-[0.5px] normal-case text-[var(--app-hint)]">
-                {t('newSession.effort')}{' '}
-                <span className="font-normal">({t('newSession.model.optional')})</span>
+            <label className="block text-xs font-semibold uppercase tracking-[0.5px] text-[var(--app-hint)]">
+                {t('newSession.effort')}
             </label>
             <div className="relative">
                 <select

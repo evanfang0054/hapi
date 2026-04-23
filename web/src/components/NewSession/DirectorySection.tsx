@@ -34,7 +34,7 @@ export function DirectorySection(props: {
 
     return (
         <div className="space-y-3">
-            <label className="block text-[12px] font-medium tracking-[0.5px] normal-case text-[var(--app-hint)]">
+            <label className="block text-xs font-semibold uppercase tracking-[0.5px] text-[var(--app-hint)]">
                 {t('newSession.directory')}
             </label>
             <div className="relative flex items-center gap-2">
@@ -70,7 +70,7 @@ export function DirectorySection(props: {
                         type="button"
                         onClick={handleBrowse}
                         disabled={props.isDisabled}
-                        className="shrink-0 px-3 py-1.5 rounded-[8px] text-[13px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] text-[var(--app-fg)] transition-colors hover:bg-[var(--app-panel-muted-bg)] disabled:opacity-50"
+                        className="shrink-0 px-3 py-1.5 rounded-[8px] text-[13px] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] text-[var(--app-fg)] transition-colors hover:bg-[var(--app-panel-muted-bg)] disabled:opacity-50"
                     >
                         {t('newSession.browse')}
                     </button>
@@ -79,7 +79,6 @@ export function DirectorySection(props: {
 
             {props.recentPaths.length > 0 && (
                 <div className="space-y-1.5">
-                    <span className="text-[12px] font-medium tracking-[0.5px] normal-case text-[var(--app-hint)]">{t('newSession.recent')}:</span>
                     <div className="space-y-1.5">
                         {props.recentPaths.map((path) => (
                             <button
@@ -87,7 +86,7 @@ export function DirectorySection(props: {
                                 type="button"
                                 onClick={() => props.onPathClick(path)}
                                 disabled={props.isDisabled}
-                                className="flex w-full max-w-full items-center gap-2 truncate p-[10px_12px] rounded-[10px] font-mono text-[12px] text-[var(--app-fg)] transition-colors hover:bg-[var(--app-panel-muted-bg)] disabled:opacity-50"
+                                className="flex w-full max-w-full items-center gap-2 truncate p-[10px_12px] rounded-[10px] font-mono text-[12px] text-[var(--app-hint)] transition-colors hover:bg-[var(--app-panel-muted-bg)] disabled:opacity-50"
                                 title={path}
                             >
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-[var(--app-hint)]">

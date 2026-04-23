@@ -169,7 +169,7 @@ export function LoginPrompt(props: LoginPromptProps) {
                                 placeholder={t('login.placeholder')}
                                 autoComplete="current-password"
                                 disabled={isLoading}
-                                className={`w-full px-4 py-3.5 rounded-[16px] border bg-[var(--app-panel-elevated-bg)] text-[var(--app-fg)] placeholder:text-[var(--app-hint)] focus:outline-none focus:border-[var(--app-link)] focus:shadow-[0_0_0_3px_rgba(201,100,66,0.12)] disabled:opacity-60 transition-colors ${
+                                className={`w-full px-4 py-3.5 rounded-[16px] border bg-[var(--app-panel-elevated-bg)] text-[var(--app-fg)] placeholder:text-[var(--app-hint)] placeholder:opacity-70 focus:outline-none focus:border-[var(--app-link)] focus:shadow-[0_0_0_3px_rgba(201,100,66,0.12)] disabled:opacity-60 transition-all duration-200 ${
                                     displayError ? 'border-[var(--app-error)]' : 'border-[var(--app-border)]'
                                 }`}
                                 style={{ fontFamily: 'var(--app-font-mono)', fontSize: '15px' }}
@@ -225,7 +225,7 @@ export function LoginPrompt(props: LoginPromptProps) {
                                         Hub {props.serverUrl ? t('login.server.custom') : t('login.server.default')}
                                     </button>
                                 </DialogTrigger>
-                                <DialogContent className="max-w-[420px]">
+                                <DialogContent className="max-w-[420px] animate-[dialog-slide-up_0.2s_ease]">
                                     <DialogHeader>
                                         <DialogTitle>{t('login.server.title')}</DialogTitle>
                                         <DialogDescription>

@@ -412,3 +412,8 @@ html[data-theme="dark"] .shiki span {
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
 }
+
+@keyframes dialog-slide-up {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}

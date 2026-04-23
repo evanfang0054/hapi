@@ -33,7 +33,7 @@ function MachineDrawer({
         <>
             {/* Overlay */}
             <div
-                className="fixed inset-0 z-50 bg-black/40 transition-opacity duration-250"
+                className="fixed inset-0 z-50 bg-black/40 [html[data-theme=dark]_&]:bg-black/60 transition-opacity duration-250"
                 onClick={onClose}
             />
             {/* Drawer */}
@@ -42,7 +42,7 @@ function MachineDrawer({
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Handle */}
-                <div className="mx-auto mt-3 mb-4 h-1 w-9 rounded-sm bg-[var(--app-border)]" />
+                <div className="mx-auto mt-3 mb-4 h-1 w-9 rounded-sm bg-[var(--app-subtle-bg)]" />
 
                 {/* Header: Icon + Name + ID */}
                 <div className="flex items-center gap-3.5 px-5 pb-4 border-b border-[var(--app-border)]">
@@ -231,10 +231,7 @@ export default function MachinesPage() {
                         className="flex items-center gap-1.5 px-3.5 py-2 rounded-[10px] text-[13px] font-medium border border-[var(--app-border)] bg-[var(--app-subtle-bg)] text-[var(--app-fg)] hover:bg-[var(--app-panel-muted-bg)] disabled:opacity-60 transition-colors"
                     >
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`}>
-                            <path d="M21 2v6h-6" />
-                            <path d="M3 12a9 9 0 0 1 15.3-6.36L21 8" />
-                            <path d="M3 22v-6h6" />
-                            <path d="M21 12a9 9 0 0 1-15.3 6.36L3 16" />
+                            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
                         </svg>
                         {t('machines.refresh')}
                     </button>
@@ -246,16 +243,16 @@ export default function MachinesPage() {
                         {/* Stats row - only show when machines data is loaded */}
                         {machines.length > 0 && (
                             <div className="grid grid-cols-3 gap-3 mb-6">
-                                <div className="bg-[var(--app-panel-bg)] border border-[var(--app-border)] rounded-[16px] p-3 text-center sm:p-4">
-                                    <div className="text-[24px] sm:text-[28px] font-mono font-semibold text-[var(--app-git-staged-color)]">{onlineCount}</div>
+                                <div className="bg-[var(--app-panel-bg)] border border-[var(--app-border)] rounded-[16px] p-4 text-center">
+                                    <div className="text-[28px] font-mono font-semibold text-[var(--app-git-staged-color)]">{onlineCount}</div>
                                     <div className="text-[11px] text-[var(--app-hint)] uppercase tracking-[0.05em] mt-1">{t('machines.stats.online')}</div>
                                 </div>
-                                <div className="bg-[var(--app-panel-bg)] border border-[var(--app-border)] rounded-[16px] p-3 text-center sm:p-4">
-                                    <div className="text-[24px] sm:text-[28px] font-mono font-semibold text-[var(--app-hint)]">{offlineCount}</div>
+                                <div className="bg-[var(--app-panel-bg)] border border-[var(--app-border)] rounded-[16px] p-4 text-center">
+                                    <div className="text-[28px] font-mono font-semibold text-[var(--app-hint)]">{offlineCount}</div>
                                     <div className="text-[11px] text-[var(--app-hint)] uppercase tracking-[0.05em] mt-1">{t('machines.stats.offline')}</div>
                                 </div>
-                                <div className="bg-[var(--app-panel-bg)] border border-[var(--app-border)] rounded-[16px] p-3 text-center sm:p-4">
-                                    <div className="text-[24px] sm:text-[28px] font-mono font-semibold text-[var(--app-fg)]">{machines.length}</div>
+                                <div className="bg-[var(--app-panel-bg)] border border-[var(--app-border)] rounded-[16px] p-4 text-center">
+                                    <div className="text-[28px] font-mono font-semibold text-[var(--app-fg)]">{machines.length}</div>
                                     <div className="text-[11px] text-[var(--app-hint)] uppercase tracking-[0.05em] mt-1">{t('machines.stats.total')}</div>
                                 </div>
                             </div>
