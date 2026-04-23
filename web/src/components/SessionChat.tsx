@@ -338,97 +338,96 @@ export function SessionChat(props: {
             />
 
             <AssistantRuntimeProvider runtime={runtime}>
-                <div className="mx-auto flex min-h-0 w-full max-w-content flex-1 flex-col md:px-5 md:pb-5">
+                <div className="flex min-h-0 flex-1 flex-col bg-[var(--app-panel-bg)]">
                     {props.session.teamState ? (
-                        <div className="mt-2.5 md:mt-3">
+                        <div className="px-3 py-2 md:px-4 md:py-3">
                             <TeamPanel teamState={props.session.teamState} />
                         </div>
                     ) : null}
 
-                    <div className="flex min-h-0 flex-1 flex-col overflow-hidden border border-[var(--app-border)] bg-[var(--app-panel-bg)] shadow-[var(--app-shadow-sm)] md:mt-3">
-                        {sessionInactive ? (
-                            <div className="border-b border-[var(--app-divider)] bg-[var(--app-panel-muted-bg)] px-3 py-2.5 text-sm text-[var(--app-hint)] md:px-5 md:py-3">
-                                Session is inactive. Sending will resume it automatically.
-                            </div>
-                        ) : null}
+                    {sessionInactive ? (
+                        <div className="border-y border-[var(--app-divider)] bg-[var(--app-panel-muted-bg)] px-3 py-2.5 text-sm text-[var(--app-hint)] md:px-4 md:py-3">
+                            Session is inactive. Sending will resume it automatically.
+                        </div>
+                    ) : null}
 
-                        {props.continuityState === 'refresh_failed' && props.hasHydratedMessages ? (
-                            <div className="border-b border-amber-500/20 bg-amber-500/8 px-3 py-2.5 text-sm text-[var(--app-fg)] md:px-5 md:py-3">
-                                <div className="flex items-center justify-between gap-3">
-                                    <span>网络恢复失败，当前显示的是缓存内容。</span>
-                                    <Button variant="secondary" size="sm" onClick={props.onRefresh}>重试</Button>
-                                </div>
+                    {props.continuityState === 'refresh_failed' && props.hasHydratedMessages ? (
+                        <div className="border-y border-amber-500/20 bg-amber-500/8 px-3 py-2.5 text-sm text-[var(--app-fg)] md:px-4 md:py-3">
+                            <div className="flex items-center justify-between gap-3">
+                                <span>网络恢复失败，当前显示的是缓存内容。</span>
+                                <Button variant="secondary" size="sm" onClick={props.onRefresh}>重试</Button>
                             </div>
-                        ) : null}
+                        </div>
+                    ) : null}
 
-                        <div className="relative flex min-h-0 flex-1 flex-col">
-                            {props.continuityState === 'refresh_failed' && !props.hasHydratedMessages && props.messages.length === 0 && !props.isLoadingMessages ? (
-                                <div className="flex flex-1 items-center justify-center px-4 py-8 md:px-6">
-                                    <div className="w-full max-w-md rounded-[20px] border border-amber-500/20 bg-amber-500/8 px-5 py-4 text-center shadow-[var(--app-shadow-xs)]">
-                                        <div className="text-sm font-medium text-[var(--app-fg)]">当前无法刷新会话内容</div>
-                                        <div className="mt-1 text-sm text-[var(--app-hint)]">请检查网络后重试。</div>
-                                        <div className="mt-4">
-                                            <Button variant="secondary" size="sm" onClick={props.onRefresh}>重试</Button>
-                                        </div>
+                    <div className="relative flex min-h-0 flex-1 flex-col">
+                        {props.continuityState === 'refresh_failed' && !props.hasHydratedMessages && props.messages.length === 0 && !props.isLoadingMessages ? (
+                            <div className="flex flex-1 items-center justify-center px-4 py-8 md:px-6">
+                                <div className="w-full max-w-md rounded-[20px] border border-amber-500/20 bg-amber-500/8 px-5 py-4 text-center shadow-[var(--app-shadow-xs)]">
+                                    <div className="text-sm font-medium text-[var(--app-fg)]">当前无法刷新会话内容</div>
+                                    <div className="mt-1 text-sm text-[var(--app-hint)]">请检查网络后重试。</div>
+                                    <div className="mt-4">
+                                        <Button variant="secondary" size="sm" onClick={props.onRefresh}>重试</Button>
                                     </div>
                                 </div>
-                            ) : null}
-                            <HappyThread
-                                key={props.session.id}
-                                api={props.api}
-                                sessionId={props.session.id}
-                                metadata={props.session.metadata}
-                                disabled={sessionInactive}
-                                onRefresh={props.onRefresh}
-                                onRetryMessage={props.onRetryMessage}
-                                onFlushPending={props.onFlushPending}
-                                onAtBottomChange={props.onAtBottomChange}
-                                isLoadingMessages={props.isLoadingMessages}
-                                messagesWarning={props.messagesWarning}
-                                hasMoreMessages={props.hasMoreMessages}
-                                isLoadingMoreMessages={props.isLoadingMoreMessages}
-                                onLoadMore={props.onLoadMore}
-                                pendingCount={props.pendingCount}
-                                rawMessagesCount={props.messages.length}
-                                normalizedMessagesCount={normalizedMessages.length}
-                                messagesVersion={props.messagesVersion}
-                                forceScrollToken={forceScrollToken}
-                            />
+                            </div>
+                        ) : null}
 
-                            <HappyComposer
-                                sessionId={props.session.id}
-                                disabled={props.isSending}
-                                permissionMode={props.session.permissionMode}
-                                collaborationMode={codexCollaborationModeSupported ? props.session.collaborationMode : undefined}
-                                model={props.session.model}
-                                effort={props.session.effort}
-                                agentFlavor={agentFlavor}
-                                active={props.session.active}
-                                allowSendWhenInactive
-                                thinking={props.session.thinking}
-                                agentState={props.session.agentState}
-                                contextSize={reduced.latestUsage?.contextSize}
-                                backgroundTaskCount={props.pendingCount}
-                                controlledByUser={controlledByUser}
-                                onCollaborationModeChange={
-                                    codexCollaborationModeSupported && props.session.active && !controlledByUser
-                                        ? handleCollaborationModeChange
-                                        : undefined
-                                }
-                                onPermissionModeChange={handlePermissionModeChange}
-                                onModelChange={handleModelChange}
-                                onEffortChange={handleEffortChange}
-                                onSwitchToRemote={handleSwitchToRemote}
-                                onTerminal={props.session.active && terminalSupported ? handleViewTerminal : undefined}
-                                terminalUnsupported={props.session.active && !terminalSupported}
-                                autocompleteSuggestions={props.autocompleteSuggestions}
-                                voiceStatus={voice?.status}
-                                voiceMicMuted={voice?.micMuted}
-                                onVoiceToggle={voice ? handleVoiceToggle : undefined}
-                                onVoiceMicToggle={voice ? handleVoiceMicToggle : undefined}
-                            />
-                        </div>
+                        <HappyThread
+                            key={props.session.id}
+                            api={props.api}
+                            sessionId={props.session.id}
+                            metadata={props.session.metadata}
+                            disabled={sessionInactive}
+                            onRefresh={props.onRefresh}
+                            onRetryMessage={props.onRetryMessage}
+                            onFlushPending={props.onFlushPending}
+                            onAtBottomChange={props.onAtBottomChange}
+                            isLoadingMessages={props.isLoadingMessages}
+                            messagesWarning={props.messagesWarning}
+                            hasMoreMessages={props.hasMoreMessages}
+                            isLoadingMoreMessages={props.isLoadingMoreMessages}
+                            onLoadMore={props.onLoadMore}
+                            pendingCount={props.pendingCount}
+                            rawMessagesCount={props.messages.length}
+                            normalizedMessagesCount={normalizedMessages.length}
+                            messagesVersion={props.messagesVersion}
+                            forceScrollToken={forceScrollToken}
+                        />
                     </div>
+
+                    <HappyComposer
+                        sessionId={props.session.id}
+                        disabled={props.isSending}
+                        permissionMode={props.session.permissionMode}
+                        collaborationMode={codexCollaborationModeSupported ? props.session.collaborationMode : undefined}
+                        model={props.session.model}
+                        effort={props.session.effort}
+                        agentFlavor={agentFlavor}
+                        active={props.session.active}
+                        allowSendWhenInactive
+                        thinking={props.session.thinking}
+                        agentState={props.session.agentState}
+                        contextSize={reduced.latestUsage?.contextSize}
+                        backgroundTaskCount={props.pendingCount}
+                        controlledByUser={controlledByUser}
+                        onCollaborationModeChange={
+                            codexCollaborationModeSupported && props.session.active && !controlledByUser
+                                ? handleCollaborationModeChange
+                                : undefined
+                        }
+                        onPermissionModeChange={handlePermissionModeChange}
+                        onModelChange={handleModelChange}
+                        onEffortChange={handleEffortChange}
+                        onSwitchToRemote={handleSwitchToRemote}
+                        onTerminal={props.session.active && terminalSupported ? handleViewTerminal : undefined}
+                        terminalUnsupported={props.session.active && !terminalSupported}
+                        autocompleteSuggestions={props.autocompleteSuggestions}
+                        voiceStatus={voice?.status}
+                        voiceMicMuted={voice?.micMuted}
+                        onVoiceToggle={voice ? handleVoiceToggle : undefined}
+                        onVoiceMicToggle={voice ? handleVoiceMicToggle : undefined}
+                    />
                 </div>
             </AssistantRuntimeProvider>
 

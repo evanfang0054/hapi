@@ -47,7 +47,7 @@ function splitTaskChildren(block: ToolCallBlock): { pending: ChatBlock[]; rest: 
 
 function nestedContainerClass(source: 'user' | 'assistant' = 'assistant') {
     return source === 'user'
-        ? 'ml-auto w-fit min-w-0 max-w-[min(78ch,85%)] rounded-[22px] border border-transparent bg-[var(--app-subtle-bg)] px-4 py-3 text-[var(--app-fg)] shadow-[var(--app-shadow-xs)]'
+        ? 'ml-auto w-fit min-w-0 rounded-[22px] border border-transparent bg-[var(--app-subtle-bg)] px-4 py-3 text-[var(--app-fg)] shadow-[var(--app-shadow-xs)]'
         : 'mr-auto w-full min-w-0 max-w-[min(82ch,100%)] rounded-[24px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-4 py-3 text-[var(--app-fg)] shadow-[var(--app-shadow-sm)]'
 }
 
@@ -91,7 +91,7 @@ function HappyNestedBlockList(props: {
 
                 if (block.kind === 'cli-output') {
                     const alignClass = block.source === 'user'
-                        ? 'ml-auto w-full max-w-[min(78ch,85%)]'
+                        ? 'ml-auto w-full'
                         : 'mr-auto w-full max-w-[min(82ch,100%)]'
                     return (
                         <div key={`cli:${block.id}`} className="min-w-0 max-w-full overflow-x-hidden">

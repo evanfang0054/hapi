@@ -735,8 +735,8 @@ export function HappyComposer(props: {
     }, [isFullscreenOpen])
 
     return (
-        <div className={`bg-[var(--app-panel-bg)] ${bottomPaddingClass} md:px-4 md:pt-4`}>
-            <div className="mx-auto w-full max-w-[960px]">
+        <div className={`border-t border-[var(--app-border)] bg-[var(--app-panel-bg)] px-3 py-2.5 pb-[calc(10px+env(safe-area-inset-bottom))] md:px-4 md:py-3 ${bottomPaddingClass}`}>
+            <div className="w-full">
                 <ComposerPrimitive.Root className="relative" onSubmit={handleSubmit}>
                     <Dialog open={isFullscreenOpen} onOpenChange={setIsFullscreenOpen}>
                         <DialogContent className="flex h-[min(100dvh-24px,820px)] w-[calc(100vw-16px)] max-w-3xl flex-col gap-0 overflow-hidden rounded-[var(--app-radius-panel)] p-0 sm:w-[calc(100vw-24px)]">
@@ -783,7 +783,7 @@ export function HappyComposer(props: {
 
                     {overlays}
 
-                    <div className="border-t border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)]">
+                    <div className="bg-[var(--app-panel-bg)]">
                         <StatusBar
                             active={active}
                             thinking={thinking}
@@ -803,52 +803,52 @@ export function HappyComposer(props: {
                             </div>
                         ) : null}
 
-                        <div className="mx-2 mb-2 rounded-[20px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-[16px] py-[8px] md:mx-3 md:mb-3">
-                        <div className="flex items-end gap-2 md:gap-3">
-                            <ComposerPrimitive.Input
-                                ref={textareaRef}
-                                autoFocus={!controlsDisabled && !isTouch && !isFullscreenOpen}
-                                placeholder={showContinueHint ? t('misc.typeMessage') : t('misc.typeAMessage')}
-                                disabled={controlsDisabled}
-                                maxRows={4}
-                                submitOnEnter={!isTouch}
-                                cancelOnEscape={false}
-                                onChange={handleChange}
-                                onSelect={handleSelect}
-                                onKeyDown={handleKeyDown}
-                                onPaste={handlePaste}
-                                className="flex-1 resize-none bg-transparent text-[14px] leading-6 text-[var(--app-fg)] placeholder-[var(--app-hint)] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:min-h-[84px]"
-                            />
-                        </div>
+                        <div className="mt-2 rounded-[20px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-4 py-2">
+                            <div className="flex items-end gap-2 md:gap-3">
+                                <ComposerPrimitive.Input
+                                    ref={textareaRef}
+                                    autoFocus={!controlsDisabled && !isTouch && !isFullscreenOpen}
+                                    placeholder={showContinueHint ? t('misc.typeMessage') : t('misc.typeAMessage')}
+                                    disabled={controlsDisabled}
+                                    maxRows={4}
+                                    submitOnEnter={!isTouch}
+                                    cancelOnEscape={false}
+                                    onChange={handleChange}
+                                    onSelect={handleSelect}
+                                    onKeyDown={handleKeyDown}
+                                    onPaste={handlePaste}
+                                    className="flex-1 resize-none bg-transparent py-1 text-[14px] leading-6 text-[var(--app-fg)] placeholder-[var(--app-hint)] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                />
+                            </div>
 
-                        <div className="px-0 py-2">
-                            <ComposerButtons
-                                canSend={canSend}
-                                controlsDisabled={controlsDisabled}
-                                showSettingsButton={showSettingsButton}
-                                onSettingsToggle={handleSettingsToggle}
-                                showTerminalButton={showTerminalButton}
-                                terminalDisabled={terminalDisabled}
-                                terminalLabel={terminalLabel}
-                                onTerminal={onTerminal ?? (() => {})}
-                                showExpandButton
-                                onExpand={handleExpandToggle}
-                                showAbortButton={showAbortButton}
-                                abortDisabled={abortDisabled}
-                                isAborting={isAborting}
-                                onAbort={handleAbort}
-                                showSwitchButton={showSwitchButton}
-                                switchDisabled={switchDisabled}
-                                isSwitching={isSwitching}
-                                onSwitch={handleSwitch}
-                                voiceEnabled={voiceEnabled}
-                                voiceStatus={voiceStatus}
-                                voiceMicMuted={voiceMicMuted}
-                                onVoiceToggle={onVoiceToggle ?? (() => {})}
-                                onVoiceMicToggle={onVoiceMicToggle}
-                                onSend={handleSend}
-                            />
-                        </div>
+                            <div className="px-0 py-2">
+                                <ComposerButtons
+                                    canSend={canSend}
+                                    controlsDisabled={controlsDisabled}
+                                    showSettingsButton={showSettingsButton}
+                                    onSettingsToggle={handleSettingsToggle}
+                                    showTerminalButton={showTerminalButton}
+                                    terminalDisabled={terminalDisabled}
+                                    terminalLabel={terminalLabel}
+                                    onTerminal={onTerminal ?? (() => {})}
+                                    showExpandButton
+                                    onExpand={handleExpandToggle}
+                                    showAbortButton={showAbortButton}
+                                    abortDisabled={abortDisabled}
+                                    isAborting={isAborting}
+                                    onAbort={handleAbort}
+                                    showSwitchButton={showSwitchButton}
+                                    switchDisabled={switchDisabled}
+                                    isSwitching={isSwitching}
+                                    onSwitch={handleSwitch}
+                                    voiceEnabled={voiceEnabled}
+                                    voiceStatus={voiceStatus}
+                                    voiceMicMuted={voiceMicMuted}
+                                    onVoiceToggle={onVoiceToggle ?? (() => {})}
+                                    onVoiceMicToggle={onVoiceMicToggle}
+                                    onSend={handleSend}
+                                />
+                            </div>
                         </div>
                     </div>
                 </ComposerPrimitive.Root>

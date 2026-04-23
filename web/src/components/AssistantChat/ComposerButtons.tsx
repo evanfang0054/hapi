@@ -347,7 +347,7 @@ export function ComposerButtons(props: {
     const isVoiceConnected = props.voiceStatus === 'connected'
 
     return (
-        <div className="flex items-center justify-between px-2 pb-2">
+        <div className="flex items-center justify-between pt-1">
             <div className="flex items-center gap-1">
                 <ComposerPrimitive.AddAttachment
                     aria-label={t('composer.attach')}

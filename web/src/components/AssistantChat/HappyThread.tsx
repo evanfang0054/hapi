@@ -20,7 +20,7 @@ function NewMessagesIndicator(props: { count: number; onClick: () => void }) {
     return (
         <button
             onClick={props.onClick}
-            className="fixed bottom-[140px] right-5 z-10 w-10 h-10 rounded-full bg-[var(--app-panel-elevated-bg)] border border-[var(--app-border)] shadow-[var(--app-shadow-sm)] flex items-center justify-center text-[var(--app-hint)] hover:text-[var(--app-fg)] transition-all"
+            className="fixed bottom-[84px] right-3 z-10 h-9 w-9 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] shadow-[var(--app-shadow-sm)] flex items-center justify-center text-[var(--app-hint)] transition-all hover:text-[var(--app-fg)] md:bottom-6 md:right-5 md:h-10 md:w-10"
             aria-label={t('misc.newMessage', { n: props.count })}
         >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -314,8 +314,8 @@ export function HappyThread(props: {
         }}>
             <ThreadPrimitive.Root className="relative flex min-h-0 flex-1 flex-col">
                 <ThreadPrimitive.Viewport asChild autoScroll={autoScrollEnabled}>
-                    <div ref={viewportRef} className="app-scroll-y min-h-0 flex-1 overflow-x-hidden bg-transparent">
-                        <div className="mx-auto flex w-full max-w-[960px] min-w-0 flex-col px-2.5 py-3 md:px-6 md:py-6">
+                    <div ref={viewportRef} className="app-scroll-y min-h-0 flex-1 overflow-x-hidden bg-[var(--app-panel-bg)]">
+                        <div className="flex w-full min-w-0 flex-col px-3 py-3 md:px-4 md:py-4">
                             <div ref={topSentinelRef} className="h-px w-full" aria-hidden="true" />
                             {showSkeleton ? (
                                 <MessageSkeleton />
@@ -359,7 +359,7 @@ export function HappyThread(props: {
                                     ) : null}
                                 </>
                             )}
-                            <div className="happy-thread-messages flex flex-col gap-3 md:gap-4">
+                            <div className="happy-thread-messages flex flex-col gap-4">
                                 <ThreadPrimitive.Messages components={THREAD_MESSAGE_COMPONENTS} />
                             </div>
                         </div>

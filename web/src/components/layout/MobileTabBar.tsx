@@ -74,7 +74,7 @@ export function MobileTabBar({ onNewSession, hidden }: MobileTabBarProps) {
     const activeSessionsCount = sessions.filter(s => s.active).length
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 z-90 bg-[var(--app-panel-bg)] border-t border-[var(--app-border)] flex items-center justify-around transition-all duration-300"
+        <nav className="fixed bottom-0 left-0 right-0 z-90 bg-[var(--app-panel-bg)] border-t border-[var(--app-border)] flex items-center justify-around transition-all duration-300 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] [html[data-theme=dark]_&]:shadow-[0_-4px_20px_rgba(0,0,0,0.3)]"
             style={{ padding: '8px 16px', paddingBottom: 'calc(8px + env(safe-area-inset-bottom))' }}
         >
             {/* Sessions */}
@@ -100,7 +100,7 @@ export function MobileTabBar({ onNewSession, hidden }: MobileTabBarProps) {
                         </span>
                     ) : null}
                 </span>
-                <span className="text-[10px] font-medium">
+                <span className={`text-[10px] ${isSessionsActive ? 'font-semibold' : 'font-medium'}`}>
                     {t('sessions.title')}
                 </span>
             </button>
@@ -121,7 +121,7 @@ export function MobileTabBar({ onNewSession, hidden }: MobileTabBarProps) {
                 }`}>
                     <MachineIcon />
                 </span>
-                <span className="text-[10px] font-medium">
+                <span className={`text-[10px] ${isMachinesActive ? 'font-semibold' : 'font-medium'}`}>
                     {t('machines.title')}
                 </span>
             </button>
@@ -130,7 +130,7 @@ export function MobileTabBar({ onNewSession, hidden }: MobileTabBarProps) {
             <button
                 type="button"
                 onClick={onNewSession}
-                className="relative -mt-6 w-14 h-14 max-[640px]:w-12 max-[640px]:h-12 rounded-full text-white border-none cursor-pointer flex items-center justify-center shadow-[0_4px_16px_rgba(201,100,66,0.35)] transition-all duration-200 hover:scale-[1.08] hover:shadow-[0_6px_24px_rgba(201,100,66,0.45)] active:scale-95"
+                className="relative -mt-6 w-14 h-14 max-[640px]:w-12 max-[640px]:h-12 max-[640px]:-mt-5 rounded-full text-white border-none cursor-pointer flex items-center justify-center shadow-[0_4px_16px_rgba(201,100,66,0.35)] transition-all duration-200 hover:scale-[1.08] hover:shadow-[0_6px_24px_rgba(201,100,66,0.45)] active:scale-95"
             style={{ background: 'linear-gradient(135deg, var(--app-link) 0%, #d97757 100%)' }}
             >
                 <PlusIcon />
@@ -152,7 +152,7 @@ export function MobileTabBar({ onNewSession, hidden }: MobileTabBarProps) {
                 }`}>
                     <HistoryIcon />
                 </span>
-                <span className="text-[10px] font-medium">
+                <span className={`text-[10px] ${isHistoryActive ? 'font-semibold' : 'font-medium'}`}>
                     {t('history.title')}
                 </span>
             </button>
@@ -173,7 +173,7 @@ export function MobileTabBar({ onNewSession, hidden }: MobileTabBarProps) {
                 }`}>
                     <SettingsIcon />
                 </span>
-                <span className="text-[10px] font-medium">
+                <span className={`text-[10px] ${isSettingsActive ? 'font-semibold' : 'font-medium'}`}>
                     {t('settings.title')}
                 </span>
             </button>

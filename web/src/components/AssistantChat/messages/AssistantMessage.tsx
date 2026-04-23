@@ -55,7 +55,7 @@ export function HappyAssistantMessage() {
     if (isCliOutput) {
         return (
             <MessagePrimitive.Root className="mr-auto min-w-0 max-w-full overflow-x-hidden animate-msg-in">
-                <div className="w-full max-w-[min(82ch,100%)] rounded-[20px] rounded-bl-[6px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-[18px] py-[14px]">
+                <div className="w-full rounded-[20px] rounded-bl-[6px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-[18px] py-[14px]">
                     <CliOutputBlock text={cliText} />
                 </div>
             </MessagePrimitive.Root>
@@ -64,7 +64,7 @@ export function HappyAssistantMessage() {
 
     return (
         <MessagePrimitive.Root className={`${rootClass} group/msg`}>
-            <div className="w-full max-w-[min(82ch,100%)] rounded-[20px] rounded-bl-[6px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-[18px] py-[14px]">
+            <div className="w-full rounded-[20px] rounded-bl-[6px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-[18px] py-[14px]">
                 <MessagePrimitive.Content components={MESSAGE_PART_COMPONENTS} />
             </div>
             <div className="mt-1 flex items-center gap-2 opacity-0 transition-opacity group-hover/msg:opacity-100">

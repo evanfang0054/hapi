@@ -128,13 +128,15 @@ export function SessionHeader(props: {
         return null
     }
 
+    const iconButtonClass = 'h-9 w-9 rounded-[10px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] p-0 text-[var(--app-hint)] shadow-[var(--app-shadow-sm)] transition-all hover:-translate-y-px hover:text-[var(--app-fg)] hover:shadow-[var(--app-shadow-md)] active:translate-y-0 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--app-panel-bg)]'
+
     return (
         <>
             <div className="flex items-center gap-3 border-b border-[var(--app-border)] bg-[var(--app-panel-bg)] px-4 py-3 pt-[calc(12px+env(safe-area-inset-top))]">
                 <button
                     type="button"
                     onClick={props.onBack}
-                    className="w-9 h-9 rounded-[10px] flex items-center justify-center text-[var(--app-fg)] hover:bg-[var(--app-subtle-bg)] transition-colors"
+                    className={`${iconButtonClass} flex items-center justify-center text-[var(--app-fg)]`}
                     aria-label="Back"
                 >
                     <svg
@@ -159,7 +161,7 @@ export function SessionHeader(props: {
                             {title}
                         </div>
                     </div>
-                    <div className="mt-1 flex flex-wrap items-center gap-1 text-[11px] text-[var(--app-hint)] font-mono">
+                    <div className="mt-0.5 flex min-w-0 items-center gap-1 overflow-hidden whitespace-nowrap text-[11px] text-[var(--app-hint)] font-mono">
                         {session.thinking ? (
                             <>
                                 <span className="shrink-0 text-[var(--app-link)] animate-pulse">{t('session.header.thinking')}</span>
@@ -179,14 +181,14 @@ export function SessionHeader(props: {
                         <span className="shrink-0">{session.metadata?.flavor?.trim() || 'unknown'}</span>
                         {modelLabel ? (
                             <>
-                                <span className="shrink-0">·</span>
-                                <span className="shrink-0">{t(modelLabel.key)}: {modelLabel.value}</span>
+                                <span className="hidden shrink-0 sm:inline">·</span>
+                                <span className="hidden shrink-0 sm:inline">{t(modelLabel.key)}: {modelLabel.value}</span>
                             </>
                         ) : null}
                         {worktreeBranch ? (
                             <>
                                 <span className="shrink-0">·</span>
-                                <span className="shrink-0">{t('session.item.worktree')}: {worktreeBranch}</span>
+                                <span className="min-w-0 flex-1 truncate">{t('session.item.worktree')}: {worktreeBranch}</span>
                             </>
                         ) : null}
                     </div>
@@ -199,7 +201,7 @@ export function SessionHeader(props: {
                             variant="secondary"
                             size="sm"
                             onClick={props.onViewFiles}
-                            className="w-9 h-9 rounded-[10px] p-0 text-[var(--app-hint)] hover:text-[var(--app-fg)]"
+                            className={iconButtonClass}
                             title={t('session.title')}
                         >
                             <FilesIcon className="w-[18px] h-[18px]" />
@@ -212,7 +214,7 @@ export function SessionHeader(props: {
                             variant="secondary"
                             size="sm"
                             onClick={props.onViewTerminal}
-                            className="w-9 h-9 rounded-[10px] p-0 text-[var(--app-hint)] hover:text-[var(--app-fg)]"
+                            className={iconButtonClass}
                             title={t('composer.terminal')}
                         >
                             <HeaderTerminalIcon className="w-[18px] h-[18px]" />
@@ -229,7 +231,7 @@ export function SessionHeader(props: {
                         aria-haspopup="menu"
                         aria-expanded={menuOpen}
                         aria-controls={menuOpen ? menuId : undefined}
-                        className="w-9 h-9 rounded-[10px] p-0 text-[var(--app-hint)] hover:text-[var(--app-fg)]"
+                        className={iconButtonClass}
                         title={t('session.more')}
                     >
                         <MoreVerticalIcon className="w-[18px] h-[18px]" />
@@ -265,7 +267,7 @@ export function SessionHeader(props: {
                 confirmingLabel={t('dialog.archive.confirming')}
                 onConfirm={archiveSession}
                 isPending={isPending}
-                destructive
+                accent="archive"
             />
 
             <ConfirmDialog

@@ -53,7 +53,7 @@ export function HappyUserMessage() {
     if (isCliOutput) {
         return (
             <MessagePrimitive.Root className="ml-auto min-w-0 max-w-full overflow-x-hidden animate-msg-in">
-                <div className="ml-auto w-full max-w-[min(78ch,85%)]">
+                <div className="ml-auto w-full">
                     <CliOutputBlock text={cliText} />
                 </div>
             </MessagePrimitive.Root>
@@ -64,8 +64,8 @@ export function HappyUserMessage() {
     const hasAttachments = attachments && attachments.length > 0
 
     return (
-        <MessagePrimitive.Root className="ml-auto w-fit min-w-0 max-w-[min(78ch,85%)] group/msg animate-msg-in">
-            <div className="ml-auto w-fit min-w-0 max-w-[min(78ch,85%)] rounded-[20px] rounded-br-[6px] bg-[var(--app-link)] px-[18px] py-[14px] text-white">
+        <MessagePrimitive.Root className="ml-auto w-fit min-w-0 group/msg animate-msg-in">
+            <div className="ml-auto w-fit min-w-0 rounded-[20px] rounded-br-[6px] bg-[var(--app-link)] px-[18px] py-[14px] text-white">
                 <div className="flex items-end gap-2">
                     <div className="flex-1 min-w-0">
                         {hasText && <LazyRainbowText text={text} />}

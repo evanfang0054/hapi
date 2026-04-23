@@ -16,7 +16,6 @@ type SessionActionMenuProps = {
     onRename: () => void
     onArchive: () => void
     onDelete: () => void
-    onDuplicate?: () => void
     onSelectMultiple?: () => void
     anchorPoint: { x: number; y: number }
     menuId?: string
@@ -26,8 +25,8 @@ function EditIcon(props: { className?: string }) {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="18"
+            width="16"
+            height="16"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -46,8 +45,8 @@ function ArchiveIcon(props: { className?: string }) {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="18"
+            width="16"
+            height="16"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -67,8 +66,8 @@ function TrashIcon(props: { className?: string }) {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="18"
+            width="16"
+            height="16"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -86,32 +85,12 @@ function TrashIcon(props: { className?: string }) {
     )
 }
 
-function DuplicateIcon(props: { className?: string }) {
-    return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={props.className}
-        >
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-        </svg>
-    )
-}
-
 function SelectMultipleIcon(props: { className?: string }) {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="18"
+            width="16"
+            height="16"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -141,7 +120,6 @@ export function SessionActionMenu(props: SessionActionMenuProps) {
         onRename,
         onArchive,
         onDelete,
-        onDuplicate,
         onSelectMultiple,
         anchorPoint,
         menuId
@@ -165,11 +143,6 @@ export function SessionActionMenu(props: SessionActionMenuProps) {
     const handleDelete = () => {
         onClose()
         onDelete()
-    }
-
-    const handleDuplicate = () => {
-        onClose()
-        onDuplicate?.()
     }
 
     const handleSelectMultiple = () => {
@@ -263,12 +236,12 @@ export function SessionActionMenu(props: SessionActionMenuProps) {
         : undefined
 
     const baseItemClassName =
-        'flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-base transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-link)]'
+        'flex w-full items-center gap-2.5 rounded-[8px] px-3 py-2.5 text-left text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-link)]'
 
     return (
         <div
             ref={menuRef}
-            className="fixed z-100 min-w-[200px] rounded-lg border border-[var(--app-border)] bg-[var(--app-bg)] p-1 shadow-lg animate-menu-pop"
+            className="fixed z-100 min-w-[180px] rounded-[12px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] p-1.5 shadow-[var(--app-shadow-md)] animate-menu-pop"
             style={menuStyle}
         >
             <div
@@ -315,30 +288,21 @@ export function SessionActionMenu(props: SessionActionMenuProps) {
                     </button>
                 )}
 
-                <button
-                    type="button"
-                    role="menuitem"
-                    className={`${baseItemClassName} hover:bg-[var(--app-subtle-bg)]`}
-                    onClick={() => {
-                        // TODO: implement session duplication
-                        onClose?.()
-                    }}
-                >
-                    <DuplicateIcon className="text-[var(--app-hint)]" />
-                    {t('session.action.duplicate')}
-                </button>
+                {onSelectMultiple ? (
+                    <>
+                        <div className="my-1 h-px bg-[var(--app-border)]" />
 
-                <div className="my-1 h-px bg-[var(--app-border)]" />
-
-                <button
-                    type="button"
-                    role="menuitem"
-                    className={`${baseItemClassName} hover:bg-[var(--app-subtle-bg)]`}
-                    onClick={handleSelectMultiple}
-                >
-                    <SelectMultipleIcon className="text-[var(--app-hint)]" />
-                    {t('session.action.selectMultiple')}
-                </button>
+                        <button
+                            type="button"
+                            role="menuitem"
+                            className={`${baseItemClassName} hover:bg-[var(--app-subtle-bg)]`}
+                            onClick={handleSelectMultiple}
+                        >
+                            <SelectMultipleIcon className="text-[var(--app-hint)]" />
+                            {t('session.action.selectMultiple')}
+                        </button>
+                    </>
+                ) : null}
             </div>
         </div>
     )
