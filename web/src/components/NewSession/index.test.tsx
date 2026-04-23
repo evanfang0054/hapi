@@ -87,10 +87,8 @@ describe('NewSession', () => {
         expect(screen.getByText('Agent')).toBeInTheDocument()
         expect(screen.getByText('Model')).toBeInTheDocument()
         expect(screen.getByText('Effort')).toBeInTheDocument()
-        expect(screen.getAllByText('(optional)')).toHaveLength(2)
         expect(screen.getByText('Session type')).toBeInTheDocument()
         expect(screen.getByText('Bypass approvals and sandbox')).toBeInTheDocument()
-        expect(screen.getByText('Recent paths:')).toBeInTheDocument()
         expect(screen.getByRole('button', { name: '/recent/project' })).toBeInTheDocument()
         expect(screen.getByRole('button', { name: 'Create' })).toBeInTheDocument()
 

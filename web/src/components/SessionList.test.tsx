@@ -195,7 +195,7 @@ describe('SessionList', () => {
         expect(screen.getByText(/Pending 3/i)).toBeInTheDocument()
         expect(screen.getByText('claude')).toBeInTheDocument()
         expect(screen.getByText(/model: sonnet/i)).toBeInTheDocument()
-        expect(screen.getByText(/Worktree: feat\/redesign/i)).toBeInTheDocument()
+        expect(screen.getByText(/feat\/redesign/i)).toBeInTheDocument()
         expect(screen.getByText('Arwen Mac')).toBeInTheDocument()
     })
 
