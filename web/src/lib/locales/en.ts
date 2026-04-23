@@ -104,6 +104,7 @@ export default {
   'button.dismiss': 'Dismiss',
   'button.copy': 'Copy',
   'assistant.copy': 'Copy assistant message',
+  'assistant.thinking': 'Thinking…',
   'button.paste': 'Paste',
 
   // New session form

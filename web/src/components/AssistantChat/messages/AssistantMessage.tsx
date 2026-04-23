@@ -48,6 +48,13 @@ export function HappyAssistantMessage() {
             .join('\n\n')
     })
     const createdAt = useAssistantState(({ message }) => message.createdAt)
+    const isRunning = useAssistantState(({ thread }) => thread.isRunning)
+    const isLastAssistant = useAssistantState(({ thread, message }) => {
+        const messages = thread.messages
+        const lastMsg = messages[messages.length - 1]
+        return lastMsg?.id === message.id && message.role === 'assistant'
+    })
+    const showThinking = isRunning && isLastAssistant
     const rootClass = toolOnly
         ? 'py-1 min-w-0 max-w-full overflow-x-hidden animate-msg-in'
         : 'mr-auto min-w-0 max-w-full overflow-x-hidden animate-msg-in'
@@ -66,6 +73,16 @@ export function HappyAssistantMessage() {
         <MessagePrimitive.Root className={`${rootClass} group/msg`}>
             <div className="w-full rounded-[20px] rounded-bl-[6px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-[18px] py-[14px]">
                 <MessagePrimitive.Content components={MESSAGE_PART_COMPONENTS} />
+                {showThinking && (
+                    <div className="flex items-center gap-2 mt-1">
+                        <div className="flex items-center gap-1">
+                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--app-focus)] animate-[dot-bounce_1.4s_ease-in-out_infinite]" />
+                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--app-focus)] animate-[dot-bounce_1.4s_ease-in-out_0.2s_infinite]" />
+                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--app-focus)] animate-[dot-bounce_1.4s_ease-in-out_0.4s_infinite]" />
+                        </div>
+                        <span className="text-[13px] text-[var(--app-hint)]">{t('assistant.thinking')}</span>
+                    </div>
+                )}
             </div>
             <div className="mt-1 flex items-center gap-2 opacity-0 transition-opacity group-hover/msg:opacity-100">
                 {createdAt ? (
