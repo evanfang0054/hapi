@@ -7,12 +7,12 @@ import '@xterm/xterm/css/xterm.css'
 import { ensureBuiltinFontLoaded, getFontProvider } from '@/lib/terminalFont'
 import { getInitialTerminalFontSize, type TerminalFontSize } from '@/hooks/useTerminalFontSize'
 
-function resolveThemeColors(): { background: string; foreground: string; selectionBackground: string } {
-    const styles = getComputedStyle(document.documentElement)
+function resolveThemeColors(): { background: string; foreground: string; cursor: string; selectionBackground: string } {
     const background = '#1a1a1a'
-    const foreground = styles.getPropertyValue('--app-fg').trim() || '#ffffff'
-    const selectionBackground = styles.getPropertyValue('--app-subtle-bg').trim() || 'rgba(255, 255, 255, 0.2)'
-    return { background, foreground, selectionBackground }
+    const foreground = '#e0e0e0'
+    const cursor = '#e0e0e0'
+    const selectionBackground = 'rgba(255, 255, 255, 0.2)'
+    return { background, foreground, cursor, selectionBackground }
 }
 
 export function TerminalView(props: {
@@ -43,7 +43,7 @@ export function TerminalView(props: {
 
         const fontProvider = getFontProvider()
         const fontSize = props.fontSize ?? getInitialTerminalFontSize()
-        const { background, foreground, selectionBackground } = resolveThemeColors()
+        const { background, foreground, cursor, selectionBackground } = resolveThemeColors()
         const terminal = new Terminal({
             cursorBlink: true,
             fontFamily: fontProvider.getFontFamily(),
@@ -51,7 +51,7 @@ export function TerminalView(props: {
             theme: {
                 background,
                 foreground,
-                cursor: foreground,
+                cursor,
                 selectionBackground
             },
             convertEol: true,
