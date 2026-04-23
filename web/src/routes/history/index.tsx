@@ -4,6 +4,7 @@ import { useAppContext } from '@/lib/app-context'
 import { useSessions } from '@/hooks/queries/useSessions'
 import { useSessionActions } from '@/hooks/mutations/useSessionActions'
 import { useTranslation } from '@/lib/use-translation'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 
 type FilterMode = 'all' | 'archived' | 'unarchived'
 
@@ -106,11 +107,23 @@ function HistorySessionItem({ session, api, onOpen, searchInput }: {
         setActionsOpen(false)
     }, [])
 
-    const confirmAndAct = useCallback((message: string, action: () => Promise<void>) => {
-        if (window.confirm(message)) {
-            handleAction(action)
-        }
-    }, [handleAction])
+    const [confirmDialog, setConfirmDialog] = useState<{
+        isOpen: boolean
+        type: 'archive' | 'delete' | 'permanentDelete'
+        action: () => Promise<void>
+    }>({ isOpen: false, type: 'delete', action: async () => {} })
+
+    const [isConfirmPending, setIsConfirmPending] = useState(false)
+
+    const handleConfirm = useCallback(async () => {
+        setIsConfirmPending(true)
+        try {
+            await confirmDialog.action()
+        } catch {}
+        setIsConfirmPending(false)
+        setConfirmDialog(prev => ({ ...prev, isOpen: false }))
+        setActionsOpen(false)
+    }, [confirmDialog.action])
 
     const status: 'normal' | 'archived' | 'deleted' = session.deleted ? 'deleted' : session.archived ? 'archived' : 'normal'
     const secondaryMeta = session.model ?? session.agent
@@ -194,7 +207,11 @@ function HistorySessionItem({ session, api, onOpen, searchInput }: {
                                 type="button"
                                 onClick={(e) => {
                                     e.stopPropagation()
-                                    confirmAndAct(`Archive "${session.name}"?`, archiveSession)
+                                    setConfirmDialog({
+                                        isOpen: true,
+                                        type: 'archive',
+                                        action: archiveSession
+                                    })
                                 }}
                                 className="flex items-center gap-1 rounded-[16px] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] px-3 py-1.5 text-[12px] text-[var(--app-hint)] transition-colors hover:bg-[var(--app-panel-muted-bg)] hover:text-[var(--app-fg)] active:scale-95"
                             >
@@ -218,7 +235,11 @@ function HistorySessionItem({ session, api, onOpen, searchInput }: {
                                 type="button"
                                 onClick={(e) => {
                                     e.stopPropagation()
-                                    confirmAndAct(`Delete "${session.name}"? This action cannot be undone.`, deleteSession)
+                                    setConfirmDialog({
+                                        isOpen: true,
+                                        type: 'delete',
+                                        action: deleteSession
+                                    })
                                 }}
                                 className="flex items-center gap-1 rounded-[16px] border border-[rgba(181,51,51,0.3)] bg-transparent px-3 py-1.5 text-[12px] text-[var(--app-error)] transition-colors hover:bg-[rgba(181,51,51,0.08)] active:scale-95"
                             >
@@ -242,7 +263,11 @@ function HistorySessionItem({ session, api, onOpen, searchInput }: {
                                 type="button"
                                 onClick={(e) => {
                                     e.stopPropagation()
-                                    confirmAndAct(`Permanently delete "${session.name}"? This action cannot be undone.`, deleteSession)
+                                    setConfirmDialog({
+                                        isOpen: true,
+                                        type: 'permanentDelete',
+                                        action: deleteSession
+                                    })
                                 }}
                                 className="flex items-center gap-1 rounded-[16px] border border-[rgba(181,51,51,0.3)] bg-transparent px-3 py-1.5 text-[12px] text-[var(--app-error)] transition-colors hover:bg-[rgba(181,51,51,0.08)] active:scale-95"
                             >
@@ -253,6 +278,27 @@ function HistorySessionItem({ session, api, onOpen, searchInput }: {
                     )}
                 </div>
             )}
+
+            <ConfirmDialog
+                isOpen={confirmDialog.isOpen}
+                onClose={() => setConfirmDialog(prev => ({ ...prev, isOpen: false }))}
+                title={confirmDialog.type === 'archive'
+                    ? `Archive "${session.name}"?`
+                    : confirmDialog.type === 'permanentDelete'
+                        ? `Permanently delete "${session.name}"?`
+                        : `Delete "${session.name}"?`
+                }
+                description={confirmDialog.type === 'archive'
+                    ? 'This session will be moved to archive.'
+                    : 'This action cannot be undone.'
+                }
+                confirmLabel={confirmDialog.type === 'archive' ? 'Archive' : 'Delete'}
+                confirmingLabel={confirmDialog.type === 'archive' ? 'Archiving...' : 'Deleting...'}
+                onConfirm={handleConfirm}
+                isPending={isConfirmPending}
+                destructive={confirmDialog.type !== 'archive'}
+                accent={confirmDialog.type === 'archive' ? 'archive' : 'default'}
+            />
         </div>
     )
 }
