@@ -303,7 +303,7 @@ function SessionItem(props: {
                 </div>
                 {s.metadata?.worktree?.branch ? (
                     <span className="font-mono text-[11px] text-[var(--app-hint)]">
-                        <span className="mr-1">⎇</span>{s.metadata.worktree.branch}
+                        <span className="mr-1 text-[var(--app-badge-success-text)]">⎇</span>{s.metadata.worktree.branch}
                     </span>
                 ) : null}
                 {modelLabel ? (
@@ -311,7 +311,7 @@ function SessionItem(props: {
                 ) : null}
             </div>
             <div className="flex flex-col items-end gap-2">
-                <span className="shrink-0 font-mono text-[11px] text-[var(--app-hint)]">
+                <span className="shrink-0 rounded-full bg-[var(--app-subtle-bg)] px-2.5 py-1 font-mono text-[11px] text-[var(--app-hint)]">
                     {formatRelativeTime(s.updatedAt, t)}
                 </span>
                 <span className="font-mono text-[11px] text-[var(--app-hint)]">

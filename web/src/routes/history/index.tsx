@@ -188,7 +188,7 @@ function HistorySessionItem({ session, api, onOpen, searchInput }: {
                                     onClick={() => confirmAndAct(`Archive "${session.name}"?`, archiveSession)}
                                     className="flex items-center gap-1 px-3 py-1.5 rounded-[16px] text-[12px] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] hover:bg-[var(--app-panel-muted-bg)] transition-colors active:scale-95"
                                 >
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
                                     {t('history.archive')}
                                 </button>
                             </>
@@ -200,7 +200,7 @@ function HistorySessionItem({ session, api, onOpen, searchInput }: {
                                     onClick={() => { /* TODO: implement restoreSession mutation */ }}
                                     className="flex items-center gap-1 px-3 py-1.5 rounded-[16px] text-[12px] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] hover:bg-[var(--app-panel-muted-bg)] transition-colors active:scale-95"
                                 >
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
                                     {t('history.restore')}
                                 </button>
                                 <button
@@ -208,7 +208,7 @@ function HistorySessionItem({ session, api, onOpen, searchInput }: {
                                     onClick={() => confirmAndAct(`Delete "${session.name}"? This action cannot be undone.`, deleteSession)}
                                     className="flex items-center gap-1 px-3 py-1.5 rounded-[16px] text-[12px] border border-[rgba(181,51,51,0.3)] bg-transparent text-[var(--app-error)] hover:bg-[rgba(181,51,51,0.08)] transition-colors active:scale-95"
                                 >
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                                     {t('history.delete')}
                                 </button>
                             </>
@@ -220,7 +220,7 @@ function HistorySessionItem({ session, api, onOpen, searchInput }: {
                                     onClick={() => { /* TODO: implement restoreSession mutation */ }}
                                     className="flex items-center gap-1 px-3 py-1.5 rounded-[16px] text-[12px] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] hover:bg-[var(--app-panel-muted-bg)] transition-colors active:scale-95"
                                 >
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
                                     {t('history.restore')}
                                 </button>
                                 <button
@@ -228,7 +228,7 @@ function HistorySessionItem({ session, api, onOpen, searchInput }: {
                                     onClick={() => confirmAndAct(`Permanently delete "${session.name}"? This action cannot be undone.`, deleteSession)}
                                     className="flex items-center gap-1 px-3 py-1.5 rounded-[16px] text-[12px] border border-[rgba(181,51,51,0.3)] bg-transparent text-[var(--app-error)] hover:bg-[rgba(181,51,51,0.08)] transition-colors active:scale-95"
                                 >
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                                     {t('history.permanentDelete')}
                                 </button>
                             </>
@@ -329,13 +329,13 @@ export default function HistoryPage() {
                         value={searchInput}
                         onChange={(e) => setSearchInput(e.target.value)}
                         placeholder={t('history.search')}
-                        className="w-full pl-10 pr-4 py-2.5 rounded-[12px] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] text-[var(--app-fg)] placeholder:text-[var(--app-hint)] focus:outline-none focus:border-[var(--app-link)] transition-colors"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-[12px] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] text-[14px] text-[var(--app-fg)] placeholder:text-[var(--app-hint)] focus:outline-none focus:border-[var(--app-link)] transition-colors"
                     />
                 </div>
                 <button
                     type="button"
                     onClick={() => setFilterOpen(!filterOpen)}
-                    className={`flex items-center justify-center w-11 h-11 rounded-[12px] border transition-colors ${filterOpen ? 'border-[var(--app-link)] text-[var(--app-link)]' : 'border-[var(--app-border)] text-[var(--app-hint)] hover:bg-[var(--app-subtle-bg)]'}`}
+                    className={`flex items-center justify-center w-11 h-11 rounded-[12px] border transition-colors bg-[var(--app-panel-elevated-bg)] ${filterOpen ? 'border-[var(--app-link)] text-[var(--app-link)]' : 'border-[var(--app-border)] text-[var(--app-hint)] hover:bg-[var(--app-subtle-bg)]'}`}
                 >
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
                         <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />

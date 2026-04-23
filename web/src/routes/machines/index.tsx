@@ -64,7 +64,7 @@ function MachineDrawer({
                     <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--app-hint)] mb-3">
                         {t('machines.drawer.info')}
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 max-[640px]:grid-cols-1 gap-3">
                         <div className="rounded-[12px] bg-[var(--app-subtle-bg)] p-3">
                             <div className="text-[11px] text-[var(--app-hint)] uppercase tracking-[0.05em]">{t('machines.drawer.host')}</div>
                             <div className="font-mono text-[13px] mt-1 break-all text-[var(--app-fg)]">{host}</div>
@@ -119,20 +119,20 @@ function MachineCard({ machine, onClick }: { machine: Machine; onClick: () => vo
 
     return (
         <div
-            className="border border-[var(--app-border)] rounded-[var(--app-radius-2xl)] bg-[var(--app-panel-bg)] p-4 cursor-pointer hover:border-[var(--app-link)] hover:shadow-[var(--app-shadow-sm)] transition-all"
+            className="border border-[var(--app-border)] rounded-[var(--app-radius-2xl)] bg-[var(--app-panel-bg)] p-4 max-[640px]:p-3.5 cursor-pointer hover:border-[var(--app-link)] hover:shadow-[var(--app-shadow-sm)] transition-all"
             onClick={onClick}
         >
             {/* Header: Icon + Name + Status */}
             <div className="flex items-start gap-3.5">
-                <div className={`w-11 h-11 rounded-[12px] flex items-center justify-center shrink-0 ${isActive ? 'bg-[rgba(95,138,99,0.12)] [html[data-theme=dark]_&]:bg-[rgba(138,176,141,0.15)]' : 'bg-[var(--app-subtle-bg)]'}`}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke={isActive ? 'var(--app-git-staged-color)' : 'var(--app-hint)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[22px] h-[22px]">
+                <div className={`w-11 h-11 max-[640px]:w-10 max-[640px]:h-10 rounded-[12px] flex items-center justify-center shrink-0 ${isActive ? 'bg-[rgba(95,138,99,0.12)] [html[data-theme=dark]_&]:bg-[rgba(138,176,141,0.15)]' : 'bg-[var(--app-subtle-bg)]'}`}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke={isActive ? 'var(--app-git-staged-color)' : 'var(--app-hint)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[22px] h-[22px] max-[640px]:w-5 max-[640px]:h-5">
                         <rect x="2" y="3" width="20" height="14" rx="2" />
                         <line x1="8" y1="21" x2="16" y2="21" />
                         <line x1="12" y1="17" x2="12" y2="21" />
                     </svg>
                 </div>
                 <div className="flex-1 min-w-0">
-                    <div className="text-[16px] font-semibold text-[var(--app-fg)] flex items-center gap-2">
+                    <div className="text-[16px] max-[640px]:text-[15px] font-semibold text-[var(--app-fg)] flex items-center gap-2">
                         <span className="truncate">{title}</span>
                         <span className={`w-2 h-2 rounded-full shrink-0 ${isActive ? 'bg-[var(--app-git-staged-color)] shadow-[0_0_6px_var(--app-git-staged-color)]' : 'bg-[var(--app-hint)]'}`} />
                     </div>
@@ -213,9 +213,9 @@ export default function MachinesPage() {
         <>
             <div className="flex h-full min-h-0 flex-col bg-[var(--app-bg)]">
                 {/* Sticky header */}
-                <div className="sticky top-0 z-10 bg-[var(--app-panel-bg)] border-b border-[var(--app-border)] px-5 py-4 flex items-center justify-between">
+                <div className="sticky top-0 z-10 bg-[var(--app-panel-bg)] border-b border-[var(--app-border)] px-5 py-4 max-[640px]:px-4 max-[640px]:py-3 flex items-center justify-between">
                     <div>
-                        <h1 className="text-[20px] font-medium text-[var(--app-fg)]" style={{ fontFamily: 'var(--app-font-serif)' }}>
+                        <h1 className="text-[20px] max-[640px]:text-[18px] font-medium text-[var(--app-fg)]" style={{ fontFamily: 'var(--app-font-serif)' }}>
                             {t('machines.title')}
                         </h1>
                         {machines.length > 0 && (
@@ -239,20 +239,20 @@ export default function MachinesPage() {
 
                 {/* Content */}
                 <div className="app-scroll-y flex-1 min-h-0">
-                    <div className="mx-auto w-full max-w-[600px] px-4 py-5 space-y-3">
+                    <div className="mx-auto w-full max-w-[600px] px-4 py-5 max-[640px]:py-4 space-y-3">
                         {/* Stats row - only show when machines data is loaded */}
                         {machines.length > 0 && (
                             <div className="grid grid-cols-3 gap-3 mb-6">
-                                <div className="bg-[var(--app-panel-bg)] border border-[var(--app-border)] rounded-[16px] p-4 text-center">
-                                    <div className="text-[28px] font-mono font-semibold text-[var(--app-git-staged-color)]">{onlineCount}</div>
+                                <div className="bg-[var(--app-panel-bg)] border border-[var(--app-border)] rounded-[16px] p-4 max-[640px]:p-3 text-center">
+                                    <div className="text-[28px] max-[640px]:text-[24px] font-mono font-semibold text-[var(--app-git-staged-color)]">{onlineCount}</div>
                                     <div className="text-[11px] text-[var(--app-hint)] uppercase tracking-[0.05em] mt-1">{t('machines.stats.online')}</div>
                                 </div>
-                                <div className="bg-[var(--app-panel-bg)] border border-[var(--app-border)] rounded-[16px] p-4 text-center">
-                                    <div className="text-[28px] font-mono font-semibold text-[var(--app-hint)]">{offlineCount}</div>
+                                <div className="bg-[var(--app-panel-bg)] border border-[var(--app-border)] rounded-[16px] p-4 max-[640px]:p-3 text-center">
+                                    <div className="text-[28px] max-[640px]:text-[24px] font-mono font-semibold text-[var(--app-hint)]">{offlineCount}</div>
                                     <div className="text-[11px] text-[var(--app-hint)] uppercase tracking-[0.05em] mt-1">{t('machines.stats.offline')}</div>
                                 </div>
-                                <div className="bg-[var(--app-panel-bg)] border border-[var(--app-border)] rounded-[16px] p-4 text-center">
-                                    <div className="text-[28px] font-mono font-semibold text-[var(--app-fg)]">{machines.length}</div>
+                                <div className="bg-[var(--app-panel-bg)] border border-[var(--app-border)] rounded-[16px] p-4 max-[640px]:p-3 text-center">
+                                    <div className="text-[28px] max-[640px]:text-[24px] font-mono font-semibold text-[var(--app-fg)]">{machines.length}</div>
                                     <div className="text-[11px] text-[var(--app-hint)] uppercase tracking-[0.05em] mt-1">{t('machines.stats.total')}</div>
                                 </div>
                             </div>
