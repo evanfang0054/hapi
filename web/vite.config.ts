@@ -37,6 +37,7 @@ export default defineConfig({
         __APP_VERSION__: JSON.stringify(require('../cli/package.json').version),
     },
     server: {
+        port: 5170,
         host: true,
         allowedHosts: ['hapidev.weishu.me'],
         proxy: {
