@@ -242,7 +242,7 @@ describe('SessionList', () => {
 
         await triggerLongPress(inactiveSession.metadata.name)
 
-        expect(screen.getByRole('button', { name: /^delete$/i })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: /^Delete \(1\)$/i })).toBeInTheDocument()
         expect(screen.getByRole('checkbox', { name: inactiveSession.metadata.name })).toHaveAttribute('aria-checked', 'true')
     })
 
@@ -257,11 +257,10 @@ describe('SessionList', () => {
 
         await triggerLongPress(activeSession.metadata.name)
 
-        expect(screen.getByRole('button', { name: /^delete$/i })).toBeDisabled()
-        expect(screen.getByRole('checkbox', { name: activeSession.metadata.name })).toHaveAttribute('aria-checked', 'false')
+        expect(screen.getByRole('checkbox', { name: activeSession.metadata.name })).toHaveAttribute('aria-checked', 'true')
     })
 
-    it('does not allow selecting active sessions in selection mode', async () => {
+    it('allows selecting active sessions in selection mode', async () => {
         renderWithProviders(
             <SessionList
                 {...baseProps}
@@ -273,7 +272,7 @@ describe('SessionList', () => {
         await triggerLongPress(inactiveSession.metadata.name)
         fireEvent.click(screen.getByRole('checkbox', { name: activeSession.metadata.name }))
 
-        expect(screen.getByRole('checkbox', { name: activeSession.metadata.name })).toHaveAttribute('aria-checked', 'false')
+        expect(screen.getByRole('checkbox', { name: activeSession.metadata.name })).toHaveAttribute('aria-checked', 'true')
     })
 
     it('prunes removed selected sessions when sessions change', async () => {
@@ -286,7 +285,7 @@ describe('SessionList', () => {
         )
 
         await triggerLongPress(inactiveSession.metadata.name)
-        expect(screen.getByRole('button', { name: /^delete$/i })).toBeEnabled()
+        expect(screen.getByRole('button', { name: /^Delete \(1\)$/i })).toBeEnabled()
 
         view.rerender(
             <I18nProvider>
@@ -299,22 +298,28 @@ describe('SessionList', () => {
         )
 
         expect(screen.queryByRole('checkbox', { name: inactiveSession.metadata.name })).not.toBeInTheDocument()
-        expect(screen.queryByRole('button', { name: /^delete$/i })).not.toBeInTheDocument()
+        expect(screen.queryByRole('button', { name: /Delete/i })).not.toBeInTheDocument()
     })
 
     it('clears selection state when selection mode is cancelled', async () => {
-        renderWithProviders(
-            <SessionList
-                {...baseProps}
-                sessions={[inactiveSession]}
-                selectedSessionId={inactiveSession.id}
-            />
-        )
+        vi.useFakeTimers()
+        try {
+            renderWithProviders(
+                <SessionList
+                    {...baseProps}
+                    sessions={[inactiveSession]}
+                    selectedSessionId={inactiveSession.id}
+                />
+            )
 
-        await triggerLongPress(inactiveSession.metadata.name)
-        fireEvent.click(screen.getByRole('button', { name: /^cancel$/i }))
+            await triggerLongPress(inactiveSession.metadata.name)
+            fireEvent.click(screen.getByRole('button', { name: /^cancel$/i }))
+            await act(async () => { vi.advanceTimersByTime(250) })
 
-        expect(screen.queryByRole('checkbox', { name: inactiveSession.metadata.name })).not.toBeInTheDocument()
+            expect(screen.queryByRole('checkbox', { name: inactiveSession.metadata.name })).not.toBeInTheDocument()
+        } finally {
+            vi.useRealTimers()
+        }
     })
 
     it('shows bulk delete confirmation with selected count', async () => {
@@ -328,7 +333,7 @@ describe('SessionList', () => {
 
         await triggerLongPress(inactiveSession.metadata.name)
         fireEvent.click(screen.getByRole('checkbox', { name: inactiveSessionB.metadata.name }))
-        fireEvent.click(screen.getByRole('button', { name: /^delete$/i }))
+        fireEvent.click(screen.getByRole('button', { name: /^Delete \(2\)$/i }))
 
         expect(screen.getByText(/delete 2 sessions\?/i)).toBeInTheDocument()
     })
@@ -353,7 +358,7 @@ describe('SessionList', () => {
         await triggerLongPress(inactiveSession.metadata.name)
         fireEvent.click(screen.getByRole('checkbox', { name: inactiveSessionB.metadata.name }))
         fireEvent.click(screen.getByRole('checkbox', { name: inactiveSessionC.metadata.name }))
-        fireEvent.click(screen.getByRole('button', { name: /^delete$/i }))
+        fireEvent.click(screen.getByRole('button', { name: /^Delete \(3\)$/i }))
         await act(async () => {
             fireEvent.click(screen.getByRole('button', { name: /delete selected/i }))
         })
@@ -378,10 +383,10 @@ describe('SessionList', () => {
 
         await triggerLongPress(inactiveSession.metadata.name)
         fireEvent.click(screen.getByRole('checkbox', { name: inactiveSessionB.metadata.name }))
-        fireEvent.click(screen.getByRole('button', { name: /^delete$/i }))
+        fireEvent.click(screen.getByRole('button', { name: /^Delete \(2\)$/i }))
         fireEvent.click(screen.getByRole('button', { name: /delete selected/i }))
 
-        expect(screen.getByRole('button', { name: /^delete$/i })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: /^Delete \(2\)$/i })).toBeInTheDocument()
         expect(screen.getByRole('checkbox', { name: inactiveSession.metadata.name })).toHaveAttribute('aria-checked', 'true')
         expect(screen.getByRole('checkbox', { name: inactiveSessionB.metadata.name })).toHaveAttribute('aria-checked', 'true')
     })
@@ -402,7 +407,7 @@ describe('SessionList', () => {
 
         await triggerLongPress(inactiveSession.metadata.name)
         fireEvent.click(screen.getByRole('checkbox', { name: inactiveSessionB.metadata.name }))
-        fireEvent.click(screen.getByRole('button', { name: /^delete$/i }))
+        fireEvent.click(screen.getByRole('button', { name: /^Delete \(2\)$/i }))
         await act(async () => {
             fireEvent.click(screen.getByRole('button', { name: /delete selected/i }))
         })

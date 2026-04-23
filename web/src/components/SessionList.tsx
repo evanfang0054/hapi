@@ -350,7 +350,6 @@ function SessionItem(props: {
                             role="checkbox"
                             aria-checked={selectionChecked}
                             aria-label={sessionName}
-                            disabled={s.active}
                             onClick={(event) => {
                                 event.stopPropagation()
                                 onToggleSelected?.(s.id)
