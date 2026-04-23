@@ -47,7 +47,7 @@
     --app-panel-elevated-bg: #ffffff;
     --app-panel-muted-bg: #f0ede3;
     --app-shadow-sm: 0 2px 8px rgba(30, 24, 17, 0.06);
-    --app-shadow-md: 0 10px 30px rgba(30, 24, 17, 0.06);
+    --app-shadow-md: 0 8px 24px rgba(30, 24, 17, 0.08);
     --app-ring: 0 0 0 1px rgba(113, 92, 69, 0.08);
 
     --app-font-serif: Georgia, 'Times New Roman', serif;
@@ -124,8 +124,8 @@
     --app-panel-bg: #1d1c1a;
     --app-panel-elevated-bg: #252422;
     --app-panel-muted-bg: #30302e;
-    --app-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-    --app-shadow-md: 0 12px 32px rgba(0, 0, 0, 0.32);
+    --app-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+    --app-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.3);
     --app-ring: 0 0 0 1px rgba(245, 241, 232, 0.06);
 
     /* Additional design tokens from redesign spec */

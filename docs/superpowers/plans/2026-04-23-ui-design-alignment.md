@@ -1,211 +1,737 @@
-# UI 对齐计划：设计稿 vs 实现
+# UI Design Alignment Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 将 web/ 所有页面实现与 `web/design/` 设计稿 HTML 逐一视觉对齐
+**Goal:** Align all web pages with design mockups in `web/design/`, fixing ~80 styling/layout/interactive differences across 8 pages.
 
-**Architecture:** 按全局 → 组件 → 页面顺序修复。全局 CSS 变量优先，共享组件其次，最后各页面独立差异。保留桌面端分栏布局和 Voice/Nerd Font/Autocomplete 等合理新增功能。
+**Architecture:** Task-by-task approach, each task scoped to a single page or cross-cutting concern. Each task produces a self-contained commit. Global fixes (FAB, tab bar, shadows) are done first since they affect all pages.
 
-**Tech Stack:** React 19 + Tailwind CSS v4 + CSS 变量设计系统
+**Tech Stack:** React 19, Tailwind CSS, TanStack Router, Vitest
+
+**Spec:** `docs/superpowers/specs/2026-04-23-ui-design-alignment-spec.md`
 
 ---
 
-## Task 0: 全局样式修复
+## Phase 1: Global / Cross-Page Fixes
+
+### Task 1: FAB gradient, shadow, and hover effect
 
 **Files:**
-- Modify: `web/src/index.css`
+- Modify: `web/src/components/layout/MobileTabBar.tsx:129-136`
 
-- [x] **G1**: `--app-border` light 值从 `#f0eee6` 改为 `#ebe7dc`
-- [x] **G2**: `--app-font-sans` 改为 `-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`
-- [x] **G3**: body 背景移除径向渐变，改为纯色 `var(--app-bg)`
-- [x] **G4**: `--app-button-text` dark 值从 `#141413` 改为 `#faf9f5`
-- [x] **G5**: `--app-error` dark 值从 `#e05a5a` 改为 `#e08c72`
+- [ ] **Step 1: Update FAB button styles**
+
+In `MobileTabBar.tsx`, replace the FAB button className (line 133):
+
+```tsx
+className="relative -mt-6 w-12 h-12 rounded-full bg-[var(--app-link)] text-white border-none cursor-pointer flex items-center justify-center shadow-[0_4px_12px_rgba(201,100,66,0.3)] transition-all duration-200 active:scale-95"
+```
+
+with:
+
+```tsx
+className="relative -mt-6 w-12 h-12 rounded-full text-white border-none cursor-pointer flex items-center justify-center shadow-[0_4px_16px_rgba(201,100,66,0.35)] transition-all duration-200 hover:scale-[1.08] hover:shadow-[0_6px_24px_rgba(201,100,66,0.45)] active:scale-95"
+style={{ background: 'linear-gradient(135deg, var(--app-link) 0%, #d97757 100%)' }}
+```
+
+- [ ] **Step 2: Verify visually**
+
+Run: `bun run dev:web`
+Open browser, check the FAB button has a warm gradient and hover scale effect.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add web/src/components/layout/MobileTabBar.tsx
+git commit -m "style(mobile-tab-bar): add FAB gradient, larger shadow, and hover scale effect"
+```
+
+- [ ] **Step 4: Design mockup verification**
+
+Dispatch an Explore subagent to compare ALL design mockups that include the FAB button against the current `MobileTabBar.tsx` implementation. The subagent should:
+1. Read `web/design/redesign-ab-hybrid.html`, `web/design/redesign-machines.html`, `web/design/redesign-history.html`, `web/design/redesign-settings.html` — extract every FAB-related CSS rule (`.fab`, gradient, shadow, hover, size, margin)
+2. Read the updated `MobileTabBar.tsx` FAB button code
+3. Compare: gradient direction/colors, shadow offset/blur/opacity, hover scale, active scale, size (w/h), margin-top
+4. Report ALL remaining differences as a checklist — only proceed to the next task when zero differences remain
 
 ---
 
-## Task 1: Index / Sessions 页
+### Task 2: Tab bar shadow removal and active label weight fix
 
 **Files:**
-- Modify: `web/src/components/SessionList.tsx`
-- Modify: `web/src/components/layout/MobileTabBar.tsx`
-- Modify: `web/src/components/layout/DesktopNav.tsx`
+- Modify: `web/src/components/layout/MobileTabBar.tsx:77, 103, 124, 154, 175`
 
-- [x] **S1**: Session 卡片时间戳添加胶囊背景
-- [x] **S2**: 复选框自定义样式
-- [x] **S3**: 分组标题字号从 `text-sm`(14px) 改为 `text-[15px]`
-- [x] **S4**: Badge 字号从 `text-[10px]` 改为 `text-[11px]`
-- [x] **S5**: MobileTabBar FAB 从 `w-14 h-14`(56px) 渐变 改为 `w-12 h-12`(48px) 纯色 `bg-[var(--app-link)]`
-- [x] **S6**: FAB shadow 从 `0_4px_16px_rgba(201,100,66,0.35)` 改为 `0_4px_12px_rgba(201,100,66,0.3)`
-- [x] **S7**: Tab bar shadow 改为 `shadow-[0_-4px_20px_rgba(0,0,0,0.06)]`
+- [ ] **Step 1: Remove tab bar shadow**
+
+In `MobileTabBar.tsx`, remove the shadow from the `<nav>` element (line 77). Change:
+
+```tsx
+shadow-[0_-4px_20px_rgba(0,0,0,0.06)] ... [html[data-theme=dark]_&]:shadow-[0_-4px_20px_rgba(0,0,0,0.3)]
+```
+
+Remove both shadow classes. The nav className becomes:
+
+```tsx
+className="fixed bottom-0 left-0 right-0 z-90 bg-[var(--app-panel-bg)] border-t border-[var(--app-border)] flex items-center justify-around transition-all duration-300"
+```
+
+- [ ] **Step 2: Fix active tab label font-weight**
+
+Replace all dynamic `font-${isActive ? '600' : '500'}` patterns with proper conditional classes. On lines 103, 124, 154, 175, change:
+
+```tsx
+<span className={`text-[10px] font-${isXxxActive ? '600' : '500'}`}>
+```
+
+to:
+
+```tsx
+<span className={`text-[10px] font-medium`}>
+```
+
+Both active and inactive use `font-medium` (500) per design spec.
+
+- [ ] **Step 3: Verify**
+
+Run: `bun run dev:web` — check tab bar has no shadow and labels are same weight.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add web/src/components/layout/MobileTabBar.tsx
+git commit -m "style(mobile-tab-bar): remove tab bar shadow and unify label weight to medium"
+```
+
+- [ ] **Step 5: Design mockup verification**
+
+Dispatch an Explore subagent to compare the tab bar across ALL design mockups against the updated `MobileTabBar.tsx`. The subagent should:
+1. Read `web/design/redesign-ab-hybrid.html`, `web/design/redesign-machines.html`, `web/design/redesign-history.html`, `web/design/redesign-settings.html` — extract `.tab-bar`, `.tab-item`, `.tab-label`, `.tab-icon` CSS rules
+2. Read the updated `MobileTabBar.tsx` nav element code
+3. Compare: shadow (should be none), label font-weight (should be 500 for all states), icon background on active, badge position, padding, safe-area-inset, border
+4. Report ALL remaining differences — only proceed when zero differences remain
 
 ---
 
-## Task 2: Chat 聊天页
+### Task 3: Shadow CSS variable alignment
 
 **Files:**
-- Modify: `web/src/components/AssistantChat/HappyComposer.tsx`
-- Modify: `web/src/components/AssistantChat/ComposerButtons.tsx`
-- Modify: `web/src/components/AssistantChat/messages/UserMessage.tsx`
-- Modify: `web/src/components/AssistantChat/messages/AssistantMessage.tsx`
-- Modify: `web/src/components/SessionHeader.tsx`
-- Modify: `web/src/components/AssistantChat/StatusBar.tsx`
+- Modify: `web/src/index.css:49-50, 127-128`
 
-- [x] **C1**: Composer 外层容器从圆角卡片改为扁平底部 — 移除 `rounded-[20px] border`，改为 `border-t border-[var(--app-border)] bg-[var(--app-panel-bg)]`
-- [x] **C2**: 输入框内 composer-inner 添加胶囊包裹 — `rounded-[20px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-[16px] py-[8px]`
-- [x] **C3**: 输入框字号从 `text-[15px]` 改为 `text-[14px]`，行高改为 `leading-6`(24px/1.5)
-- [x] **C4**: 发送按钮图标从垂直向上箭头改为斜角飞镖 `<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>`
-- [x] **C5**: 工具按钮尺寸从 `h-8 w-8`(32px) 改为 `h-9 w-9`(36px)
-- [x] **C6**: 附件按钮添加 `bg-[var(--app-subtle-bg)]` 背景 + `text-[var(--app-hint)]` 颜色
-- [x] **C7**: UserMessage 气泡下方添加时间戳 — `<div className="text-[10px] text-[var(--app-hint)] mt-1 text-right">{formatTime(msg.createdAt)}</div>`
-- [x] **C8**: UserMessage 操作按钮移至气泡外下方，添加 "Copy" 文字标签
-- [x] **C9**: AssistantMessage 同 C7 添加时间戳（左对齐）
-- [x] **C10**: AssistantMessage 同 C8 调整操作按钮位置
-- [x] **C11**: SessionHeader meta 行添加连接状态文字描述（如 "Thinking"）
-- [x] **C12**: StatusBar 所有硬编码颜色改为 CSS 变量 — `#007AFF` → `var(--app-focus)`、`#999` → `var(--app-hint)`、`#FF9500` → `var(--app-warning)`、`#34C759` → `var(--app-success)`
+- [ ] **Step 1: Update shadow variables**
+
+In `web/src/index.css`, update the `:root` (light mode) shadow values:
+
+```css
+--app-shadow-sm: 0 2px 8px rgba(30, 24, 17, 0.06);
+--app-shadow-md: 0 8px 24px rgba(30, 24, 17, 0.08);
+```
+
+Update the `[data-theme="dark"]` shadow values:
+
+```css
+--app-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+--app-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.3);
+```
+
+- [ ] **Step 2: Verify no visual regression**
+
+Run: `bun run dev:web` — check pages still look correct in both light and dark modes.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add web/src/index.css
+git commit -m "style(css): align shadow-sm and shadow-md values with design spec"
+```
+
+- [ ] **Step 4: Design mockup verification**
+
+Dispatch an Explore subagent to compare shadow CSS variables across ALL design mockups against the updated `index.css`. The subagent should:
+1. Read `web/design/redesign-ab-hybrid.html`, `web/design/redesign-login.html`, `web/design/redesign-machines.html` — extract `--shadow-sm` and `--shadow-md` values from both `:root` and `[data-theme="dark"]`
+2. Read the updated `web/src/index.css` shadow variable values
+3. Compare exact values for both light and dark themes
+4. Report ALL remaining differences — only proceed when zero differences remain
 
 ---
 
-## Task 3: New Session 新建页
+## Phase 2: Session List Page
+
+### Task 4: Session card layout — add CSS Grid with right column
 
 **Files:**
-- Modify: `web/src/components/NewSession/DirectorySection.tsx`
-- Modify: `web/src/components/NewSession/ModelSelector.tsx`（如有）
-- Modify: `web/src/components/NewSession/EffortSelector.tsx`（如有）
-- Modify: `web/src/components/NewSession/index.tsx`
+- Modify: `web/src/components/SessionList.tsx:323-398`
 
-- [x] **N1**: 目录输入框圆角从 `rounded-[18px]` 改为 `rounded-[14px]`
-- [x] **N2**: 目录输入框字体添加 `font-mono`
-- [x] **N3**: 移除 `shadow-[var(--app-shadow-sm)]`
-- [x] **N4**: 添加 Browse 按钮 — `<button className="px-3 py-1.5 rounded-[8px] text-[13px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)]">Browse</button>`
-- [x] **N5**: 最近目录从 pill tag 改为列表行 — `<button className="flex items-center gap-2 p-[10px_12px] rounded-[10px] font-mono text-[12px] hover:bg-[var(--app-subtle-bg)]">` + 时钟 SVG 图标
-- [x] **N6**: Model/Effort select 圆角从 `rounded-[18px]` 改为 `rounded-[12px]`
-- [x] **N7**: focus 样式从 `ring` 改为 `focus:border-[var(--app-link)] focus:outline-none`
-- [x] **N8**: 移除 select 的 `shadow-[var(--app-shadow-sm)]`
-- [x] **N9**: label 样式对齐为 `text-[12px] font-medium tracking-[0.5px] text-[var(--app-hint)]`
-- [x] **N10**: 移动端 Model/Effort 行添加 `flex-col` 响应式（`flex flex-col sm:flex-row`）
+- [ ] **Step 1: Restructure session card to grid layout**
+
+In `SessionList.tsx`, change the inner card div (line 326) from flexbox to grid:
+
+```tsx
+// Before:
+<div className="flex items-start gap-3 px-4 py-4">
+
+// After:
+<div className="grid items-start gap-3 px-[18px] py-[14px]" style={{ gridTemplateColumns: '10px 1fr auto' }}>
+```
+
+- [ ] **Step 2: Move time pill and agent label to right column**
+
+Restructure the card content so the right column contains: more button on top, time pill, agent label — all stacked vertically. The middle column contains: title row, badges row, tags row (including branch).
+
+The new structure should be:
+
+```tsx
+// Column 1: Status dot (10px)
+<div className="...">...</div>
+
+// Column 2: Main content (1fr)
+<div className="min-w-0 flex flex-col gap-1.5">
+    {/* Title */}
+    <h3 className="text-[15px] font-medium leading-5 truncate" style={{ fontFamily: 'var(--app-font-serif)', fontStyle: 'italic' }}>{s.name}</h3>
+    {/* Badges row */}
+    <div className="flex flex-wrap items-center gap-2">...</div>
+    {/* Branch as dedicated line */}
+    {s.metadata?.worktree?.branch && (
+        <span className="font-mono text-[11px] text-[var(--app-hint)]">
+            <span className="mr-1">⎇</span>{s.metadata.worktree.branch}
+        </span>
+    )}
+</div>
+
+// Column 3: Right column (auto)
+<div className="flex flex-col items-end gap-2">
+    {/* More button */}
+    <button ...>...</button>
+    {/* Time pill */}
+    <span className="text-[11px] text-[var(--app-hint)] font-mono">{timeAgo}</span>
+    {/* Agent label */}
+    <span className="font-mono text-[11px] text-[var(--app-hint)]">{getAgentLabel(s)}</span>
+</div>
+```
+
+- [ ] **Step 3: Update card padding and hover effects**
+
+Change card padding from `px-4 py-4` to `px-[18px] py-[14px]`. Add `active:scale-[0.98]` to the outer card div.
+
+- [ ] **Step 4: Verify visually**
+
+Run: `bun run dev:web` — session cards should have the 3-column grid layout with right column.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add web/src/components/SessionList.tsx
+git commit -m "style(session-list): restructure card to CSS Grid with right column per design spec"
+```
+
+- [ ] **Step 6: Design mockup verification**
+
+Dispatch an Explore subagent to compare the session card layout against design mockups. The subagent should:
+1. Read `web/design/redesign-ab-hybrid.html` — extract `.session-card`, `.session-left`, `.session-info`, `.session-right`, `.session-agent`, `.session-time`, `.session-branch` CSS rules and HTML structure
+2. Read the updated `SessionList.tsx` session card render code
+3. Compare: grid columns (10px / 1fr / auto), status dot position, title font/size/style, branch display (dedicated line with ⎇), time pill in right column, agent label in right column, more button in right column, card padding (18px/14px), hover/active effects
+4. Report ALL remaining differences — only proceed when zero differences remain
 
 ---
 
-## Task 4: Terminal 终端页
+### Task 5: Session list — Duplicate action, batch bar icons, group header padding
 
 **Files:**
-- Modify: `web/src/routes/sessions/terminal.tsx`
-- Modify: `web/src/components/Terminal/TerminalView.tsx`
+- Modify: `web/src/components/SessionActionMenu.tsx:308-311`
+- Modify: `web/src/components/SessionList.tsx:747-770`
+- Modify: `web/src/components/SessionList.tsx:662`
 
-- [x] **T1**: xterm 容器背景改为 `bg-[#1a1a1a]`（不随主题变化）
-- [x] **T2**: TerminalView `resolveThemeColors()` 中 background 改为 `#1a1a1a`
-- [x] **T3**: CardTitle 添加 `italic`
-- [x] **T4**: 命令输入框添加 `font-mono`
-- [x] **T5**: 退出覆盖层背景从 `bg-[var(--app-bg)]/80` 改为 `bg-[rgba(26,26,26,0.9)]`，文字色改为 `text-[#888]`
-- [x] **T6**: Quick Input 标题字号从 `11px` 改为 `10px`，letter-spacing 从 `0.16em` 改为 `0.5px`
-- [x] **T7**: 快捷键/命令输入框圆角从 `rounded-[var(--app-radius-control)]`(16px) 改为 `rounded-[12px]`
-- [x] **T8**: 修饰键激活态文字色从 `text-[var(--app-bg)]` 改为 `text-white`
-- [x] **T9**: Quick Input 底栏 padding 对齐 — `p-[12px_16px]`，移动端 `p-[10px_12px]`
-- [x] **T10**: Quick Input 底栏添加 `pb-[calc(12px+env(safe-area-inset-bottom))]`
-- [x] **T11**: 连接状态点颜色对齐设计稿 — connected `bg-[var(--app-success)]`、connecting `bg-[var(--app-warning)]`、idle `bg-[var(--app-hint)]`
+- [ ] **Step 1: Enable Duplicate action in SessionActionMenu**
+
+In `SessionActionMenu.tsx`, change the Duplicate button from disabled to functional. Remove the `disabled` attribute and add an `onClick` handler:
+
+```tsx
+<button
+    type="button"
+    role="menuitem"
+    className={`${baseItemClassName} hover:bg-[var(--app-subtle-bg)]`}
+    onClick={() => {
+        // TODO: implement session duplication
+        onClose?.()
+    }}
+>
+    <DuplicateIcon />
+    {t('session.action.duplicate')}
+</button>
+```
+
+- [ ] **Step 2: Add icons to batch bar Archive and Delete buttons**
+
+In `SessionList.tsx`, add SVG icons to the batch bar buttons:
+
+```tsx
+// Archive button
+<Button type="button" variant="secondary" size="sm" ...>
+    <svg className="w-3.5 h-3.5 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+    </svg>
+    {t('session.action.archive')}
+</Button>
+
+// Delete button
+<Button type="button" variant="destructive" size="sm" ...>
+    <svg className="w-3.5 h-3.5 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="3 6 5 6 21 6" />
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    </svg>
+    {t('dialog.delete.confirm')}
+</Button>
+```
+
+- [ ] **Step 3: Fix group header padding**
+
+Change line 662 from `px-4 py-3` to `px-5 py-[14px]`:
+
+```tsx
+className={`flex w-full items-center justify-between gap-4 rounded-[var(--app-radius-control)] px-5 py-[14px] text-left ...`}
+```
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add web/src/components/SessionActionMenu.tsx web/src/components/SessionList.tsx
+git commit -m "style(session-list): enable duplicate action, add batch bar icons, fix group header padding"
+```
+
+- [ ] **Step 5: Design mockup verification**
+
+Dispatch an Explore subagent to compare context menu, batch bar, and group header against design mockups. The subagent should:
+1. Read `web/design/redesign-ab-hybrid.html` — extract `.context-menu` items (should include Duplicate), `.batch-bar` button styles (with SVG icons), `.group-header` padding
+2. Read the updated `SessionActionMenu.tsx` (menu items list) and `SessionList.tsx` (batch bar buttons, group header)
+3. Compare: context menu items list, batch bar button icon presence, group header padding values (20px/14px)
+4. Report ALL remaining differences — only proceed when zero differences remain
 
 ---
 
-## Task 5: Machines 机器页
+## Phase 3: Login Page
+
+### Task 6: Login page text and animation fixes
+
+**Files:**
+- Modify: `web/src/lib/locales/en.ts:30-40`
+- Modify: `web/src/lib/locales/zh-CN.ts:30-41`
+- Modify: `web/src/components/LoginPrompt.tsx`
+- Modify: `web/src/index.css` (add keyframe)
+
+- [ ] **Step 1: Update English locale strings**
+
+In `en.ts`, change login-related keys:
+
+```typescript
+'login.server.title': 'Hub Server',
+'login.server.description': "Configure a custom hub server URL if you're self-hosting.",
+'login.server.origin': 'Server URL',
+'login.server.placeholder': 'https://your-hub.example.com',
+'login.server.hint': 'Leave empty to use the same origin as the web app.',
+'login.server.save': 'Save',
+'login.footer': 'Made with',
+'login.footer.for': 'for developers',
+```
+
+- [ ] **Step 2: Update Chinese locale strings correspondingly**
+
+In `zh-CN.ts`, update the same keys.
+
+- [ ] **Step 3: Add placeholder opacity**
+
+In `LoginPrompt.tsx`, add `placeholder:opacity-70` to the token input.
+
+- [ ] **Step 4: Add dialog slide-up animation**
+
+Add keyframe to `index.css`:
+
+```css
+@keyframes dialog-slide-up {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+```
+
+Add `animate-[dialog-slide-up_0.2s_ease]` to the DialogContent wrapper in LoginPrompt.tsx.
+
+- [ ] **Step 5: Remove italic from dialog title**
+
+Find the DialogTitle in LoginPrompt.tsx and remove `fontStyle: 'italic'` if present.
+
+- [ ] **Step 6: Add input transition-all**
+
+Change the token input's `transition-colors` to `transition-all duration-200`.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add web/src/lib/locales/en.ts web/src/lib/locales/zh-CN.ts web/src/components/LoginPrompt.tsx web/src/index.css
+git commit -m "style(login): align dialog text, add slide-up animation, fix placeholder and transitions"
+```
+
+- [ ] **Step 8: Design mockup verification**
+
+Dispatch an Explore subagent to compare the login page against the design mockup. The subagent should:
+1. Read `web/design/redesign-login.html` — extract ALL elements: page layout, login card, logo, form inputs, submit button, hub server dialog (title, description, labels, placeholder, hint, buttons), footer, theme toggle, language switcher
+2. Read the updated `LoginPrompt.tsx`, `en.ts`, `zh-CN.ts`, and `index.css`
+3. Compare: dialog title/description/label/placeholder/hint text, dialog slide-up animation, placeholder opacity, input transition, footer text, dialog title font-style, secondary button style
+4. Report ALL remaining differences — only proceed when zero differences remain
+
+---
+
+## Phase 4: New Session Page
+
+### Task 7: New session — section labels, directory input, recent paths, agent capitalization
+
+**Files:**
+- Modify: `web/src/components/NewSession/DirectorySection.tsx:80-101`
+- Modify: `web/src/components/NewSession/ModelSelector.tsx`
+- Modify: `web/src/components/NewSession/ClaudeEffortSelector.tsx`
+- Modify: `web/src/components/NewSession/ReasoningEffortSelector.tsx`
+- Modify: `web/src/components/NewSession/AgentSelector.tsx:48-49`
+
+- [ ] **Step 1: Fix section labels to uppercase + semibold**
+
+In `DirectorySection.tsx`, `ModelSelector.tsx`, `ClaudeEffortSelector.tsx`, `ReasoningEffortSelector.tsx`, change label style from `text-[12px] font-medium tracking-[0.5px] normal-case` to `text-xs font-semibold uppercase tracking-[0.5px]`.
+
+- [ ] **Step 2: Fix recent paths text color**
+
+In `DirectorySection.tsx` line 90, change `text-[var(--app-fg)]` to `text-[var(--app-hint)]`.
+
+- [ ] **Step 3: Fix Browse button background**
+
+In `DirectorySection.tsx` line 73, change `bg-[var(--app-panel-elevated-bg)]` to `bg-[var(--app-subtle-bg)]`.
+
+- [ ] **Step 4: Remove "(optional)" from model/effort labels**
+
+In `ModelSelector.tsx`, `ClaudeEffortSelector.tsx`, `ReasoningEffortSelector.tsx`, remove the "(optional)" suffix text from labels.
+
+- [ ] **Step 5: Remove "Recent:" label**
+
+In `DirectorySection.tsx` line 82, remove the explicit `<span>` label `{t('newSession.recent')}:`.
+
+- [ ] **Step 6: Fix "OpenCode" capitalization**
+
+In `AgentSelector.tsx`, change from CSS `capitalize` class to explicit mapping:
+
+```tsx
+<span className="text-[13px] font-medium">
+    {agentType === 'opencode' ? 'OpenCode' : agentType.charAt(0).toUpperCase() + agentType.slice(1)}
+</span>
+```
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add web/src/components/NewSession/
+git commit -m "style(new-session): fix labels to uppercase, muted recent paths, fix agent capitalization"
+```
+
+- [ ] **Step 8: Design mockup verification**
+
+Dispatch an Explore subagent to compare the new session page against the design mockup. The subagent should:
+1. Read `web/design/redesign-new-session.html` — extract ALL elements: section labels (text-transform, font-weight), machine icon (monitor vs server differentiation), directory input container (unified vs separate), browse button (background, visibility), recent directory items (text color, "Recent:" label presence), agent names (capitalization), model/effort label text ("optional" suffix)
+2. Read the updated `DirectorySection.tsx`, `ModelSelector.tsx`, `ClaudeEffortSelector.tsx`, `ReasoningEffortSelector.tsx`, `AgentSelector.tsx`
+3. Compare: section label casing/weight, recent path text color, browse button bg, agent name capitalization, "(optional)" absence
+4. Report ALL remaining differences — only proceed when zero differences remain
+
+---
+
+## Phase 5: Machines Page
+
+### Task 8: Machines — drawer overlay, handle, refresh icon, stat sizes
 
 **Files:**
 - Modify: `web/src/routes/machines/index.tsx`
 
-- [x] **M1**: 机器图标暗色模式背景 — 在在线图标容器上添加 `dark:bg-[rgba(138,176,141,0.15)]`
-- [x] **M2**: 离线状态点移除 `opacity-40`
-- [x] **M3**: 统计卡片圆角从 `rounded-[12px]` 改为 `rounded-[16px]`
-- [x] **M4**: Runner Error 颜色偏橙改偏红 — `bg-[rgba(181,51,51,0.08)] border-[rgba(181,51,51,0.2)] text-[var(--app-error)]`
-- [x] **M5**: 抽屉圆角从 `rounded-t-[24px]` 改为 `rounded-t-[20px]`
-- [x] **M6**: 手柄宽度从 `w-7`(28px) 改为 `w-9`(36px)，圆角从 `rounded-full` 改为 `rounded-[2px]`
-- [x] **M7**: 抽屉动画从 `ease-out` 改为 `cubic-bezier(0.32, 0.72, 0, 1)`
-- [x] **M8**: 主要按钮 hover 从 `opacity-90` 改为 `hover:bg-[#d97757]`
+- [ ] **Step 1: Fix drawer overlay dark mode**
+
+Change overlay from `bg-black/40` to conditional:
+
+```tsx
+className="fixed inset-0 z-50 bg-black/40 [html[data-theme=dark]_&]:bg-black/60"
+```
+
+- [ ] **Step 2: Fix drawer handle color**
+
+Change handle background from `bg-[var(--app-border)]` to `bg-[var(--app-subtle-bg)]`.
+
+- [ ] **Step 3: Fix refresh icon SVG**
+
+Replace the 4-path refresh icon (lines 233-238) with the single-arc design from the mockup:
+
+```tsx
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`}>
+    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+</svg>
+```
+
+- [ ] **Step 4: Remove responsive overrides from stat cards**
+
+Change stat card padding from `p-3 sm:p-4` to `p-4`, and font size from `text-[24px] sm:text-[28px]` to `text-[28px]`.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add web/src/routes/machines/index.tsx
+git commit -m "style(machines): fix drawer overlay, handle, refresh icon, stat card sizes"
+```
+
+- [ ] **Step 6: Design mockup verification**
+
+Dispatch an Explore subagent to compare the machines page against the design mockup. The subagent should:
+1. Read `web/design/redesign-machines.html` — extract ALL elements: drawer overlay (light/dark opacity), drawer handle (background color), refresh icon SVG paths, stat card padding/font-size (no responsive override), machine card styling, status dot, online count placement, section titles
+2. Read the updated `machines/index.tsx`
+3. Compare: drawer overlay opacity in dark mode, drawer handle color token, refresh icon SVG, stat card sizes, section title text
+4. Report ALL remaining differences — only proceed when zero differences remain
 
 ---
 
-## Task 6: History 历史页
+## Phase 6: History Page
+
+### Task 9: History — card click behavior, meta content, restore, confirmations
 
 **Files:**
 - Modify: `web/src/routes/history/index.tsx`
+- Modify: `web/src/lib/locales/en.ts`
+- Modify: `web/src/lib/locales/zh-CN.ts`
 
-- [x] **H1**: 操作按钮添加 SVG 图标 — Restore 用 `RotateCcw`、Archive 用 `Archive`、Delete 用 `Trash2`
-- [x] **H2**: 元信息行添加消息数量 — `· {session.messageCount ?? 0} messages`
-- [x] **H3**: 非活跃筛选芯片文字色从 `text-[var(--app-fg)]` 改为 `text-[var(--app-hint)]`
-- [x] **H4**: 搜索关键词添加高亮 — 创建 `highlightText(text, query)` 函数，返回带 `<mark className="bg-[rgba(201,100,66,0.2)] rounded-[2px] px-[2px]">` 的 JSX
-- [x] **H5**: 预览文字 line-height 从 `leading-snug`(1.375) 改为 `leading-[1.4]`
-- [x] **H6**: meta 行 gap 从 `gap-1.5`(6px) 改为 `gap-2`(8px)
-- [x] **H7**: 空状态标题从 `text-[18px] font-medium` + serif 改为 `text-[16px] font-medium`（移除 serif 字体和 font-family inline style）
+- [ ] **Step 1: Change card click to toggle actions**
+
+Modify the card content click handler. Change from opening the session to toggling the actions menu:
+
+```tsx
+<div className="flex items-start gap-3 cursor-pointer" onClick={() => setActionsOpen(!actionsOpen)}>
+```
+
+- [ ] **Step 2: Change meta row to show message count**
+
+Replace the agent/model display with message count. Add locale key `'history.messages': 'messages'` to both locale files.
+
+- [ ] **Step 3: Enable Restore button**
+
+Remove `disabled` from the Restore buttons. Add the restore handler if the mutation exists.
+
+- [ ] **Step 4: Add confirmation dialogs for destructive actions**
+
+Add `window.confirm()` for archive, delete, and permanent-delete actions.
+
+- [ ] **Step 5: Add search debounce**
+
+Add 200ms debounce to the search input state update.
+
+- [ ] **Step 6: Update search placeholder**
+
+Change `'history.search'` value to "Search history..." in both locale files.
+
+- [ ] **Step 7: Remove max-width constraint**
+
+Remove `max-w-[600px]` from the content wrapper.
+
+- [ ] **Step 8: Remove sticky header**
+
+Remove `sticky top-0 z-10` from the header.
+
+- [ ] **Step 9: Fix spacing values**
+
+- Header padding: `px-5` → `px-4`
+- Preview margin-top: `mt-0.5` → `mt-1`
+- Meta row margin-top: `mt-1` → `mt-2`
+- Filter panel padding: `py-2.5` → `py-3`
+
+- [ ] **Step 10: Commit**
+
+```bash
+git add web/src/routes/history/index.tsx web/src/lib/locales/en.ts web/src/lib/locales/zh-CN.ts
+git commit -m "style(history): fix card click, meta content, restore, add confirmations, debounce search"
+```
+
+- [ ] **Step 11: Design mockup verification**
+
+Dispatch an Explore subagent to compare the history page against the design mockup. The subagent should:
+1. Read `web/design/redesign-history.html` — extract ALL elements: card click behavior (toggle actions vs open), meta row content (message count vs agent/model), Restore button enabled/disabled, confirmation dialogs for destructive actions, search debounce, search placeholder text, content max-width, header sticky behavior, spacing values (header padding, preview margin, meta margin, filter panel padding), archive icon SVG, item icon stroke-width, time group labels
+2. Read the updated `history/index.tsx`, `en.ts`, `zh-CN.ts`
+3. Compare every CSS value and interactive behavior listed above
+4. Report ALL remaining differences — only proceed when zero differences remain
 
 ---
 
-## Task 7: Settings 设置页
+## Phase 7: Files & File Detail Pages
 
-**Files:**
-- Modify: `web/src/routes/settings/index.tsx`
-- Modify: i18n 文件（搜索 `settings.display.title` key）
-
-- [x] **SE1**: About 区添加 GitHub 链接 — `<a href="https://github.com/nicepkg/hapi" className="...">` + GitHub SVG 图标
-- [x] **SE2**: 分区标题 i18n key 从 `settings.display.title` 改为 `settings.appearance.title`，值 "Appearance"
-- [x] **SE3**: Toggle 滑块位移从 `translate-x-[22px]` 改为 `translate-x-[20px]`
-- [x] **SE4**: Log Out 区移除 "Danger Zone" section-title，让 Log Out 卡片直接放在最后
-- [x] **SE5**: 选择器图标从 `ChevronDownIcon` 改为 `ChevronRightIcon`
-
----
-
-## Task 8: Files 文件页
+### Task 10: Files page — header sizing, section bg, renamed arrow
 
 **Files:**
 - Modify: `web/src/routes/sessions/files.tsx`
 - Modify: `web/src/routes/sessions/file.tsx`
-- Modify: `web/src/components/SessionFiles/DirectoryTree.tsx`
 
-- [x] **F1**: 文件行 padding 从 `px-3 py-2` 改为 `px-4 py-[10px]`
-- [x] **F2**: Section header 水平 padding 从 `px-5 sm:px-6` 改为 `px-4`
-- [x] **F3**: 文件路径添加 `font-mono`
-- [x] **F4**: 文件操作按钮圆角从 `rounded`(4px) 改为 `rounded-[6px]`
-- [x] **F5**: 搜索高亮从硬编码 `bg-[rgba(201,100,66,0.25)]` 改为 `bg-[color-mix(in_srgb,var(--app-link)_25%,transparent)]`
-- [x] **F6**: Diff 容器圆角从 `rounded-md`(6px) 改为 `rounded-[12px]`
-- [x] **F7**: 代码块右侧 padding 从 `pr-10`(40px) 改为 `pr-12`(48px)
-- [x] **F8**: Diff 行添加 `leading-[1.6]`
-- [x] **F9**: 状态图标（empty/binary/error）从 `w-16 h-16`(64px) 改为 `w-14 h-14`(56px)
-- [x] **F10**: 目录树行添加 `rounded-[8px]`
-- [x] **F11**: 目录树行 gap 从 `gap-3`(12px) 改为 `gap-2`(8px)
-- [x] **F12**: 空目录文字添加 `italic`，字号从 `text-sm` 改为 `text-xs`
-- [x] **F13**: files.tsx + file.tsx 添加 `env(safe-area-inset-top)` 顶部安全区
+- [ ] **Step 1: Fix files page header title**
+
+Change `text-3xl` to `text-[24px]`, add italic:
+
+```tsx
+<CardTitle className="mt-2 text-[24px] leading-tight italic" data-ui-heading="serif">
+```
+
+- [ ] **Step 2: Fix files page header label**
+
+Change from `text-[11px] tracking-[0.16em]` to `text-[10px] tracking-[0.5px]`.
+
+- [ ] **Step 3: Fix files page header description**
+
+Change from `text-sm` to `text-[13px]`.
+
+- [ ] **Step 4: Fix section header background**
+
+Change `bg-[var(--app-panel-muted-bg)]` to `bg-[var(--app-subtle-bg)]` in section headers.
+
+- [ ] **Step 5: Fix renamed file display**
+
+Change from `{oldPath} → {filePath}` to `← {oldPath}`:
+
+```tsx
+<div className="truncate text-[10px] text-[var(--app-hint)] font-mono mt-0.5">
+    ← {props.file.oldPath}
+</div>
+```
+
+- [ ] **Step 6: Fix file detail page header title**
+
+Change from `text-3xl leading-none` to `text-[28px] leading-[1.2]`.
+
+- [ ] **Step 7: Fix diff warning colors**
+
+Replace hardcoded amber with CSS variable approach:
+
+```tsx
+className="mb-4 rounded-[16px] border px-4 py-3 text-xs leading-5 text-[var(--app-hint)]"
+style={{
+    background: 'color-mix(in srgb, var(--app-warning, #e29a4b) 12%, transparent)',
+    borderColor: 'color-mix(in srgb, var(--app-warning, #e29a4b) 40%, transparent)',
+}}
+```
+
+- [ ] **Step 8: Commit**
+
+```bash
+git add web/src/routes/sessions/files.tsx web/src/routes/sessions/file.tsx
+git commit -m "style(files): fix header sizing, section bg, renamed arrow, diff warning colors"
+```
+
+- [ ] **Step 9: Design mockup verification**
+
+Dispatch an Explore subagent to compare both files page and file detail page against design mockups. The subagent should:
+1. Read `web/design/redesign-files.html` — extract: header title font-size/style, header label font-size/letter-spacing, header description font-size, section header background, renamed file arrow direction, file row styling
+2. Read `web/design/redesign-file.html` — extract: header title font-size/line-height, diff warning color approach (CSS variable vs hardcoded), mode tab padding, path badge styling
+3. Read the updated `files.tsx` and `file.tsx`
+4. Compare every CSS value and element structure listed above
+5. Report ALL remaining differences — only proceed when zero differences remain
 
 ---
 
-## Task 9: Login 登录页
+## Phase 8: Settings Page
+
+### Task 11: Settings — responsive breakpoints, icon replacements, user name size
 
 **Files:**
-- Modify: `web/src/components/LoginPrompt.tsx`
-- Modify: `web/src/components/ui/dialog.tsx`
+- Modify: `web/src/routes/settings/index.tsx`
 
-- [x] **L1**: Spinner 速度从 `animate-spin`(1s) 改为 `animate-[spin_0.8s_linear_infinite]`
-- [x] **L2**: DialogContent 圆角从硬编码 `rounded-[24px]` 改为 `rounded-[var(--app-radius-panel)]`
-- [x] **L3**: 副标题 line-height 从 `leading-relaxed`(1.625) 改为 `leading-[1.5]`
+- [ ] **Step 1: Fix user name font size**
+
+Change from `text-[16px]` to `text-[17px]`.
+
+- [ ] **Step 2: Replace theme icon with always-sun**
+
+Replace the conditional moon/sun with always-sun icon.
+
+- [ ] **Step 3: Replace Documentation icon with file-with-fold-corner**
+
+Replace the book SVG with:
+
+```tsx
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <polyline points="14 2 14 8 20 8" />
+</svg>
+```
+
+- [ ] **Step 4: Replace GitHub icon with outline stroke version**
+
+Replace the filled GitHub SVG with outline version.
+
+- [ ] **Step 5: Add mobile responsive breakpoints**
+
+Add responsive classes:
+- Header: `max-[640px]:px-4 max-[640px]:py-3`
+- Title: `max-[640px]:text-[18px]`
+- Avatar: `max-[640px]:w-12 max-[640px]:h-12`
+- Setting items: `max-[640px]:px-[14px] max-[640px]:py-3`
+- User card: `max-[640px]:p-[14px]`
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add web/src/routes/settings/index.tsx
+git commit -m "style(settings): fix user name size, icons, add mobile responsive breakpoints"
+```
+
+- [ ] **Step 7: Design mockup verification**
+
+Dispatch an Explore subagent to compare the settings page against the design mockup. The subagent should:
+1. Read `web/design/redesign-settings.html` — extract: user name font-size, theme icon (sun-only vs sun/moon dynamic), documentation icon SVG paths, GitHub icon SVG paths, mobile responsive breakpoint values (header padding, title size, avatar size, setting item padding, user card padding), section spacing, toggle dimensions
+2. Read the updated `settings/index.tsx`
+3. Compare: user name size (17px), theme icon (always sun), documentation icon (file-with-fold-corner), GitHub icon (outline stroke), responsive class values, section/title padding
+4. Report ALL remaining differences — only proceed when zero differences remain
 
 ---
 
-## Task 10: 全局组件清理
+## Phase 9: Verification
 
-**Files:**
-- Modify: `web/src/components/AssistantChat/ComposerButtons.tsx`
-- Modify: `web/src/components/layout/MobileTabBar.tsx`
+### Task 12: Full visual verification and test fixes
 
-- [x] **U1**: UnifiedButton 禁用色从 `bg-[#C0C0C0]` 改为 `bg-[var(--app-subtle-bg)]`
-- [x] **U2**: Mute 按钮颜色从 `bg-gray-200 text-gray-600 hover:bg-gray-300` 改为 `bg-[var(--app-subtle-bg)] text-[var(--app-hint)] hover:bg-[var(--app-panel-muted-bg)]`
+- [ ] **Step 1: Run dev server**
+
+```bash
+bun run dev
+```
+
+- [ ] **Step 2: Verify each page in both light and dark modes**
+
+- Sessions list — grid layout, FAB gradient, tab bar
+- Login — dialog animation, text changes
+- New Session — labels, recent paths
+- Machines — drawer overlay, refresh icon
+- History — card click, meta, restore
+- Files — header sizing, section bg
+- File Detail — title size, diff warning
+- Settings — icons, responsive
+
+- [ ] **Step 3: Run typecheck**
+
+```bash
+bun run typecheck:web
+```
+
+- [ ] **Step 4: Run tests**
+
+```bash
+bun run test:web
+```
+
+- [ ] **Step 5: Fix any test failures**
+
+Update test assertions to match new DOM structure (especially session card grid layout).
+
+- [ ] **Step 6: Final commit if needed**
+
+```bash
+git commit -m "fix: update tests for new UI structure"
+```
 
 ---
 
-## 执行顺序
+## Out of Scope
 
-1. Task 0 (已完成) → Task 1 → Task 2 → Task 3 → Task 4 → Task 5 → Task 6 → Task 7 → Task 8 → Task 9 → Task 10
-
-## 验证
-
-每个 Task 完成后：
-- `bun run typecheck:web` — 无类型错误
-- `bun run test:web` — 无测试回归
-
-最终全量验证：
-- `bun run typecheck && bun run test && bun run build:web`
+- **Chat page** — requires separate detailed investigation (139KB design mockup)
+- **Terminal page** — requires separate detailed investigation
+- **Machine drawer session list** — depends on Machine type having sessions data (backend change may be needed)
+- **History restore functionality** — depends on restoreSession mutation existing
