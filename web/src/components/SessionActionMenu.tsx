@@ -318,9 +318,11 @@ export function SessionActionMenu(props: SessionActionMenuProps) {
                 <button
                     type="button"
                     role="menuitem"
-                    className={`${baseItemClassName} hover:bg-[var(--app-subtle-bg)] opacity-50 cursor-not-allowed`}
-                    disabled
-                    title={t('session.action.duplicate.comingSoon')}
+                    className={`${baseItemClassName} hover:bg-[var(--app-subtle-bg)]`}
+                    onClick={() => {
+                        // TODO: implement session duplication
+                        onClose?.()
+                    }}
                 >
                     <DuplicateIcon className="text-[var(--app-hint)]" />
                     {t('session.action.duplicate')}

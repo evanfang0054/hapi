@@ -272,58 +272,58 @@ function SessionItem(props: {
     const todoProgress = getTodoProgress(s)
     const sessionContent = (
         <>
-            <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 space-y-1.5">
-                    <div className="flex min-w-0 items-center gap-2">
-                        <div className="truncate text-[15px] font-medium leading-5" style={{ fontFamily: 'var(--app-font-serif)', fontStyle: 'italic' }}>
-                            {sessionName}
-                        </div>
+            <div className="flex min-w-0 flex-col gap-1.5">
+                <div className="flex min-w-0 items-center gap-2">
+                    <div className="truncate text-[15px] font-medium leading-5" style={{ fontFamily: 'var(--app-font-serif)', fontStyle: 'italic' }}>
+                        {sessionName}
                     </div>
-                    {showPath ? (
-                        <div className="truncate text-xs text-[var(--app-hint)]">
-                            {s.metadata?.path ?? s.id}
-                        </div>
+                </div>
+                {showPath ? (
+                    <div className="truncate text-xs text-[var(--app-hint)]">
+                        {s.metadata?.path ?? s.id}
+                    </div>
+                ) : null}
+                <div className="flex flex-wrap items-center gap-2 text-xs">
+                    {s.thinking ? (
+                        <span className="rounded-[6px] border border-[var(--app-link)]/20 bg-[var(--app-link)]/10 px-2 py-0.5 font-mono text-[10px] text-[var(--app-link)] animate-pulse">
+                            ● {t('session.item.thinking')}
+                        </span>
+                    ) : null}
+                    {todoProgress ? (
+                        <span className="flex items-center gap-1 rounded-[6px] border border-[var(--app-badge-success-border)] bg-[var(--app-badge-success-bg)] px-2 py-0.5 font-mono text-[10px] text-[var(--app-badge-success-text)]">
+                            <BulbIcon className="h-3 w-3" />
+                            {todoProgress.completed}/{todoProgress.total}
+                        </span>
+                    ) : null}
+                    {s.pendingRequestsCount > 0 ? (
+                        <span className="rounded-[6px] border border-[var(--app-badge-warning-border)] bg-[var(--app-badge-warning-bg)] px-2 py-0.5 font-mono text-[10px] text-[var(--app-badge-warning-text)]">
+                            {t('session.item.pending')} {s.pendingRequestsCount}
+                        </span>
                     ) : null}
                 </div>
-                <div className="shrink-0 font-mono text-[11px] text-[var(--app-hint)] bg-[var(--app-subtle-bg)] px-[10px] py-[4px] rounded-full">
+                {s.metadata?.worktree?.branch ? (
+                    <span className="font-mono text-[11px] text-[var(--app-hint)]">
+                        <span className="mr-1">⎇</span>{s.metadata.worktree.branch}
+                    </span>
+                ) : null}
+                {modelLabel ? (
+                    <span className="rounded-[6px] border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2 py-0.5 w-fit font-mono text-[10px] text-[var(--app-hint)]">{t(modelLabel.key)}: {modelLabel.value}</span>
+                ) : null}
+            </div>
+            <div className="flex flex-col items-end gap-2">
+                <span className="shrink-0 font-mono text-[11px] text-[var(--app-hint)]">
                     {formatRelativeTime(s.updatedAt, t)}
-                </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-2 text-xs">
-                {s.thinking ? (
-                    <span className="rounded-[6px] border border-[var(--app-link)]/20 bg-[var(--app-link)]/10 px-2 py-0.5 font-mono text-[10px] text-[var(--app-link)] animate-pulse">
-                        ● {t('session.item.thinking')}
-                    </span>
-                ) : null}
-                {todoProgress ? (
-                    <span className="flex items-center gap-1 rounded-[6px] border border-[var(--app-badge-success-border)] bg-[var(--app-badge-success-bg)] px-2 py-0.5 font-mono text-[10px] text-[var(--app-badge-success-text)]">
-                        <BulbIcon className="h-3 w-3" />
-                        {todoProgress.completed}/{todoProgress.total}
-                    </span>
-                ) : null}
-                {s.pendingRequestsCount > 0 ? (
-                    <span className="rounded-[6px] border border-[var(--app-badge-warning-border)] bg-[var(--app-badge-warning-bg)] px-2 py-0.5 font-mono text-[10px] text-[var(--app-badge-warning-text)]">
-                        {t('session.item.pending')} {s.pendingRequestsCount}
-                    </span>
-                ) : null}
-            </div>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-[var(--app-hint)]">
-                <span className="font-mono text-[10px] text-[var(--app-hint)]">
+                </span>
+                <span className="font-mono text-[11px] text-[var(--app-hint)]">
                     {getAgentLabel(s)}
                 </span>
-                {modelLabel ? (
-                    <span className="rounded-[6px] border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2 py-0.5 font-mono text-[10px] text-[var(--app-hint)]">{t(modelLabel.key)}: {modelLabel.value}</span>
-                ) : null}
-                {s.metadata?.worktree?.branch ? (
-                    <span className="rounded-[6px] border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2 py-0.5 font-mono text-[10px] text-[var(--app-hint)]">{t('session.item.worktree')}: {s.metadata.worktree.branch}</span>
-                ) : null}
             </div>
         </>
     )
     return (
         <>
-            <div className={`rounded-[var(--app-radius-control)] border transition-all duration-200 ${selected ? 'border-[var(--app-link)] shadow-[0_0_0_3px_rgba(201,100,66,0.12)]' : 'border-transparent bg-[var(--app-panel-elevated-bg)] hover:border-[var(--app-border)] hover:shadow-[var(--app-shadow-sm)] hover:-translate-y-px'}`}>
-                <div className="flex items-start gap-3 px-4 py-4">
+            <div className={`rounded-[var(--app-radius-control)] border transition-all duration-200 active:scale-[0.98] ${selected ? 'border-[var(--app-link)] shadow-[0_0_0_3px_rgba(201,100,66,0.12)]' : 'border-transparent bg-[var(--app-panel-elevated-bg)] hover:border-[var(--app-border)] hover:shadow-[var(--app-shadow-sm)] hover:-translate-y-px'}`}>
+                <div className="grid items-start gap-3 px-[18px] py-[14px]" style={{ gridTemplateColumns: '10px 1fr auto' }}>
                     {selectionMode ? (
                         <button
                             type="button"
@@ -659,7 +659,7 @@ export function SessionList(props: {
                             <button
                                 type="button"
                                 onClick={() => toggleGroup(group.key, isCollapsed)}
-                                className={`flex w-full items-center justify-between gap-4 rounded-[var(--app-radius-control)] px-4 py-3 text-left transition-colors hover:bg-[var(--app-subtle-bg)] ${!isCollapsed ? 'border-b border-[var(--app-border)]' : ''}`}
+                                className={`flex w-full items-center justify-between gap-4 rounded-[var(--app-radius-control)] px-5 py-[14px] text-left transition-colors hover:bg-[var(--app-subtle-bg)] ${!isCollapsed ? 'border-b border-[var(--app-border)]' : ''}`}
                             >
                                 <div className="min-w-0">
                                     <div className="flex min-w-0 items-center gap-2">
@@ -757,6 +757,10 @@ export function SessionList(props: {
                             }}
                             disabled={selectedIds.size === 0}
                         >
+                            <svg className="w-3.5 h-3.5 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                            </svg>
                             {t('session.action.archive')}
                         </Button>
                         <Button
@@ -766,6 +770,10 @@ export function SessionList(props: {
                             onClick={() => setBulkDeleteOpen(true)}
                             disabled={selectedIds.size === 0}
                         >
+                            <svg className="w-3.5 h-3.5 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="3 6 5 6 21 6" />
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                            </svg>
                             {t('dialog.delete.confirm')}
                         </Button>
                     </div>
