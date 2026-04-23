@@ -13,7 +13,7 @@
     --app-secondary-bg: #faf9f5;
 
     /* Theme-aware colors (light mode defaults) */
-    --app-border: #f0eee6;
+    --app-border: #ebe7dc;
     --app-divider: rgba(20, 20, 19, 0.08);
     --app-subtle-bg: #e8e6dc;
     --app-code-bg: #f3f0e8;
@@ -51,7 +51,7 @@
     --app-ring: 0 0 0 1px rgba(113, 92, 69, 0.08);
 
     --app-font-serif: Georgia, 'Times New Roman', serif;
-    --app-font-sans: 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+    --app-font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --app-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
     --app-radius-panel: 24px;
@@ -86,7 +86,7 @@
     --app-hint: #b0aea5;
     --app-link: #d97757;
     --app-button: #d97757;
-    --app-button-text: #141413;
+    --app-button-text: #faf9f5;
     --app-banner-bg: #30302e;
     --app-banner-text: #f5f1e8;
     --app-secondary-bg: #1d1c1a;
@@ -132,7 +132,7 @@
     --app-fg-tertiary: #87867f;
     --app-fg-dark: #d1cfc5;
     --app-accent-light: #e8956e;
-    --app-error: #e05a5a;
+    --app-error: #e08c72;
     --app-warning: #dfad61;
     --app-success: #8ab08d;
     --app-focus: #3898ec;
@@ -148,9 +148,7 @@ html {
 
 body {
     font-family: var(--app-font-sans);
-    background:
-        radial-gradient(circle at top, rgba(201, 100, 66, 0.05), transparent 32%),
-        var(--app-bg);
+    background: var(--app-bg);
     color: var(--app-fg);
 }
 

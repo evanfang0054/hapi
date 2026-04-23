@@ -245,7 +245,7 @@ function GitFileRow(props: {
 
     return (
         <div
-            className={`flex w-full items-center gap-3 px-3 py-2 hover:bg-[var(--app-subtle-bg)] transition-colors ${props.showDivider ? 'border-b border-[var(--app-divider)]' : ''}`}
+            className={`flex w-full items-center gap-3 px-4 py-[10px] hover:bg-[var(--app-subtle-bg)] transition-colors ${props.showDivider ? 'border-b border-[var(--app-divider)]' : ''}`}
         >
             <button
                 type="button"
@@ -256,11 +256,11 @@ function GitFileRow(props: {
                 <div className="min-w-0 flex-1">
                     <div className="truncate font-medium">{props.file.fileName}</div>
                     {props.file.status === 'renamed' && props.file.oldPath ? (
-                        <div className="truncate text-[11px] text-[var(--app-hint)]" style={{ fontFamily: 'var(--app-font-mono)' }}>
+                        <div className="truncate text-[11px] text-[var(--app-hint)] font-mono" style={{ fontFamily: 'var(--app-font-mono)' }}>
                             {props.file.oldPath} → {props.file.filePath}
                         </div>
                     ) : (
-                        <div className="truncate text-xs text-[var(--app-hint)]" style={{ fontFamily: 'var(--app-font-mono)' }}>{subtitle}</div>
+                        <div className="truncate text-xs text-[var(--app-hint)] font-mono" style={{ fontFamily: 'var(--app-font-mono)' }}>{subtitle}</div>
                     )}
                 </div>
             </button>
@@ -273,7 +273,7 @@ function GitFileRow(props: {
                             type="button"
                             onClick={(e) => handleAction(e, props.onUnstage)}
                             disabled={props.actionLoading}
-                            className="p-1.5 rounded hover:bg-[var(--app-panel-muted-bg)] text-[var(--app-hint)] hover:text-[var(--app-fg)] transition-colors disabled:opacity-50"
+                            className="p-1.5 rounded-[6px] hover:bg-[var(--app-panel-muted-bg)] text-[var(--app-hint)] hover:text-[var(--app-fg)] transition-colors disabled:opacity-50"
                             title={t('sessionFiles.action.unstage')}
                         >
                             <MinusIcon />
@@ -284,7 +284,7 @@ function GitFileRow(props: {
                                 type="button"
                                 onClick={(e) => handleAction(e, props.onStage)}
                                 disabled={props.actionLoading}
-                                className="p-1.5 rounded hover:bg-[var(--app-panel-muted-bg)] text-[var(--app-hint)] hover:text-[var(--app-fg)] transition-colors disabled:opacity-50"
+                                className="p-1.5 rounded-[6px] hover:bg-[var(--app-panel-muted-bg)] text-[var(--app-hint)] hover:text-[var(--app-fg)] transition-colors disabled:opacity-50"
                                 title={t('sessionFiles.action.stage')}
                             >
                                 <PlusIcon />
@@ -294,7 +294,7 @@ function GitFileRow(props: {
                                     type="button"
                                     onClick={(e) => handleAction(e, props.onClean, 'delete')}
                                     disabled={props.actionLoading}
-                                    className="p-1.5 rounded hover:bg-[var(--app-panel-muted-bg)] text-[var(--app-hint)] hover:text-[var(--app-git-deleted-color)] transition-colors disabled:opacity-50"
+                                    className="p-1.5 rounded-[6px] hover:bg-[var(--app-panel-muted-bg)] text-[var(--app-hint)] hover:text-[var(--app-git-deleted-color)] transition-colors disabled:opacity-50"
                                 >
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
                                         <polyline points="3 6 5 6 21 6" />
@@ -306,7 +306,7 @@ function GitFileRow(props: {
                                     type="button"
                                     onClick={(e) => handleAction(e, props.onDiscard, 'discard')}
                                     disabled={props.actionLoading}
-                                    className="p-1.5 rounded hover:bg-[var(--app-panel-muted-bg)] text-[var(--app-hint)] hover:text-[var(--app-git-deleted-color)] transition-colors disabled:opacity-50"
+                                    className="p-1.5 rounded-[6px] hover:bg-[var(--app-panel-muted-bg)] text-[var(--app-hint)] hover:text-[var(--app-git-deleted-color)] transition-colors disabled:opacity-50"
                                 >
                                     <UndoIcon />
                                 </button>
@@ -330,7 +330,7 @@ function HighlightedText(props: { text: string; query: string }) {
             {parts.map((part, i) => {
                 const isMatch = part.toLowerCase() === props.query.toLowerCase() && part.length > 0
                 return isMatch
-                    ? <span key={i} className="rounded-sm bg-[rgba(201,100,66,0.25)] px-0.5 text-[var(--app-link)]">{part}</span>
+                    ? <span key={i} className="rounded-sm bg-[color-mix(in_srgb,var(--app-link)_25%,transparent)] px-0.5 text-[var(--app-link)]">{part}</span>
                     : <span key={i}>{part}</span>
             })}
         </>
@@ -353,14 +353,14 @@ function SearchResultRow(props: {
         <button
             type="button"
             onClick={props.onOpen}
-            className={`flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-[var(--app-subtle-bg)] transition-colors ${props.showDivider ? 'border-b border-[var(--app-divider)]' : ''}`}
+            className={`flex w-full items-center gap-3 px-4 py-[10px] text-left hover:bg-[var(--app-subtle-bg)] transition-colors ${props.showDivider ? 'border-b border-[var(--app-divider)]' : ''}`}
         >
             {icon}
             <div className="min-w-0 flex-1">
                 <div className="truncate font-medium">
                     <HighlightedText text={props.file.fileName} query={props.searchQuery} />
                 </div>
-                <div className="truncate text-xs text-[var(--app-hint)]">{subtitle}</div>
+                <div className="truncate text-xs text-[var(--app-hint)] font-mono">{subtitle}</div>
             </div>
         </button>
     )
@@ -559,7 +559,7 @@ export default function FilesPage() {
     }, [api, sessionId, refetchGit, addToast, t])
 
     return (
-        <div className="flex h-full min-h-0 flex-col bg-[var(--app-bg)]">
+        <div className="flex h-full min-h-0 flex-col bg-[var(--app-bg)]" style={{ paddingTop: 'calc(16px + env(safe-area-inset-top))' }}>
             <div className="app-scroll-y flex-1 min-h-0">
                 <div className="mx-auto w-full max-w-content px-2 py-2 md:px-3 md:py-3">
                     <div className="space-y-4">
@@ -691,7 +691,7 @@ export default function FilesPage() {
                                         <div className="px-5 py-10 text-sm text-[var(--app-hint)] sm:px-6">{searchResults.error}</div>
                                     ) : searchResults.files.length === 0 ? (
                                         <div className="flex flex-col items-center justify-center py-12 text-center">
-                                            <div className="w-16 h-16 rounded-full bg-[var(--app-subtle-bg)] flex items-center justify-center mb-4">
+                                            <div className="w-14 h-14 rounded-full bg-[var(--app-subtle-bg)] flex items-center justify-center mb-4">
                                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-7 h-7 text-[var(--app-hint)]">
                                                     <circle cx="11" cy="11" r="8" />
                                                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -733,7 +733,7 @@ export default function FilesPage() {
                                     <div>
                                         {gitStatus?.stagedFiles.length ? (
                                             <div>
-                                                <div className="flex items-center justify-between border-b border-[var(--app-divider)] bg-[var(--app-panel-muted-bg)] px-5 py-2 sm:px-6">
+                                                <div className="flex items-center justify-between border-b border-[var(--app-divider)] bg-[var(--app-panel-muted-bg)] px-4 py-2">
                                                     <span className="text-xs font-semibold text-[var(--app-git-staged-color)]">
                                                         {t('sessionFiles.section.staged', { count: gitStatus.stagedFiles.length })}
                                                     </span>
@@ -764,7 +764,7 @@ export default function FilesPage() {
 
                                         {gitStatus?.unstagedFiles.length ? (
                                             <div>
-                                                <div className="flex items-center justify-between border-b border-[var(--app-divider)] bg-[var(--app-panel-muted-bg)] px-5 py-2 sm:px-6">
+                                                <div className="flex items-center justify-between border-b border-[var(--app-divider)] bg-[var(--app-panel-muted-bg)] px-4 py-2">
                                                     <span className="text-xs font-semibold text-[var(--app-git-unstaged-color)]">
                                                         {t('sessionFiles.section.unstaged', { count: gitStatus.unstagedFiles.length })}
                                                     </span>
@@ -814,7 +814,7 @@ export default function FilesPage() {
 
                                         {gitStatus && gitStatus.stagedFiles.length === 0 && gitStatus.unstagedFiles.length === 0 ? (
                                             <div className="flex flex-col items-center justify-center py-12 text-center">
-                                                <div className="w-16 h-16 rounded-full bg-[var(--app-subtle-bg)] flex items-center justify-center mb-4">
+                                                <div className="w-14 h-14 rounded-full bg-[var(--app-subtle-bg)] flex items-center justify-center mb-4">
                                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-7 h-7 text-[var(--app-hint)]">
                                                         <polyline points="20 6 9 17 4 12" />
                                                     </svg>

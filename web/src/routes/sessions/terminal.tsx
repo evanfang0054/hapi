@@ -44,9 +44,9 @@ function ConnectionIndicator(props: { status: 'idle' | 'connecting' | 'connected
     const isConnecting = props.status === 'connecting'
     const label = props.label
     const colorClass = isConnected
-        ? 'bg-[var(--app-badge-success-text)]'
+        ? 'bg-[var(--app-success)]'
         : isConnecting
-          ? 'bg-[var(--app-badge-warning-text)] animate-pulse'
+          ? 'bg-[var(--app-warning)] animate-pulse'
           : 'bg-[var(--app-hint)]'
 
     return (
@@ -171,7 +171,7 @@ function QuickKeyButton(props: {
             disabled={disabled}
             aria-pressed={modifier ? isActive : undefined}
             className={`flex-1 border-l border-[var(--app-border)] px-2 py-1.5 text-xs font-medium text-[var(--app-fg)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-button)] focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent first:border-l-0 active:bg-[var(--app-subtle-bg)] sm:px-3 sm:text-sm ${
-                isActive ? 'bg-[var(--app-link)] text-[var(--app-bg)]' : 'hover:bg-[var(--app-subtle-bg)]'
+                isActive ? 'bg-[var(--app-link)] text-white' : 'hover:bg-[var(--app-subtle-bg)]'
             }`}
             aria-label={input.description}
             title={popupDescription ? `${input.description} (long press: ${popupDescription})` : input.description}
@@ -442,7 +442,7 @@ export default function TerminalPage() {
                                         <BackIcon />
                                     </button>
                                     <div className="min-w-0 flex-1">
-                                        <CardTitle className="truncate text-base leading-tight md:text-xl" data-ui-heading="serif">
+                                        <CardTitle className="truncate text-base italic leading-tight md:text-xl" data-ui-heading="serif">
                                             {t('terminal.page.title')}
                                         </CardTitle>
                                         <p className="mt-0.5 truncate text-xs text-[var(--app-hint)] md:hidden">
@@ -515,7 +515,7 @@ export default function TerminalPage() {
                         </CardHeader>
 
                         <CardContent className="relative flex min-h-0 flex-1 flex-col gap-2 md:gap-4 md:px-6 md:py-5">
-                            <div className="relative min-h-0 flex-1 overflow-hidden rounded-lg border border-[var(--app-border)] bg-[var(--app-code-bg)]">
+                            <div className="relative min-h-0 flex-1 overflow-hidden rounded-lg border border-[var(--app-border)] bg-[#1a1a1a]">
                                 {terminalSupported ? (
                                     <TerminalView onMount={handleTerminalMount} onResize={handleResize} fontSize={terminalFontSize} className="h-full w-full" />
                                 ) : (
@@ -532,7 +532,7 @@ export default function TerminalPage() {
                                     </div>
                                 )}
                                 {exitInfo && terminalSupported ? (
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-[var(--app-bg)]/80 gap-3 text-center font-mono text-[13px] text-[var(--app-hint)]">
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-[rgba(26,26,26,0.9)] gap-3 text-center font-mono text-[13px] text-[#888]">
                                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                                             <circle cx="12" cy="12" r="10" />
                                             <line x1="12" y1="8" x2="12" y2="12" />
@@ -546,9 +546,9 @@ export default function TerminalPage() {
                                 ) : null}
                             </div>
 
-                            <div className="space-y-1.5 border-t border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] p-2 md:space-y-3 md:p-4">
+                            <div className="space-y-1.5 border-t border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] p-[10px_12px] md:space-y-3 md:p-[12px_16px]" style={{ paddingBottom: 'calc(10px + env(safe-area-inset-bottom))' }}>
                                 <div className="hidden md:block">
-                                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--app-hint)]">
+                                    <p className="text-[10px] font-semibold uppercase tracking-[0.5px] text-[var(--app-hint)]">
                                         {t('terminal.quickInput.title')}
                                     </p>
                                     <p className="mt-1 text-sm text-[var(--app-hint)]">
@@ -572,7 +572,7 @@ export default function TerminalPage() {
                                         autoCorrect="off"
                                         autoCapitalize="off"
                                         spellCheck={false}
-                                        className="flex-1 rounded-[var(--app-radius-control)] border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-3 py-1.5 text-sm text-[var(--app-fg)] placeholder-[var(--app-hint)] focus:outline-none focus:ring-2 focus:ring-[var(--app-link)] focus:ring-inset disabled:cursor-not-allowed disabled:opacity-50"
+                                        className="flex-1 font-mono rounded-[12px] border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-3 py-1.5 text-sm text-[var(--app-fg)] placeholder-[var(--app-hint)] focus:outline-none focus:border-[var(--app-link)] disabled:cursor-not-allowed disabled:opacity-50"
                                     />
                                     <button
                                         type="button"
@@ -586,7 +586,7 @@ export default function TerminalPage() {
                                 {QUICK_INPUT_ROWS.map((row, rowIndex) => (
                                     <div
                                         key={`terminal-quick-row-${rowIndex}`}
-                                        className="flex items-stretch overflow-hidden rounded-[var(--app-radius-control)] border border-[var(--app-border)] bg-[var(--app-panel-bg)]"
+                                        className="flex items-stretch overflow-hidden rounded-[12px] border border-[var(--app-border)] bg-[var(--app-panel-bg)]"
                                     >
                                         {row.map((input) => {
                                             const modifier = input.modifier

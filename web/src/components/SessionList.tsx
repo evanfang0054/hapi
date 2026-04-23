@@ -285,7 +285,7 @@ function SessionItem(props: {
                         </div>
                     ) : null}
                 </div>
-                <div className="shrink-0 font-mono text-[11px] text-[var(--app-hint)]">
+                <div className="shrink-0 font-mono text-[11px] text-[var(--app-hint)] bg-[var(--app-subtle-bg)] px-[10px] py-[4px] rounded-full">
                     {formatRelativeTime(s.updatedAt, t)}
                 </div>
             </div>
@@ -325,20 +325,28 @@ function SessionItem(props: {
             <div className={`rounded-[var(--app-radius-control)] border transition-all duration-200 ${selected ? 'border-[var(--app-link)] shadow-[0_0_0_3px_rgba(201,100,66,0.12)]' : 'border-transparent bg-[var(--app-panel-elevated-bg)] hover:border-[var(--app-border)] hover:shadow-[var(--app-shadow-sm)] hover:-translate-y-px'}`}>
                 <div className="flex items-start gap-3 px-4 py-4">
                     {selectionMode ? (
-                        <input
-                            type="checkbox"
+                        <button
+                            type="button"
+                            role="checkbox"
+                            aria-checked={selectionChecked}
                             aria-label={sessionName}
-                            className="mt-1 shrink-0"
-                            checked={selectionChecked}
                             disabled={s.active}
                             onClick={(event) => {
                                 event.stopPropagation()
-                            }}
-                            onChange={(event) => {
-                                event.stopPropagation()
                                 onToggleSelected?.(s.id, s.active)
                             }}
-                        />
+                            className="mt-1 shrink-0 h-5 w-5 rounded-[6px] border-2 flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            style={{
+                                borderColor: selectionChecked ? 'var(--app-link)' : 'var(--app-border)',
+                                backgroundColor: selectionChecked ? 'var(--app-link)' : 'transparent',
+                            }}
+                        >
+                            {selectionChecked && (
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="2 6 5 9 10 3" />
+                                </svg>
+                            )}
+                        </button>
                     ) : (
                         <span className="mt-1 flex h-4 w-4 shrink-0 items-center justify-center" aria-hidden="true">
                             <span className={`h-2.5 w-2.5 rounded-full ${statusDotClass}`} />
@@ -655,10 +663,10 @@ export function SessionList(props: {
                             >
                                 <div className="min-w-0">
                                     <div className="flex min-w-0 items-center gap-2">
-                                        <span className="font-semibold text-sm break-words min-w-0" title={group.directory} style={{ fontFamily: 'var(--app-font-serif)' }}>
+                                        <span className="font-semibold text-[15px] break-words min-w-0" title={group.directory} style={{ fontFamily: 'var(--app-font-serif)' }}>
                                             {group.displayName}
                                         </span>
-                                        <span className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium text-white" style={{ background: 'var(--app-link)' }}>
+                                        <span className="shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium text-white" style={{ background: 'var(--app-link)' }}>
                                             {group.sessions.length}
                                         </span>
                                     </div>

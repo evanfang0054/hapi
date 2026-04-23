@@ -8,6 +8,10 @@ import { CliOutputBlock } from '@/components/CliOutputBlock'
 import { CopyIcon, CheckIcon } from '@/components/icons'
 import { useCopyToClipboard } from '@/hooks/useCopyToClipboard'
 
+function formatMessageTime(date: Date): string {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+}
+
 export function HappyUserMessage() {
     const ctx = useHappyChatContext()
     const { copied, copy } = useCopyToClipboard()
@@ -40,12 +44,11 @@ export function HappyUserMessage() {
         if (custom?.kind !== 'cli-output') return ''
         return message.content.find((part) => part.type === 'text')?.text ?? ''
     })
+    const createdAt = useAssistantState(({ message }) => message.createdAt)
 
     if (role !== 'user') return null
     const canRetry = status === 'failed' && typeof localId === 'string' && Boolean(ctx.onRetryMessage)
     const onRetry = canRetry ? () => ctx.onRetryMessage!(localId) : undefined
-
-    const userBubbleClass = 'ml-auto w-fit min-w-0 max-w-[min(78ch,85%)] rounded-[20px] rounded-br-[6px] bg-[var(--app-link)] px-[18px] py-[14px] text-white animate-msg-in'
 
     if (isCliOutput) {
         return (
@@ -61,28 +64,37 @@ export function HappyUserMessage() {
     const hasAttachments = attachments && attachments.length > 0
 
     return (
-        <MessagePrimitive.Root className={`${userBubbleClass} group/msg`}>
-            <div className="flex items-end gap-2">
-                <div className="flex-1 min-w-0">
-                    {hasText && <LazyRainbowText text={text} />}
-                    {hasAttachments && <MessageAttachments attachments={attachments} />}
-                </div>
-                {(hasText || status) && (
-                    <div className="shrink-0 self-end pb-0.5 flex items-center gap-1">
-                        {hasText && (
-                            <button
-                                type="button"
-                                title="Copy"
-                                className="opacity-60 sm:opacity-0 sm:group-hover/msg:opacity-100 transition-[opacity,background-color] p-0.5 rounded hover:bg-white/20"
-                                onClick={() => copy(text)}
-                            >
-                                {copied
-                                    ? <CheckIcon className="h-3.5 w-3.5 text-green-500" />
-                                    : <CopyIcon className="h-3.5 w-3.5 text-[var(--app-hint)]" />}
-                            </button>
-                        )}
-                        {status && <MessageStatusIndicator status={status} onRetry={onRetry} />}
+        <MessagePrimitive.Root className="ml-auto w-fit min-w-0 max-w-[min(78ch,85%)] group/msg animate-msg-in">
+            <div className="ml-auto w-fit min-w-0 max-w-[min(78ch,85%)] rounded-[20px] rounded-br-[6px] bg-[var(--app-link)] px-[18px] py-[14px] text-white">
+                <div className="flex items-end gap-2">
+                    <div className="flex-1 min-w-0">
+                        {hasText && <LazyRainbowText text={text} />}
+                        {hasAttachments && <MessageAttachments attachments={attachments} />}
                     </div>
+                    {status && (
+                        <div className="shrink-0 self-end pb-0.5 flex items-center gap-1">
+                            <MessageStatusIndicator status={status} onRetry={onRetry} />
+                        </div>
+                    )}
+                </div>
+            </div>
+            <div className="mt-1 flex items-center justify-end gap-2 opacity-0 transition-opacity group-hover/msg:opacity-100">
+                {createdAt ? (
+                    <span className="text-[10px] text-[var(--app-hint)]">
+                        {formatMessageTime(createdAt)}
+                    </span>
+                ) : null}
+                {hasText && (
+                    <button
+                        type="button"
+                        className="flex items-center gap-1 rounded-full px-2 py-1 text-[10px] text-[var(--app-hint)] transition-colors hover:bg-[var(--app-subtle-bg)] hover:text-[var(--app-fg)]"
+                        onClick={() => copy(text)}
+                    >
+                        {copied
+                            ? <CheckIcon className="h-3 w-3 text-green-500" />
+                            : <CopyIcon className="h-3 w-3" />}
+                        <span>{copied ? 'Copied' : 'Copy'}</span>
+                    </button>
                 )}
             </div>
         </MessagePrimitive.Root>

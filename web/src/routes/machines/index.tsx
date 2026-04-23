@@ -38,15 +38,15 @@ function MachineDrawer({
             />
             {/* Drawer */}
             <div
-                className="fixed inset-x-0 bottom-0 z-50 rounded-t-[var(--app-radius-2xl)] bg-[var(--app-panel-bg)] border-t border-[var(--app-border)] shadow-[var(--app-shadow-md)] animate-[drawer-slide-up_0.3s_ease-out] max-h-[85vh] overflow-y-auto pb-[env(safe-area-inset-bottom)]"
+                className="fixed inset-x-0 bottom-0 z-50 rounded-t-[20px] bg-[var(--app-panel-bg)] border-t border-[var(--app-border)] shadow-[var(--app-shadow-md)] animate-[drawer-slide-up_0.3s_cubic-bezier(0.32,0.72,0,1)] max-h-[85vh] overflow-y-auto pb-[env(safe-area-inset-bottom)]"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Handle */}
-                <div className="mx-auto mt-2 mb-4 h-1 w-7 rounded-full bg-[var(--app-border)]" />
+                <div className="mx-auto mt-3 mb-4 h-1 w-9 rounded-sm bg-[var(--app-border)]" />
 
                 {/* Header: Icon + Name + ID */}
                 <div className="flex items-center gap-3.5 px-5 pb-4 border-b border-[var(--app-border)]">
-                    <div className={`w-11 h-11 rounded-[12px] flex items-center justify-center shrink-0 ${isActive ? 'bg-[rgba(95,138,99,0.12)]' : 'bg-[var(--app-subtle-bg)]'}`}>
+                    <div className={`w-11 h-11 rounded-[12px] flex items-center justify-center shrink-0 ${isActive ? 'bg-[rgba(95,138,99,0.12)] [html[data-theme=dark]_&]:bg-[rgba(138,176,141,0.15)]' : 'bg-[var(--app-subtle-bg)]'}`}>
                         <svg viewBox="0 0 24 24" fill="none" stroke={isActive ? 'var(--app-git-staged-color)' : 'var(--app-hint)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[22px] h-[22px]">
                             <rect x="2" y="3" width="20" height="14" rx="2" />
                             <line x1="8" y1="21" x2="16" y2="21" />
@@ -95,7 +95,7 @@ function MachineDrawer({
                     <button
                         type="button"
                         onClick={onNewSession}
-                        className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-[14px] text-[14px] font-medium border border-[var(--app-link)] bg-[var(--app-link)] text-white hover:opacity-90 transition-colors"
+                        className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-[14px] text-[14px] font-medium border border-[var(--app-link)] bg-[var(--app-link)] text-white hover:bg-[#d97757] transition-colors"
                     >
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
                             <line x1="12" y1="5" x2="12" y2="19" />
@@ -124,7 +124,7 @@ function MachineCard({ machine, onClick }: { machine: Machine; onClick: () => vo
         >
             {/* Header: Icon + Name + Status */}
             <div className="flex items-start gap-3.5">
-                <div className={`w-11 h-11 rounded-[12px] flex items-center justify-center shrink-0 ${isActive ? 'bg-[rgba(95,138,99,0.12)]' : 'bg-[var(--app-subtle-bg)]'}`}>
+                <div className={`w-11 h-11 rounded-[12px] flex items-center justify-center shrink-0 ${isActive ? 'bg-[rgba(95,138,99,0.12)] [html[data-theme=dark]_&]:bg-[rgba(138,176,141,0.15)]' : 'bg-[var(--app-subtle-bg)]'}`}>
                     <svg viewBox="0 0 24 24" fill="none" stroke={isActive ? 'var(--app-git-staged-color)' : 'var(--app-hint)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[22px] h-[22px]">
                         <rect x="2" y="3" width="20" height="14" rx="2" />
                         <line x1="8" y1="21" x2="16" y2="21" />
@@ -134,7 +134,7 @@ function MachineCard({ machine, onClick }: { machine: Machine; onClick: () => vo
                 <div className="flex-1 min-w-0">
                     <div className="text-[16px] font-semibold text-[var(--app-fg)] flex items-center gap-2">
                         <span className="truncate">{title}</span>
-                        <span className={`w-2 h-2 rounded-full shrink-0 ${isActive ? 'bg-[var(--app-git-staged-color)] shadow-[0_0_6px_var(--app-git-staged-color)]' : 'bg-[var(--app-hint)] opacity-40'}`} />
+                        <span className={`w-2 h-2 rounded-full shrink-0 ${isActive ? 'bg-[var(--app-git-staged-color)] shadow-[0_0_6px_var(--app-git-staged-color)]' : 'bg-[var(--app-hint)]'}`} />
                     </div>
                     <div className="text-[11px] text-[var(--app-hint)] mt-0.5 font-mono">{machine.id.slice(0, 8)}</div>
                 </div>
@@ -162,13 +162,13 @@ function MachineCard({ machine, onClick }: { machine: Machine; onClick: () => vo
 
             {/* Runner error */}
             {runnerError ? (
-                <div className="mt-3 rounded-[12px] border border-[var(--app-badge-error-border)] bg-[var(--app-badge-error-bg)] p-3 flex items-start gap-2">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--app-badge-error-text)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 shrink-0 mt-0.5">
+                <div className="mt-3 rounded-[12px] border bg-[rgba(181,51,51,0.08)] [html[data-theme=dark]_&]:bg-[rgba(224,140,114,0.1)] border-[rgba(181,51,51,0.2)] [html[data-theme=dark]_&]:border-[rgba(224,140,114,0.2)] p-3 flex items-start gap-2">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--app-error)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 shrink-0 mt-0.5">
                         <circle cx="12" cy="12" r="10" />
                         <line x1="12" y1="8" x2="12" y2="12" />
                         <line x1="12" y1="16" x2="12.01" y2="16" />
                     </svg>
-                    <span className="text-[12px] text-[var(--app-badge-error-text)]">{runnerError}</span>
+                    <span className="text-[12px] text-[var(--app-error)]">{runnerError}</span>
                 </div>
             ) : null}
         </div>
@@ -246,15 +246,15 @@ export default function MachinesPage() {
                         {/* Stats row - only show when machines data is loaded */}
                         {machines.length > 0 && (
                             <div className="grid grid-cols-3 gap-3 mb-6">
-                                <div className="bg-[var(--app-panel-bg)] border border-[var(--app-border)] rounded-[12px] p-3 text-center sm:p-4">
+                                <div className="bg-[var(--app-panel-bg)] border border-[var(--app-border)] rounded-[16px] p-3 text-center sm:p-4">
                                     <div className="text-[24px] sm:text-[28px] font-mono font-semibold text-[var(--app-git-staged-color)]">{onlineCount}</div>
                                     <div className="text-[11px] text-[var(--app-hint)] uppercase tracking-[0.05em] mt-1">{t('machines.stats.online')}</div>
                                 </div>
-                                <div className="bg-[var(--app-panel-bg)] border border-[var(--app-border)] rounded-[12px] p-3 text-center sm:p-4">
+                                <div className="bg-[var(--app-panel-bg)] border border-[var(--app-border)] rounded-[16px] p-3 text-center sm:p-4">
                                     <div className="text-[24px] sm:text-[28px] font-mono font-semibold text-[var(--app-hint)]">{offlineCount}</div>
                                     <div className="text-[11px] text-[var(--app-hint)] uppercase tracking-[0.05em] mt-1">{t('machines.stats.offline')}</div>
                                 </div>
-                                <div className="bg-[var(--app-panel-bg)] border border-[var(--app-border)] rounded-[12px] p-3 text-center sm:p-4">
+                                <div className="bg-[var(--app-panel-bg)] border border-[var(--app-border)] rounded-[16px] p-3 text-center sm:p-4">
                                     <div className="text-[24px] sm:text-[28px] font-mono font-semibold text-[var(--app-fg)]">{machines.length}</div>
                                     <div className="text-[11px] text-[var(--app-hint)] uppercase tracking-[0.05em] mt-1">{t('machines.stats.total')}</div>
                                 </div>

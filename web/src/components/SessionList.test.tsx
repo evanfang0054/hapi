@@ -243,7 +243,7 @@ describe('SessionList', () => {
         await triggerLongPress(inactiveSession.metadata.name)
 
         expect(screen.getByRole('button', { name: /^delete$/i })).toBeInTheDocument()
-        expect(screen.getByRole('checkbox', { name: inactiveSession.metadata.name })).toBeChecked()
+        expect(screen.getByRole('checkbox', { name: inactiveSession.metadata.name })).toHaveAttribute('aria-checked', 'true')
     })
 
     it('does not auto-select an active session on long press', async () => {
@@ -258,7 +258,7 @@ describe('SessionList', () => {
         await triggerLongPress(activeSession.metadata.name)
 
         expect(screen.getByRole('button', { name: /^delete$/i })).toBeDisabled()
-        expect(screen.getByRole('checkbox', { name: activeSession.metadata.name })).not.toBeChecked()
+        expect(screen.getByRole('checkbox', { name: activeSession.metadata.name })).toHaveAttribute('aria-checked', 'false')
     })
 
     it('does not allow selecting active sessions in selection mode', async () => {
@@ -273,7 +273,7 @@ describe('SessionList', () => {
         await triggerLongPress(inactiveSession.metadata.name)
         fireEvent.click(screen.getByRole('checkbox', { name: activeSession.metadata.name }))
 
-        expect(screen.getByRole('checkbox', { name: activeSession.metadata.name })).not.toBeChecked()
+        expect(screen.getByRole('checkbox', { name: activeSession.metadata.name })).toHaveAttribute('aria-checked', 'false')
     })
 
     it('prunes removed selected sessions when sessions change', async () => {
@@ -382,8 +382,8 @@ describe('SessionList', () => {
         fireEvent.click(screen.getByRole('button', { name: /delete selected/i }))
 
         expect(screen.getByRole('button', { name: /^delete$/i })).toBeInTheDocument()
-        expect(screen.getByRole('checkbox', { name: inactiveSession.metadata.name })).toBeChecked()
-        expect(screen.getByRole('checkbox', { name: inactiveSessionB.metadata.name })).toBeChecked()
+        expect(screen.getByRole('checkbox', { name: inactiveSession.metadata.name })).toHaveAttribute('aria-checked', 'true')
+        expect(screen.getByRole('checkbox', { name: inactiveSessionB.metadata.name })).toHaveAttribute('aria-checked', 'true')
     })
 
     it('clears selected ids after bulk delete completes', async () => {

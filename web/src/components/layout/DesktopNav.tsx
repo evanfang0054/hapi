@@ -142,7 +142,7 @@ export function DesktopNav({ onNewSession }: DesktopNavProps) {
                     className="flex items-center justify-center w-8 h-8 rounded-[var(--app-radius-lg)] text-[var(--app-hint)] hover:text-[var(--app-fg)] hover:bg-[var(--app-subtle-bg)] transition-colors"
                     title={isDark ? t('theme.light') : t('theme.dark')}
                 >
-                    {isDark ? <SunIcon /> : <MoonIcon />}
+                    {isDark ? <MoonIcon /> : <SunIcon />}
                 </button>
             </div>
         </header>

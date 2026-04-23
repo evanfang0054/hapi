@@ -32,9 +32,9 @@ const VIBING_MESSAGES = [
 
 const PERMISSION_TONE_CLASSES: Record<PermissionModeTone, string> = {
     neutral: 'text-[var(--app-hint)]',
-    info: 'text-blue-500',
-    warning: 'text-amber-500',
-    danger: 'text-red-500'
+    info: 'text-[var(--app-focus)]',
+    warning: 'text-[var(--app-warning)]',
+    danger: 'text-[var(--app-error)]'
 }
 
 function getConnectionStatus(
@@ -50,8 +50,8 @@ function getConnectionStatus(
     if (voiceStatus === 'connecting') {
         return {
             text: t('voice.connecting'),
-            color: 'text-[#007AFF]',
-            dotColor: 'bg-[#007AFF]',
+            color: 'text-[var(--app-focus)]',
+            dotColor: 'bg-[var(--app-focus)]',
             isPulsing: true
         }
     }
@@ -59,8 +59,8 @@ function getConnectionStatus(
     if (!active) {
         return {
             text: t('misc.offline'),
-            color: 'text-[#999]',
-            dotColor: 'bg-[#999]',
+            color: 'text-[var(--app-hint)]',
+            dotColor: 'bg-[var(--app-hint)]',
             isPulsing: false
         }
     }
@@ -68,8 +68,8 @@ function getConnectionStatus(
     if (hasPermissions) {
         return {
             text: t('misc.permissionRequired'),
-            color: 'text-[#FF9500]',
-            dotColor: 'bg-[#FF9500]',
+            color: 'text-[var(--app-warning)]',
+            dotColor: 'bg-[var(--app-warning)]',
             isPulsing: true
         }
     }
@@ -78,16 +78,16 @@ function getConnectionStatus(
         const vibingMessage = VIBING_MESSAGES[Math.floor(Math.random() * VIBING_MESSAGES.length)].toLowerCase() + '…'
         return {
             text: vibingMessage,
-            color: 'text-[#007AFF]',
-            dotColor: 'bg-[#007AFF]',
+            color: 'text-[var(--app-focus)]',
+            dotColor: 'bg-[var(--app-focus)]',
             isPulsing: true
         }
     }
 
     return {
         text: t('misc.online'),
-        color: 'text-[#34C759]',
-        dotColor: 'bg-[#34C759]',
+        color: 'text-[var(--app-success)]',
+        dotColor: 'bg-[var(--app-success)]',
         isPulsing: false
     }
 }
@@ -98,9 +98,9 @@ function getContextWarning(contextSize: number, maxContextSize: number, t: (key:
 
     const percent = Math.round(percentageRemaining)
     if (percentageRemaining <= 5) {
-        return { text: t('misc.percentLeft', { percent }), color: 'text-red-500' }
+        return { text: t('misc.percentLeft', { percent }), color: 'text-[var(--app-error)]' }
     } else if (percentageRemaining <= 10) {
-        return { text: t('misc.percentLeft', { percent }), color: 'text-amber-500' }
+        return { text: t('misc.percentLeft', { percent }), color: 'text-[var(--app-warning)]' }
     } else {
         return { text: t('misc.percentLeft', { percent }), color: 'text-[var(--app-hint)]' }
     }
@@ -179,7 +179,7 @@ export function StatusBar(props: {
                     </span>
                 ) : null}
                 {collaborationModeLabel ? (
-                    <span className="text-xs text-blue-500">
+                    <span className="text-xs text-[var(--app-focus)]">
                         {collaborationModeLabel}
                     </span>
                 ) : null}

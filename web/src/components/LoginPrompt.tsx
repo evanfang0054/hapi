@@ -151,7 +151,7 @@ export function LoginPrompt(props: LoginPromptProps) {
                     >
                         {title}
                     </h1>
-                    <p className="text-[15px] text-[var(--app-hint)] leading-relaxed">{subtitle}</p>
+                    <p className="text-[15px] text-[var(--app-hint)] leading-[1.5]">{subtitle}</p>
                 </div>
 
                 {/* Card */}
@@ -204,7 +204,7 @@ export function LoginPrompt(props: LoginPromptProps) {
                         >
                             {isLoading ? (
                                 <>
-                                    <span className="inline-block h-[18px] w-[18px] animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                                    <span className="inline-block h-[18px] w-[18px] animate-[spin_0.8s_linear_infinite] rounded-full border-2 border-white/30 border-t-white" />
                                     {isBindMode ? t('login.bind.submitting') : t('login.submitting')}
                                 </>
                             ) : (
@@ -225,7 +225,7 @@ export function LoginPrompt(props: LoginPromptProps) {
                                         Hub {props.serverUrl ? t('login.server.custom') : t('login.server.default')}
                                     </button>
                                 </DialogTrigger>
-                                <DialogContent className="max-w-md">
+                                <DialogContent className="max-w-[420px]">
                                     <DialogHeader>
                                         <DialogTitle>{t('login.server.title')}</DialogTitle>
                                         <DialogDescription>

@@ -57,8 +57,8 @@ describe('SessionHeader', () => {
         expect(screen.getByText(/Worktree: feat\/redesign/i)).toBeInTheDocument()
     })
 
-    it('calls onRefresh when refresh button is clicked', () => {
-        const onRefresh = vi.fn()
+    it('renders terminal button when onViewTerminal is provided', () => {
+        const onViewTerminal = vi.fn()
 
         renderWithProviders(
             <SessionHeader
@@ -72,12 +72,11 @@ describe('SessionHeader', () => {
                     },
                 } as any}
                 onBack={vi.fn()}
-                onRefresh={onRefresh}
+                onViewTerminal={onViewTerminal}
                 api={null}
             />
         )
 
-        fireEvent.click(screen.getByRole('button', { name: '刷新' }))
-        expect(onRefresh).toHaveBeenCalledTimes(1)
+        expect(screen.getByRole('button', { name: /terminal/i })).toBeInTheDocument()
     })
 })

@@ -454,8 +454,8 @@ export function NewSession(props: {
                             onAgentChange={setAgent}
                         />
 
-                        {/* Model & Effort — side by side */}
-                        <div className="flex gap-3">
+                        {/* Model & Effort — side by side on desktop, stacked on mobile */}
+                        <div className="flex flex-col sm:flex-row gap-3">
                             <div className="flex-1">
                                 <ModelSelector
                                     agent={agent}

@@ -130,7 +130,7 @@ export function MobileTabBar({ onNewSession, hidden }: MobileTabBarProps) {
             <button
                 type="button"
                 onClick={onNewSession}
-                className="relative -mt-6 w-14 h-14 rounded-full bg-gradient-to-br from-[var(--app-link)] to-[#d97757] text-white border-none cursor-pointer flex items-center justify-center shadow-[0_4px_16px_rgba(201,100,66,0.35)] transition-all duration-200 hover:scale-108 hover:shadow-[0_6px_24px_rgba(201,100,66,0.45)] active:scale-95"
+                className="relative -mt-6 w-12 h-12 rounded-full bg-[var(--app-link)] text-white border-none cursor-pointer flex items-center justify-center shadow-[0_4px_12px_rgba(201,100,66,0.3)] transition-all duration-200 active:scale-95"
             >
                 <PlusIcon />
             </button>

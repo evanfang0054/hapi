@@ -100,7 +100,7 @@ describe('SettingsPage', () => {
         renderWithProviders(<SettingsPage />)
 
         expect(screen.getAllByText('Language').length).toBeGreaterThanOrEqual(1)
-        expect(screen.getAllByText('Display').length).toBeGreaterThanOrEqual(1)
+        expect(screen.getAllByText('Appearance').length).toBeGreaterThanOrEqual(1)
         expect(screen.getAllByText('Font Size').length).toBeGreaterThanOrEqual(1)
         expect(screen.getAllByText('Voice Assistant').length).toBeGreaterThanOrEqual(1)
         expect(screen.getAllByText('About').length).toBeGreaterThanOrEqual(1)

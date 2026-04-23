@@ -8,6 +8,10 @@ import { useCopyToClipboard } from '@/hooks/useCopyToClipboard'
 import type { HappyChatMessageMetadata } from '@/lib/assistant-runtime'
 import { useTranslation } from '@/lib/use-translation'
 
+function formatMessageTime(date: Date): string {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+}
+
 const TOOL_COMPONENTS = {
     Fallback: HappyToolMessage
 } as const
@@ -43,6 +47,7 @@ export function HappyAssistantMessage() {
             .map((part) => part.text)
             .join('\n\n')
     })
+    const createdAt = useAssistantState(({ message }) => message.createdAt)
     const rootClass = toolOnly
         ? 'py-1 min-w-0 max-w-full overflow-x-hidden animate-msg-in'
         : 'mr-auto min-w-0 max-w-full overflow-x-hidden animate-msg-in'
@@ -58,20 +63,28 @@ export function HappyAssistantMessage() {
     }
 
     return (
-        <MessagePrimitive.Root className={rootClass}>
-            <div className="relative w-full max-w-[min(82ch,100%)] rounded-[20px] rounded-bl-[6px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-[18px] py-[14px]">
+        <MessagePrimitive.Root className={`${rootClass} group/msg`}>
+            <div className="w-full max-w-[min(82ch,100%)] rounded-[20px] rounded-bl-[6px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-[18px] py-[14px]">
+                <MessagePrimitive.Content components={MESSAGE_PART_COMPONENTS} />
+            </div>
+            <div className="mt-1 flex items-center gap-2 opacity-0 transition-opacity group-hover/msg:opacity-100">
+                {createdAt ? (
+                    <span className="text-[10px] text-[var(--app-hint)]">
+                        {formatMessageTime(createdAt)}
+                    </span>
+                ) : null}
                 {copyableText ? (
                     <button
                         type="button"
-                        className="absolute right-3 bottom-3 rounded p-1 text-[var(--app-hint)] hover:bg-[var(--app-subtle-bg)] hover:text-[var(--app-fg)] transition-colors"
+                        className="flex items-center gap-1 rounded-full px-2 py-1 text-[10px] text-[var(--app-hint)] transition-colors hover:bg-[var(--app-subtle-bg)] hover:text-[var(--app-fg)]"
                         onClick={() => copy(copyableText)}
                         aria-label={t('assistant.copy')}
                         title={t('assistant.copy')}
                     >
-                        {copied ? <CheckIcon className="h-3.5 w-3.5" /> : <CopyIcon className="h-3.5 w-3.5" />}
+                        {copied ? <CheckIcon className="h-3 w-3" /> : <CopyIcon className="h-3 w-3" />}
+                        <span>{copied ? 'Copied' : 'Copy'}</span>
                     </button>
                 ) : null}
-                <MessagePrimitive.Content components={MESSAGE_PART_COMPONENTS} />
             </div>
         </MessagePrimitive.Root>
     )

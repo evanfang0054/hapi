@@ -61,7 +61,7 @@ function MoreVerticalIcon(props: { className?: string }) {
     )
 }
 
-function RefreshIcon(props: { className?: string }) {
+function HeaderTerminalIcon(props: { className?: string }) {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -75,10 +75,8 @@ function RefreshIcon(props: { className?: string }) {
             strokeLinejoin="round"
             className={props.className}
         >
-            <path d="M21 2v6h-6" />
-            <path d="M3 12a9 9 0 0 1 15.3-6.36L21 8" />
-            <path d="M3 22v-6h6" />
-            <path d="M21 12a9 9 0 0 1-15.3 6.36L3 16" />
+            <polyline points="4 17 10 11 4 5" />
+            <line x1="12" y1="19" x2="20" y2="19" />
         </svg>
     )
 }
@@ -88,6 +86,7 @@ export function SessionHeader(props: {
     onBack: () => void
     onRefresh?: () => void
     onViewFiles?: () => void
+    onViewTerminal?: () => void
     api: ApiClient | null
     onSessionDeleted?: () => void
 }) {
@@ -161,6 +160,22 @@ export function SessionHeader(props: {
                         </div>
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-1 text-[11px] text-[var(--app-hint)] font-mono">
+                        {session.thinking ? (
+                            <>
+                                <span className="shrink-0 text-[var(--app-link)] animate-pulse">{t('session.header.thinking')}</span>
+                                <span className="shrink-0">·</span>
+                            </>
+                        ) : session.active ? (
+                            <>
+                                <span className="shrink-0 text-[var(--app-success)]">{t('session.header.active')}</span>
+                                <span className="shrink-0">·</span>
+                            </>
+                        ) : (
+                            <>
+                                <span className="shrink-0 text-[var(--app-hint)]">{t('misc.offline')}</span>
+                                <span className="shrink-0">·</span>
+                            </>
+                        )}
                         <span className="shrink-0">{session.metadata?.flavor?.trim() || 'unknown'}</span>
                         {modelLabel ? (
                             <>
@@ -191,17 +206,16 @@ export function SessionHeader(props: {
                         </Button>
                     ) : null}
 
-                    {props.onRefresh ? (
+                    {props.onViewTerminal ? (
                         <Button
                             type="button"
                             variant="secondary"
                             size="sm"
-                            onClick={props.onRefresh}
+                            onClick={props.onViewTerminal}
                             className="w-9 h-9 rounded-[10px] p-0 text-[var(--app-hint)] hover:text-[var(--app-fg)]"
-                            title="刷新"
-                            aria-label="刷新"
+                            title={t('composer.terminal')}
                         >
-                            <RefreshIcon className="w-[18px] h-[18px]" />
+                            <HeaderTerminalIcon className="w-[18px] h-[18px]" />
                         </Button>
                     ) : null}
 

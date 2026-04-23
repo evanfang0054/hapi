@@ -783,7 +783,7 @@ export function HappyComposer(props: {
 
                     {overlays}
 
-                    <div className="overflow-hidden rounded-[20px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)]">
+                    <div className="border-t border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)]">
                         <StatusBar
                             active={active}
                             thinking={thinking}
@@ -798,12 +798,13 @@ export function HappyComposer(props: {
                         />
 
                         {attachments.length > 0 ? (
-                            <div className="flex flex-wrap gap-2 border-b border-[var(--app-divider)] px-4 py-3 md:px-5">
+                            <div className="flex flex-wrap gap-2 px-4 py-3 md:px-5">
                                 <ComposerPrimitive.Attachments components={{ Attachment: AttachmentItem }} />
                             </div>
                         ) : null}
 
-                        <div className="flex items-end gap-2 px-4 py-2 md:gap-3 md:px-5 md:py-4">
+                        <div className="mx-2 mb-2 rounded-[20px] border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-[16px] py-[8px] md:mx-3 md:mb-3">
+                        <div className="flex items-end gap-2 md:gap-3">
                             <ComposerPrimitive.Input
                                 ref={textareaRef}
                                 autoFocus={!controlsDisabled && !isTouch && !isFullscreenOpen}
@@ -816,11 +817,11 @@ export function HappyComposer(props: {
                                 onSelect={handleSelect}
                                 onKeyDown={handleKeyDown}
                                 onPaste={handlePaste}
-                                className="flex-1 resize-none bg-transparent text-[15px] leading-7 text-[var(--app-fg)] placeholder-[var(--app-hint)] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:min-h-[84px]"
+                                className="flex-1 resize-none bg-transparent text-[14px] leading-6 text-[var(--app-fg)] placeholder-[var(--app-hint)] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:min-h-[84px]"
                             />
                         </div>
 
-                        <div className="border-t border-[var(--app-divider)] px-3 py-2 md:px-4 md:py-3">
+                        <div className="px-0 py-2">
                             <ComposerButtons
                                 canSend={canSend}
                                 controlsDisabled={controlsDisabled}
@@ -847,6 +848,7 @@ export function HappyComposer(props: {
                                 onVoiceMicToggle={onVoiceMicToggle}
                                 onSend={handleSend}
                             />
+                        </div>
                         </div>
                     </div>
                 </ComposerPrimitive.Root>

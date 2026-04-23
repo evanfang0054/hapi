@@ -9,7 +9,7 @@ import { getInitialTerminalFontSize, type TerminalFontSize } from '@/hooks/useTe
 
 function resolveThemeColors(): { background: string; foreground: string; selectionBackground: string } {
     const styles = getComputedStyle(document.documentElement)
-    const background = styles.getPropertyValue('--app-bg').trim() || '#000000'
+    const background = '#1a1a1a'
     const foreground = styles.getPropertyValue('--app-fg').trim() || '#ffffff'
     const selectionBackground = styles.getPropertyValue('--app-subtle-bg').trim() || 'rgba(255, 255, 255, 0.2)'
     return { background, foreground, selectionBackground }

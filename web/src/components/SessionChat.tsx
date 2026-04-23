@@ -332,6 +332,7 @@ export function SessionChat(props: {
                 onBack={props.onBack}
                 onRefresh={props.onRefresh}
                 onViewFiles={props.session.metadata?.path ? handleViewFiles : undefined}
+                onViewTerminal={terminalSupported ? handleViewTerminal : undefined}
                 api={props.api}
                 onSessionDeleted={props.onBack}
             />
