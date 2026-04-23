@@ -228,7 +228,8 @@ function SessionPage() {
     const refreshSelectedSession = useCallback(() => {
         void refetchSession()
         void refetchMessages()
-    }, [refetchMessages, refetchSession])
+        addToast({ title: t('session.action.refreshing'), body: '' })
+    }, [refetchMessages, refetchSession, addToast, t])
 
     if (!session) {
         return (
