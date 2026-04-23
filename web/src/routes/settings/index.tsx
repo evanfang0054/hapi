@@ -66,7 +66,7 @@ function SettingRow({ children, onClick }: { children: React.ReactNode; onClick?
         <button
             type="button"
             onClick={onClick}
-            className="flex w-full items-center justify-between px-4 py-3.5 border-b border-[var(--app-border)] last:border-b-0 text-left hover:bg-[var(--app-subtle-bg)] transition-colors"
+            className="flex w-full items-center justify-between px-4 py-3.5 max-[640px]:px-[14px] max-[640px]:py-3 border-b border-[var(--app-border)] last:border-b-0 text-left hover:bg-[var(--app-subtle-bg)] transition-colors"
         >
             {children}
         </button>
@@ -228,8 +228,8 @@ export default function SettingsPage() {
     return (
         <div className="flex h-full min-h-0 flex-col bg-[var(--app-bg)]">
             {/* Sticky header */}
-            <div className="sticky top-0 z-10 bg-[var(--app-panel-bg)] border-b border-[var(--app-border)] px-5 py-4">
-                <h1 className="text-[20px] font-medium text-[var(--app-fg)]" style={{ fontFamily: 'var(--app-font-serif)' }}>
+            <div className="sticky top-0 z-10 bg-[var(--app-panel-bg)] border-b border-[var(--app-border)] px-5 py-4 max-[640px]:px-4 max-[640px]:py-3">
+                <h1 className="text-[20px] font-medium text-[var(--app-fg)] max-[640px]:text-[18px]" style={{ fontFamily: 'var(--app-font-serif)' }}>
                     {t('settings.title')}
                 </h1>
             </div>
@@ -240,15 +240,15 @@ export default function SettingsPage() {
                     {/* User Card */}
                     <div>
                         <SettingsCard>
-                            <div className="flex items-center gap-3.5 p-4 cursor-pointer hover:border-[var(--app-link)] transition-all rounded-[var(--app-radius-2xl)]">
+                            <div className="flex items-center gap-3.5 p-4 max-[640px]:p-[14px] cursor-pointer hover:border-[var(--app-link)] transition-all rounded-[var(--app-radius-2xl)]">
                                 <div
-                                    className="w-14 h-14 rounded-full flex items-center justify-center text-white text-xl font-semibold shrink-0"
+                                    className="w-14 h-14 rounded-full flex items-center justify-center text-white text-xl font-semibold shrink-0 max-[640px]:w-12 max-[640px]:h-12"
                                     style={{ background: 'linear-gradient(135deg, var(--app-link) 0%, #d97757 100%)' }}
                                 >
                                     {t('settings.user.name').charAt(0).toUpperCase()}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <div className="text-[16px] font-semibold text-[var(--app-fg)]">{t('settings.user.name')}</div>
+                                    <div className="text-[17px] font-semibold text-[var(--app-fg)]">{t('settings.user.name')}</div>
                                     <div className="text-[13px] text-[var(--app-hint)] mt-0.5" style={{ fontFamily: 'var(--app-font-mono)' }}>{t('settings.user.email')}</div>
                                 </div>
                                 <ChevronRightIcon />
@@ -261,12 +261,13 @@ export default function SettingsPage() {
                         <SectionTitle>{t('settings.display.title')}</SectionTitle>
                         <SettingsCard>
                             {/* Dark Mode Toggle */}
-                            <div className="flex items-center justify-between px-4 py-3.5 border-b border-[var(--app-border)]">
+                            <div className="flex items-center justify-between px-4 py-3.5 max-[640px]:px-[14px] max-[640px]:py-3 border-b border-[var(--app-border)]">
                                 <div className="flex items-center gap-3.5">
                                     <SettingIconBox variant="accent">
                                         {isDark ? (
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
-                                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                                                <circle cx="12" cy="12" r="5" />
+                                                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
                                             </svg>
                                         ) : (
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
@@ -377,7 +378,7 @@ export default function SettingsPage() {
                         <SectionTitle>{t('settings.voice.title')}</SectionTitle>
                         <SettingsCard>
                             {/* Voice Enable Toggle */}
-                            <div className="flex items-center justify-between px-4 py-3.5 border-b border-[var(--app-border)]">
+                            <div className="flex items-center justify-between px-4 py-3.5 max-[640px]:px-[14px] max-[640px]:py-3 border-b border-[var(--app-border)]">
                                 <div className="flex items-center gap-3.5">
                                     <SettingIconBox variant="accent">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
@@ -434,7 +435,7 @@ export default function SettingsPage() {
                         <SectionTitle>{t('settings.notifications.title')}</SectionTitle>
                         <SettingsCard>
                             {/* Push Notifications Toggle */}
-                            <div className="flex items-center justify-between px-4 py-3.5 border-b border-[var(--app-border)]">
+                            <div className="flex items-center justify-between px-4 py-3.5 max-[640px]:px-[14px] max-[640px]:py-3 border-b border-[var(--app-border)]">
                                 <div className="flex items-center gap-3.5">
                                     <SettingIconBox>
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
@@ -450,7 +451,7 @@ export default function SettingsPage() {
                                 <Toggle checked={pushNotifications} onChange={setPushNotifications} />
                             </div>
                             {/* Telegram Notifications Toggle */}
-                            <div className="flex items-center justify-between px-4 py-3.5">
+                            <div className="flex items-center justify-between px-4 py-3.5 max-[640px]:px-[14px] max-[640px]:py-3">
                                 <div className="flex items-center gap-3.5">
                                     <SettingIconBox>
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
@@ -470,7 +471,7 @@ export default function SettingsPage() {
                     <div>
                         <SectionTitle>{t('settings.server.title')}</SectionTitle>
                         <SettingsCard>
-                            <div className="px-4 py-3.5 space-y-1.5" style={{ fontFamily: 'var(--app-font-mono)', fontSize: '12px' }}>
+                            <div className="px-4 py-3.5 max-[640px]:px-[14px] max-[640px]:py-3 space-y-1.5" style={{ fontFamily: 'var(--app-font-mono)', fontSize: '12px' }}>
                                 <div className="flex items-center justify-between">
                                     <span className="text-[var(--app-hint)]">Hub URL</span>
                                     <span className="text-[var(--app-fg)]">{baseUrl}</span>
@@ -504,7 +505,7 @@ export default function SettingsPage() {
                                 href="https://hapi.run"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center justify-between px-4 py-3.5 border-b border-[var(--app-border)] hover:bg-[var(--app-subtle-bg)] transition-colors"
+                                className="flex items-center justify-between px-4 py-3.5 max-[640px]:px-[14px] max-[640px]:py-3 border-b border-[var(--app-border)] hover:bg-[var(--app-subtle-bg)] transition-colors"
                             >
                                 <div className="flex items-center gap-3.5">
                                     <SettingIconBox>
@@ -521,13 +522,13 @@ export default function SettingsPage() {
                                 href="https://hapi.run/docs"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center justify-between px-4 py-3.5 border-b border-[var(--app-border)] hover:bg-[var(--app-subtle-bg)] transition-colors"
+                                className="flex items-center justify-between px-4 py-3.5 max-[640px]:px-[14px] max-[640px]:py-3 border-b border-[var(--app-border)] hover:bg-[var(--app-subtle-bg)] transition-colors"
                             >
                                 <div className="flex items-center gap-3.5">
                                     <SettingIconBox>
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
-                                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                            <polyline points="14 2 14 8 20 8" />
                                         </svg>
                                     </SettingIconBox>
                                     <span className="text-[15px] font-medium text-[var(--app-fg)]">{t('settings.about.documentation')}</span>
@@ -538,19 +539,19 @@ export default function SettingsPage() {
                                 href="https://github.com/nicepkg/hapi"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center justify-between px-4 py-3.5 border-b border-[var(--app-border)] hover:bg-[var(--app-subtle-bg)] transition-colors"
+                                className="flex items-center justify-between px-4 py-3.5 max-[640px]:px-[14px] max-[640px]:py-3 border-b border-[var(--app-border)] hover:bg-[var(--app-subtle-bg)] transition-colors"
                             >
                                 <div className="flex items-center gap-3.5">
                                     <SettingIconBox>
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
+                                            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
                                         </svg>
                                     </SettingIconBox>
                                     <span className="text-[15px] font-medium text-[var(--app-fg)]">GitHub</span>
                                 </div>
                                 <ChevronRightIcon />
                             </a>
-                            <div className="flex items-center justify-between px-4 py-3.5">
+                            <div className="flex items-center justify-between px-4 py-3.5 max-[640px]:px-[14px] max-[640px]:py-3">
                                 <div className="flex items-center gap-3.5">
                                     <SettingIconBox>
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
@@ -570,7 +571,7 @@ export default function SettingsPage() {
                             <button
                                 type="button"
                                 onClick={() => setLogoutOpen(true)}
-                                className="flex w-full items-center justify-between px-4 py-3.5 text-left hover:bg-[var(--app-subtle-bg)] transition-colors"
+                                className="flex w-full items-center justify-between px-4 py-3.5 max-[640px]:px-[14px] max-[640px]:py-3 text-left hover:bg-[var(--app-subtle-bg)] transition-colors"
                             >
                                 <div className="flex items-center gap-3.5">
                                     <SettingIconBox variant="danger">
