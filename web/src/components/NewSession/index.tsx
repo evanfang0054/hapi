@@ -439,6 +439,8 @@ export function NewSession(props: {
                             recentPaths={recentPaths}
                             statusMessage={directoryStatusMessage}
                             statusTone={directoryStatusTone}
+                            machineId={machineId}
+                            api={props.api}
                             onDirectoryChange={handleDirectoryChange}
                             onDirectoryFocus={handleDirectoryFocus}
                             onDirectoryBlur={handleDirectoryBlur}

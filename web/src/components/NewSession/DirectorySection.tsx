@@ -1,8 +1,10 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react'
+import type { ApiClient } from '@/api/client'
 import type { Suggestion } from '@/hooks/useActiveSuggestions'
 import { Autocomplete } from '@/components/ChatInput/Autocomplete'
 import { FloatingOverlay } from '@/components/ChatInput/FloatingOverlay'
+import { DirectoryPickerModal } from '@/components/NewSession/DirectoryPickerModal'
 import { useTranslation } from '@/lib/use-translation'
 
 export function DirectorySection(props: {
@@ -13,6 +15,8 @@ export function DirectorySection(props: {
     recentPaths: string[]
     statusMessage?: string | null
     statusTone?: 'warning' | 'error' | null
+    machineId: string | null
+    api: ApiClient | null
     onDirectoryChange: (value: string) => void
     onDirectoryFocus: () => void
     onDirectoryBlur: () => void
@@ -21,16 +25,11 @@ export function DirectorySection(props: {
     onPathClick: (path: string) => void
 }) {
     const { t } = useTranslation()
+    const [pickerOpen, setPickerOpen] = useState(false)
 
-    const handleBrowse = useCallback(async () => {
-        if (!('showDirectoryPicker' in window)) return
-        try {
-            const handle = await (window as unknown as { showDirectoryPicker(opts: { mode: string }): Promise<{ name: string }> }).showDirectoryPicker({ mode: 'read' })
-            props.onDirectoryChange(handle.name)
-        } catch {
-            // User cancelled or browser denied
-        }
-    }, [props.onDirectoryChange])
+    const handleBrowse = useCallback(() => {
+        setPickerOpen(true)
+    }, [])
 
     return (
         <div className="space-y-3">
@@ -65,16 +64,22 @@ export function DirectorySection(props: {
                         </div>
                     )}
                 </div>
-                {'showDirectoryPicker' in window && (
-                    <button
-                        type="button"
-                        onClick={handleBrowse}
-                        disabled={props.isDisabled}
-                        className="shrink-0 px-3 py-1.5 rounded-[8px] text-[13px] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] text-[var(--app-fg)] transition-colors hover:bg-[var(--app-panel-muted-bg)] disabled:opacity-50"
-                    >
-                        {t('newSession.browse')}
-                    </button>
-                )}
+                <button
+                    type="button"
+                    onClick={handleBrowse}
+                    disabled={props.isDisabled || !props.machineId}
+                    className="shrink-0 px-3 py-1.5 rounded-[8px] text-[13px] border border-[var(--app-border)] bg-[var(--app-subtle-bg)] text-[var(--app-fg)] transition-colors hover:bg-[var(--app-panel-muted-bg)] disabled:opacity-50"
+                >
+                    {t('newSession.browse')}
+                </button>
+                <DirectoryPickerModal
+                    isOpen={pickerOpen}
+                    onClose={() => setPickerOpen(false)}
+                    onConfirm={props.onDirectoryChange}
+                    machineId={props.machineId}
+                    api={props.api}
+                    initialPath={props.directory || undefined}
+                />
             </div>
 
             {props.recentPaths.length > 0 && (
