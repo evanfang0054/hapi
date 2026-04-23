@@ -22,7 +22,7 @@ export { PushStore } from './pushStore'
 export { SessionStore } from './sessionStore'
 export { UserStore } from './userStore'
 
-const SCHEMA_VERSION: number = 6
+const SCHEMA_VERSION: number = 7
 const REQUIRED_TABLES = [
     'sessions',
     'machines',
@@ -124,6 +124,27 @@ export class Store {
 
         if (currentVersion === 5 && SCHEMA_VERSION === 6) {
             this.migrateFromV5ToV6()
+            this.setUserVersion(SCHEMA_VERSION)
+            return
+        }
+
+        if (currentVersion === 6 && SCHEMA_VERSION === 7) {
+            this.migrateFromV6ToV7()
+            this.setUserVersion(SCHEMA_VERSION)
+            return
+        }
+
+        if (currentVersion === 5 && SCHEMA_VERSION === 7) {
+            this.migrateFromV5ToV6()
+            this.migrateFromV6ToV7()
+            this.setUserVersion(SCHEMA_VERSION)
+            return
+        }
+
+        if (currentVersion === 4 && SCHEMA_VERSION === 7) {
+            this.migrateFromV4ToV5()
+            this.migrateFromV5ToV6()
+            this.migrateFromV6ToV7()
             this.setUserVersion(SCHEMA_VERSION)
             return
         }
@@ -330,6 +351,13 @@ export class Store {
         const columns = this.getSessionColumnNames()
         if (!columns.has('effort')) {
             this.db.exec('ALTER TABLE sessions ADD COLUMN effort TEXT')
+        }
+    }
+
+    private migrateFromV6ToV7(): void {
+        const columns = this.getSessionColumnNames()
+        if (!columns.has('permission_mode')) {
+            this.db.exec('ALTER TABLE sessions ADD COLUMN permission_mode TEXT DEFAULT NULL')
         }
     }
 

@@ -18,6 +18,7 @@ type DbSessionRow = {
     agent_state_version: number
     model: string | null
     effort: string | null
+    permission_mode: string | null
     todos: string | null
     todos_updated_at: number | null
     team_state: string | null
@@ -41,6 +42,7 @@ function toStoredSession(row: DbSessionRow): StoredSession {
         agentStateVersion: row.agent_state_version,
         model: row.model,
         effort: row.effort,
+        permissionMode: row.permission_mode,
         todos: safeJsonParse(row.todos),
         todosUpdatedAt: row.todos_updated_at,
         teamState: safeJsonParse(row.team_state),
@@ -81,6 +83,7 @@ export function getOrCreateSession(
             agent_state, agent_state_version,
             model,
             effort,
+            permission_mode,
             todos, todos_updated_at,
             active, active_at, seq
         ) VALUES (
@@ -89,6 +92,7 @@ export function getOrCreateSession(
             @agent_state, 1,
             @model,
             @effort,
+            NULL,
             NULL, NULL,
             0, NULL, 0
         )
@@ -300,6 +304,39 @@ export function setSessionEffort(
         return result.changes === 1
     } catch {
         return false
+    }
+}
+
+export function setSessionPermissionMode(
+    db: Database,
+    id: string,
+    permissionMode: string | null,
+    namespace: string,
+    options?: { touchUpdatedAt?: boolean }
+): StoredSession | null {
+    const now = Date.now()
+    const touchUpdatedAt = options?.touchUpdatedAt !== false
+
+    try {
+        const result = db.prepare(`
+            UPDATE sessions
+            SET permission_mode = @permission_mode,
+                updated_at = CASE WHEN @touch_updated_at = 1 THEN @updated_at ELSE updated_at END,
+                seq = seq + 1
+            WHERE id = @id
+              AND namespace = @namespace
+        `).run({
+            id,
+            namespace,
+            permission_mode: permissionMode,
+            updated_at: now,
+            touch_updated_at: touchUpdatedAt ? 1 : 0
+        })
+
+        if (result.changes === 0) return null
+        return getSession(db, id)
+    } catch {
+        return null
     }
 }
 

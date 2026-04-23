@@ -135,7 +135,7 @@ export class SessionCache {
             teamState,
             model: stored.model,
             effort: stored.effort,
-            permissionMode: existing?.permissionMode,
+            permissionMode: existing?.permissionMode ?? (stored.permissionMode as PermissionMode | undefined) ?? existing?.permissionMode,
             collaborationMode: existing?.collaborationMode
         }
 
@@ -180,6 +180,14 @@ export class SessionCache {
         session.thinkingAt = t
         if (payload.permissionMode !== undefined) {
             session.permissionMode = payload.permissionMode
+            if (payload.permissionMode !== previousPermissionMode) {
+                this.store.sessions.setSessionPermissionMode(
+                    payload.sid,
+                    payload.permissionMode,
+                    session.namespace,
+                    { touchUpdatedAt: false }
+                )
+            }
         }
         if (payload.model !== undefined) {
             if (payload.model !== session.model) {
@@ -405,6 +413,15 @@ export class SessionCache {
             if (!updated) {
                 throw new Error('Failed to preserve session effort during merge')
             }
+        }
+
+        if (!newStored.permissionMode && oldStored.permissionMode) {
+            this.store.sessions.setSessionPermissionMode(
+                newSessionId,
+                oldStored.permissionMode,
+                namespace,
+                { touchUpdatedAt: false }
+            )
         }
 
         if (oldStored.todos !== null && oldStored.todosUpdatedAt !== null) {
