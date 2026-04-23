@@ -813,17 +813,26 @@ export default function FilesPage() {
                                         ) : null}
 
                                         {gitStatus && gitStatus.stagedFiles.length === 0 && gitStatus.unstagedFiles.length === 0 ? (
-                                            <div className="flex flex-col items-center justify-center py-12 text-center">
-                                                <div className="w-14 h-14 rounded-full bg-[var(--app-subtle-bg)] flex items-center justify-center mb-4">
-                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-7 h-7 text-[var(--app-hint)]">
+                                            <div className="flex flex-col items-center justify-center py-16 text-center">
+                                                <div className="w-16 h-16 rounded-full bg-[var(--app-subtle-bg)] flex items-center justify-center mb-5">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8 text-[var(--app-hint)]">
                                                         <polyline points="20 6 9 17 4 12" />
                                                     </svg>
                                                 </div>
-                                                <div className="text-[18px] font-medium text-[var(--app-fg)]" style={{ fontFamily: 'var(--app-font-serif)' }}>
+                                                <div className="text-[20px] font-medium text-[var(--app-fg)] mb-2" style={{ fontFamily: 'var(--app-font-serif)' }}>
                                                     {t('sessionFiles.noChangesDetected')}
                                                 </div>
-                                                <div className="text-[13px] text-[var(--app-hint)] mt-2 max-w-[280px] leading-relaxed">
-                                                    {t('sessionFiles.gitUnavailable')}
+                                                <div className="flex items-center gap-3 mt-4">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleTabChange('directories')}
+                                                        className="inline-flex items-center gap-1.5 rounded-full border border-[var(--app-border)] bg-[var(--app-subtle-bg)] px-4 py-2 text-[13px] font-medium text-[var(--app-fg)] transition-colors hover:bg-[var(--app-panel-muted-bg)]"
+                                                    >
+                                                        <svg className="w-4 h-4 text-[var(--app-hint)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                                                        </svg>
+                                                        {t('sessionFiles.tab.directories')}
+                                                    </button>
                                                 </div>
                                             </div>
                                         ) : null}
