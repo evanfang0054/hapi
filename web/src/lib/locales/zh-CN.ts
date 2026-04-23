@@ -288,6 +288,12 @@ export default {
   'sessionFileDetail.error.failedLoadDiff': '加载 diff 失败',
   'sessionFileDetail.error.failedReadFile': '读取文件失败',
   'sessionFileDetail.error.diffUnavailable': 'Diff 不可用：{error}',
+  'sessionFileDetail.action.edit': '编辑',
+  'sessionFileDetail.action.save': '保存',
+  'sessionFileDetail.action.cancel': '取消',
+  'sessionFileDetail.action.saving': '保存中…',
+  'sessionFileDetail.toast.saved': '文件已保存',
+  'sessionFileDetail.toast.saveFailed': '文件保存失败',
 
   // Tool card
   'tool.askQuestion': '其他',

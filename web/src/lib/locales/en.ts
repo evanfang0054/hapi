@@ -286,6 +286,12 @@ export default {
   'sessionFileDetail.error.failedLoadDiff': 'Failed to load diff',
   'sessionFileDetail.error.failedReadFile': 'Failed to read file',
   'sessionFileDetail.error.diffUnavailable': 'Diff unavailable: {error}',
+  'sessionFileDetail.action.edit': 'Edit',
+  'sessionFileDetail.action.save': 'Save',
+  'sessionFileDetail.action.cancel': 'Cancel',
+  'sessionFileDetail.action.saving': 'Saving…',
+  'sessionFileDetail.toast.saved': 'File saved',
+  'sessionFileDetail.toast.saveFailed': 'Failed to save file',
 
   // Tool card
   'tool.askQuestion': 'Other',

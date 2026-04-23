@@ -130,6 +130,22 @@ export function createGitRoutes(getSyncEngine: () => SyncEngine | null): Hono<We
         return c.json(result)
     })
 
+    app.put('/sessions/:id/file', async (c) => {
+        const engine = requireSyncEngine(c, getSyncEngine)
+        if (engine instanceof Response) return engine
+
+        const sessionResult = requireSessionFromParam(c, engine)
+        if (sessionResult instanceof Response) return sessionResult
+
+        const body = await c.req.json<{ path?: string; content?: string }>()
+        if (!body.path || body.content === undefined) {
+            return c.json({ success: false, error: 'path and content are required' }, 400)
+        }
+
+        const result = await runRpc(() => engine.writeSessionFile(sessionResult.sessionId, body.path!, body.content!))
+        return c.json(result)
+    })
+
     app.get('/sessions/:id/files', async (c) => {
         const engine = requireSyncEngine(c, getSyncEngine)
         if (engine instanceof Response) {

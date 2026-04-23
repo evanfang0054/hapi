@@ -5,6 +5,7 @@ import type { GitCommandResponse } from '@/types/api'
 import { FileIcon } from '@/components/FileIcon'
 import { CopyIcon, CheckIcon } from '@/components/icons'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { FileEditor } from '@/components/SessionFiles/FileEditor'
 import { useAppContext } from '@/lib/app-context'
 import { useAppGoBack } from '@/hooks/useAppGoBack'
 import { useCopyToClipboard } from '@/hooks/useCopyToClipboard'
@@ -15,6 +16,16 @@ import { useTranslation } from '@/lib/use-translation'
 import { useToast } from '@/lib/toast-context'
 
 const MAX_COPYABLE_FILE_BYTES = 1_000_000
+const MAX_EDITABLE_FILE_BYTES = 1_000_000
+
+function EditFileIcon() {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+            <path d="m15 5 4 4" />
+        </svg>
+    )
+}
 
 function decodePath(value: string): string {
     if (!value) return ''
@@ -183,7 +194,39 @@ export default function FilePage() {
         && decodedContent.length > 0
         && contentSizeBytes <= MAX_COPYABLE_FILE_BYTES
 
+    const canEdit = canCopyContent && contentSizeBytes <= MAX_EDITABLE_FILE_BYTES
+
+    const handleSave = async () => {
+        if (!api || !sessionId || !filePath || editedContent === null) return
+        setIsSaving(true)
+        try {
+            const encoded = btoa(unescape(encodeURIComponent(editedContent)))
+            const result = await api.writeSessionFile(sessionId, filePath, encoded)
+            if (result.success) {
+                setIsEditing(false)
+                setEditedContent(null)
+                fileQuery.refetch()
+                diffQuery.refetch()
+                addToast({ title: t('sessionFileDetail.toast.saved'), body: '' })
+            } else {
+                addToast({ title: t('sessionFileDetail.toast.saveFailed'), body: result.error ?? '' })
+            }
+        } catch {
+            addToast({ title: t('sessionFileDetail.toast.saveFailed'), body: '' })
+        } finally {
+            setIsSaving(false)
+        }
+    }
+
+    const handleCancelEdit = () => {
+        setIsEditing(false)
+        setEditedContent(null)
+    }
+
     const [displayMode, setDisplayMode] = useState<'diff' | 'file'>('diff')
+    const [isEditing, setIsEditing] = useState(false)
+    const [isSaving, setIsSaving] = useState(false)
+    const [editedContent, setEditedContent] = useState<string | null>(null)
 
     useEffect(() => {
         if (diffSuccess && !diffContent) {
@@ -337,22 +380,60 @@ export default function FilePage() {
                                     <div className="text-sm text-[var(--app-hint)]">{diffError}</div>
                                 ) : displayMode === 'file' ? (
                                     decodedContent ? (
-                                        <div className="relative">
-                                            {canCopyContent ? (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => { copyContent(decodedContent); addToast({ title: t('button.copy'), body: '' }) }}
-                                                    className="absolute right-2 top-2 z-10 inline-flex items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2.5 py-1 text-[11px] text-[var(--app-hint)] shadow-[var(--app-shadow-sm)] transition-colors hover:bg-[var(--app-panel-muted-bg)] hover:text-[var(--app-fg)]"
-                                                    title={t('sessionFileDetail.copyFileContent')}
-                                                >
-                                                    {contentCopied ? <CheckIcon className="h-3.5 w-3.5" /> : <CopyIcon className="h-3.5 w-3.5" />}
-                                                    <span>{contentCopied ? t('sessionFileDetail.copied') : t('button.copy')}</span>
-                                                </button>
-                                            ) : null}
-                                            <pre className="shiki overflow-auto rounded-[20px] border border-[var(--app-border)] bg-[var(--app-code-bg)] p-4 pr-12 text-xs font-mono shadow-[var(--app-shadow-sm)]">
-                                                <code>{highlighted ?? decodedContent}</code>
-                                            </pre>
-                                        </div>
+                                        isEditing ? (
+                                            <div>
+                                                <FileEditor
+                                                    content={editedContent ?? decodedContent}
+                                                    language={language}
+                                                    onChange={setEditedContent}
+                                                />
+                                                <div className="mt-3 flex items-center justify-end gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleCancelEdit}
+                                                        className="inline-flex min-h-9 items-center rounded-full border border-[var(--app-border)] bg-[var(--app-panel-elevated-bg)] px-4 py-2 text-sm font-medium text-[var(--app-hint)] transition-colors hover:bg-[var(--app-panel-muted-bg)]"
+                                                    >
+                                                        {t('sessionFileDetail.action.cancel')}
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleSave}
+                                                        disabled={isSaving}
+                                                        className="inline-flex min-h-9 items-center rounded-full bg-[var(--app-link)] px-4 py-2 text-sm font-medium text-white transition-colors hover:opacity-90 disabled:opacity-50"
+                                                    >
+                                                        {isSaving ? t('sessionFileDetail.action.saving') : t('sessionFileDetail.action.save')}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="relative">
+                                                <div className="absolute right-2 top-2 z-10 flex items-center gap-1">
+                                                    {canEdit ? (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => { setIsEditing(true); setEditedContent(decodedContent) }}
+                                                            className="inline-flex items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2.5 py-1 text-[11px] text-[var(--app-hint)] shadow-[var(--app-shadow-sm)] transition-colors hover:bg-[var(--app-panel-muted-bg)] hover:text-[var(--app-fg)]"
+                                                            title={t('sessionFileDetail.action.edit')}
+                                                        >
+                                                            <EditFileIcon />
+                                                            <span>{t('sessionFileDetail.action.edit')}</span>
+                                                        </button>
+                                                    ) : null}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => { copyContent(decodedContent); addToast({ title: t('button.copy'), body: '' }) }}
+                                                        className="inline-flex items-center gap-1 rounded-full border border-[var(--app-border)] bg-[var(--app-panel-bg)] px-2.5 py-1 text-[11px] text-[var(--app-hint)] shadow-[var(--app-shadow-sm)] transition-colors hover:bg-[var(--app-panel-muted-bg)] hover:text-[var(--app-fg)]"
+                                                        title={t('sessionFileDetail.copyFileContent')}
+                                                    >
+                                                        {contentCopied ? <CheckIcon className="h-3.5 w-3.5" /> : <CopyIcon className="h-3.5 w-3.5" />}
+                                                        <span>{contentCopied ? t('sessionFileDetail.copied') : t('button.copy')}</span>
+                                                    </button>
+                                                </div>
+                                                <pre className="shiki overflow-auto rounded-[20px] border border-[var(--app-border)] bg-[var(--app-code-bg)] p-4 pr-12 text-xs font-mono shadow-[var(--app-shadow-sm)]">
+                                                    <code>{highlighted ?? decodedContent}</code>
+                                                </pre>
+                                            </div>
+                                        )
                                     ) : (
                                         <div className="text-sm text-[var(--app-hint)]">{t('sessionFileDetail.fileEmpty')}</div>
                                     )

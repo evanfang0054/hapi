@@ -1,5 +1,5 @@
 import { logger } from '@/ui/logger'
-import { readFile, stat, writeFile } from 'fs/promises'
+import { readFile, writeFile } from 'fs/promises'
 import { createHash } from 'crypto'
 import { resolve } from 'path'
 import type { RpcHandlerManager } from '@/api/rpc/RpcHandlerManager'
@@ -73,15 +73,7 @@ export function registerFileHandlers(rpcHandlerManager: RpcHandlerManager, worki
                     return rpcError('File does not exist but hash was provided')
                 }
             } else {
-                try {
-                    await stat(data.path)
-                    return rpcError('File already exists but was expected to be new')
-                } catch (error) {
-                    const nodeError = error as NodeJS.ErrnoException
-                    if (nodeError.code !== 'ENOENT') {
-                        throw error
-                    }
-                }
+                // No hash provided — allow overwriting existing files (used by web file editor)
             }
 
             const buffer = Buffer.from(data.content, 'base64')

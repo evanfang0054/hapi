@@ -16,6 +16,12 @@ export type RpcReadFileResponse = {
     error?: string
 }
 
+export type RpcWriteFileResponse = {
+    success: boolean
+    hash?: string
+    error?: string
+}
+
 export type RpcUploadFileResponse = {
     success: boolean
     path?: string
@@ -226,6 +232,10 @@ export class RpcGateway {
 
     async readSessionFile(sessionId: string, path: string): Promise<RpcReadFileResponse> {
         return await this.sessionRpc(sessionId, 'readFile', { path }) as RpcReadFileResponse
+    }
+
+    async writeSessionFile(sessionId: string, path: string, content: string): Promise<RpcWriteFileResponse> {
+        return await this.sessionRpc(sessionId, 'writeFile', { path, content }) as RpcWriteFileResponse
     }
 
     async listDirectory(sessionId: string, path: string): Promise<RpcListDirectoryResponse> {

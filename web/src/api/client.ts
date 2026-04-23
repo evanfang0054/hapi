@@ -289,6 +289,13 @@ export class ApiClient {
         return await this.request<FileReadResponse>(`/api/sessions/${encodeURIComponent(sessionId)}/file?${params.toString()}`)
     }
 
+    async writeSessionFile(sessionId: string, path: string, content: string): Promise<{ success: boolean; hash?: string; error?: string }> {
+        return await this.request(`/api/sessions/${encodeURIComponent(sessionId)}/file`, {
+            method: 'PUT',
+            body: JSON.stringify({ path, content })
+        })
+    }
+
     async listSessionDirectory(sessionId: string, path?: string): Promise<ListDirectoryResponse> {
         const params = new URLSearchParams()
         if (path) {

@@ -35,6 +35,7 @@ export type {
     RpcListDirectoryResponse,
     RpcPathExistsResponse,
     RpcReadFileResponse,
+    RpcWriteFileResponse,
     RpcUploadFileResponse
 } from './rpcGateway'
 
@@ -498,6 +499,10 @@ export class SyncEngine {
 
     async readSessionFile(sessionId: string, path: string): Promise<RpcReadFileResponse> {
         return await this.rpcGateway.readSessionFile(sessionId, path)
+    }
+
+    async writeSessionFile(sessionId: string, path: string, content: string): Promise<RpcWriteFileResponse> {
+        return await this.rpcGateway.writeSessionFile(sessionId, path, content)
     }
 
     async listDirectory(sessionId: string, path: string): Promise<RpcListDirectoryResponse> {
