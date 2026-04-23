@@ -13,6 +13,7 @@ type SessionActionMenuProps = {
     isOpen: boolean
     onClose: () => void
     sessionActive: boolean
+    onRefresh: () => void
     onRename: () => void
     onArchive: () => void
     onDelete: () => void
@@ -105,6 +106,28 @@ function SelectMultipleIcon(props: { className?: string }) {
     )
 }
 
+function RefreshIcon(props: { className?: string }) {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={props.className}
+        >
+            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+            <path d="M16 16h5v5" />
+        </svg>
+    )
+}
+
 type MenuPosition = {
     top: number
     left: number
@@ -117,6 +140,7 @@ export function SessionActionMenu(props: SessionActionMenuProps) {
         isOpen,
         onClose,
         sessionActive,
+        onRefresh,
         onRename,
         onArchive,
         onDelete,
@@ -129,6 +153,11 @@ export function SessionActionMenu(props: SessionActionMenuProps) {
     const internalId = useId()
     const resolvedMenuId = menuId ?? `session-action-menu-${internalId}`
     const headingId = `${resolvedMenuId}-heading`
+
+    const handleRefresh = () => {
+        onClose()
+        onRefresh()
+    }
 
     const handleRename = () => {
         onClose()
@@ -256,6 +285,16 @@ export function SessionActionMenu(props: SessionActionMenuProps) {
                 aria-labelledby={headingId}
                 className="flex flex-col gap-1"
             >
+                <button
+                    type="button"
+                    role="menuitem"
+                    className={`${baseItemClassName} hover:bg-[var(--app-subtle-bg)]`}
+                    onClick={handleRefresh}
+                >
+                    <RefreshIcon className="text-[var(--app-hint)]" />
+                    {t('session.action.refresh')}
+                </button>
+
                 <button
                     type="button"
                     role="menuitem"
