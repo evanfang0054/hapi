@@ -78,6 +78,11 @@ See `src/configuration.ts` for all options.
 
 ### Optional
 
+- `DEBUG` - Enable verbose debug output to console. When set, additionally:
+  prints full error stacks instead of just the message, shows `infoDeveloper` logs
+  in the terminal, outputs complete JSON in `debugLargeJson` (otherwise truncated),
+  displays the log file path in the UI, and enables runner heartbeat console output.
+  All debug logs are always written to `~/.hapi/logs/` regardless of this flag.
 - `HAPI_HOME` - Config/data directory (default: ~/.hapi).
 - `HAPI_EXPERIMENTAL` - Enable experimental features (true/1/yes).
 - `HAPI_CLAUDE_PATH` - Path to a specific `claude` executable.
