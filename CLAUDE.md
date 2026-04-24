@@ -196,6 +196,17 @@ bun run release-all     # 从 cli 包发起 release 流程
 - `web/dist` 是最终前端产物，既可由 `hub` 直接提供，也可被嵌入单文件可执行产物中。
 - 认证核心围绕 `CLI_API_TOKEN`；浏览器登录可能使用 `CLI_API_TOKEN:<namespace>`，Telegram 认证通过 hub 的相关路由完成。
 
+## 平台优先级：H5 移动端为主
+
+**Web 界面以 H5（移动端浏览器 / PWA / Telegram Mini App）为主要目标平台，PC 端也需兼容但不是优先级。**
+
+开发 UI 时的关键原则：
+
+- **交互设计以触摸优先**：不能用 hover-only 的交互（移动端没有 hover）。需要 hover 效果时，用 `md:opacity-0 md:group-hover/xxx:opacity-100` 让移动端始终可见、桌面端 hover 显示。
+- **视口和布局以移动端为基准**：先确保窄屏（375px+）体验正确，再用 `md:` / `lg:` 断点适配桌面。
+- **触摸手势兼容**：终端等组件需要 `touch-action` 正确设置（如 `touch-pan-y` 允许垂直滚动），避免 `touch-none` 阻止正常滚动。
+- **复制、长按等操作**：需要提供明确的 UI 按钮而非依赖右键菜单或 hover 菜单。
+
 ## 给未来 Claude 实例的协作建议
 
 - 修改某个工作区的行为前，优先先读对应 README：

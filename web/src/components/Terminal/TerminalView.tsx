@@ -70,6 +70,23 @@ export function TerminalView(props: {
         }
         terminal.open(container)
 
+        // Workaround: xterm.js 6.0.0 broke touch scrolling (https://github.com/xtermjs/xterm.js/issues/5489)
+        // Manually handle touch events to scroll the terminal buffer on mobile
+        let touchStartY = 0
+        container.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                touchStartY = e.touches[0].clientY
+            }
+        }, { passive: true, signal: abortController.signal })
+        container.addEventListener('touchmove', (e) => {
+            if (e.touches.length !== 1) return
+            const deltaY = touchStartY - e.touches[0].clientY
+            if (Math.abs(deltaY) > 0) {
+                terminal.scrollLines(Math.round(deltaY / 10))
+                touchStartY = e.touches[0].clientY
+            }
+        }, { passive: true, signal: abortController.signal })
+
         terminalRef.current = terminal
         fitAddonRef.current = fitAddon
 
@@ -161,7 +178,7 @@ export function TerminalView(props: {
     return (
         <div
             ref={containerRef}
-            className={`h-full w-full overscroll-none touch-none ${props.className ?? ''}`}
+            className={`h-full w-full ${props.className ?? ''}`}
         />
     )
 }

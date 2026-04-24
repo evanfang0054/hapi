@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useParams, useSearch } from '@tanstack/react-router'
 import type { GitCommandResponse } from '@/types/api'
 import { FileIcon } from '@/components/FileIcon'
@@ -136,6 +136,7 @@ export default function FilePage() {
     const { api } = useAppContext()
     const { copied: pathCopied, copy: copyPath } = useCopyToClipboard()
     const { copied: contentCopied, copy: copyContent } = useCopyToClipboard()
+    const queryClient = useQueryClient()
     const goBack = useAppGoBack()
     const { sessionId } = useParams({ from: '/sessions/$sessionId/file' })
     const search = useSearch({ from: '/sessions/$sessionId/file' })
@@ -205,8 +206,8 @@ export default function FilePage() {
             if (result.success) {
                 setIsEditing(false)
                 setEditedContent(null)
-                fileQuery.refetch()
-                diffQuery.refetch()
+                await queryClient.invalidateQueries({ queryKey: queryKeys.sessionFile(sessionId, filePath) })
+                await queryClient.invalidateQueries({ queryKey: queryKeys.gitFileDiff(sessionId, filePath, staged) })
                 addToast({ title: t('sessionFileDetail.toast.saved'), body: '' })
             } else {
                 addToast({ title: t('sessionFileDetail.toast.saveFailed'), body: result.error ?? '' })

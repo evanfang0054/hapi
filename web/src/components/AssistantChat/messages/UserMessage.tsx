@@ -78,7 +78,7 @@ export function HappyUserMessage() {
                     )}
                 </div>
             </div>
-            <div className="mt-1 flex items-center justify-end gap-2 opacity-0 transition-opacity group-hover/msg:opacity-100">
+            <div className="mt-1 flex items-center justify-end gap-2 opacity-100 transition-opacity md:opacity-0 md:group-hover/msg:opacity-100">
                 {createdAt ? (
                     <span className="text-[10px] text-[var(--app-hint)]">
                         {formatMessageTime(createdAt)}

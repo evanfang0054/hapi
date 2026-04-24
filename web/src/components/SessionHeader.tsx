@@ -188,7 +188,7 @@ export function SessionHeader(props: {
                         {worktreeBranch ? (
                             <>
                                 <span className="shrink-0">·</span>
-                                <span className="min-w-0 flex-1 truncate">{t('session.item.worktree')}: {worktreeBranch}</span>
+                                <span className="min-w-0 flex-1 truncate">{worktreeBranch}</span>
                             </>
                         ) : null}
                     </div>
