@@ -18,6 +18,10 @@ HAPI 是一个基于 Bun 的 monorepo，用来在本地运行 AI 编码会话，
 - `docs/` — 文档站点内容
 - `website/` — 官网构建，同时承载构建后的文档
 
+跨包配置：
+
+- `cli/.cursorrules` — 符号链接到根 CLAUDE.md，Cursor 编辑器自动读取
+
 ## 包管理与工具链
 
 - 包管理器：`bun`
@@ -53,9 +57,10 @@ bun run build:hub            # 构建 hub 包
 bun run build:web            # 构建 web 包
 bun run build:single-exe     # 构建内嵌 web 资源的单文件可执行产物
 bun run build:single-exe:all # 构建所有打包目标
+bun run build:site           # 构建 website + docs
 ```
 
-### 类型检查
+### 类型检查（无 lint/format 配置，这是唯一的代码质量门禁）
 
 ```bash
 bun run typecheck
@@ -113,7 +118,8 @@ bun run release-all     # 从 cli 包发起 release 流程
 - `cli/src/commands/runCli.ts` — 命令分发入口
 - `cli/src/configuration.ts` — 环境变量与配置定义
 - `cli/src/claude/` — Claude Code 集成
-- `cli/src/codex/`、`cli/src/cursor/`、`cli/src/agent/`、`cli/src/opencode/` — 各类 agent runner / 集成实现
+- `cli/src/codex/`、`cli/src/cursor/`、`cli/src/gemini/`、`cli/src/opencode/` — 各类 agent runner / 集成实现
+- `cli/src/agent/` — 通用 agent 框架，含 `backends/acp/`（ACP SDK 传输层）和 `AgentRegistry` 会话注册
 - `cli/src/runner/` — 后台 runner 管理
 - `cli/src/api/` — hub API 客户端、会话注册、RPC 通道
 
@@ -122,20 +128,31 @@ bun run release-all     # 从 cli 包发起 release 流程
 - `hub/src/index.ts` — hub 启动入口
 - `hub/src/configuration.ts` — 服务端配置与环境变量处理
 - `hub/src/sync/syncEngine.ts` — 会话 / 消息 / 机器的核心编排逻辑
+- `hub/src/sync/teams.ts`、`hub/src/sync/todos.ts` — 团队状态和 Todo 进度追踪
+- `hub/src/sync/rpcGateway.ts` — RPC 网关
 - `hub/src/web/routes/` — web 和 CLI 使用的 HTTP API
+- `hub/src/web/middleware/auth.ts` — 认证中间件
 - `hub/src/socket/handlers/cli/` — CLI 连接的实时事件处理
 - `hub/src/store/` — SQLite 持久化层
+- `hub/src/notifications/` — 通知中心（事件解析、会话信息）
+- `hub/src/push/` — Web Push 推送服务
+- `hub/src/sse/sseManager.ts` — SSE 连接管理
+- `hub/src/visibility/visibilityTracker.ts` — 页面可见性追踪
+- `hub/src/tunnel/` — Relay 模式隧道（TLS gateway）
 - `hub/src/telegram/` — Telegram Bot 与 Mini App 集成
 
 ### Web
 
 - `web/src/router.tsx` — 路由树与页面顶层组合
-- `web/src/components/SessionList.tsx` — 会话列表 UI
-- `web/src/components/SessionChat.tsx` — 聊天与会话控制 UI
-- `web/src/components/NewSession/` — 新建会话流程
+- `web/src/routes/history/` — 会话历史（搜索、筛选、归档、删除）
+- `web/src/routes/machines/` — 机器列表与新建会话
 - `web/src/routes/sessions/files.tsx` — 文件浏览与 git 状态页面
 - `web/src/routes/sessions/file.tsx` — 文件查看与 diff 页面
 - `web/src/routes/sessions/terminal.tsx` — 终端页面
+- `web/src/routes/settings/` — 设置页（深色模式、语言、字号、语音、通知）
+- `web/src/components/SessionList.tsx` — 会话列表 UI
+- `web/src/components/SessionChat.tsx` — 聊天与会话控制 UI
+- `web/src/components/NewSession/` — 新建会话流程
 - `web/src/hooks/queries/` 和 `web/src/hooks/mutations/` — TanStack Query 数据层
 - `web/src/hooks/useSSE.ts` — 实时订阅与缓存失效处理
 - `web/src/api/client.ts` — web 侧 hub API 客户端
@@ -144,6 +161,9 @@ bun run release-all     # 从 cli 包发起 release 流程
 
 - `shared/src/index.ts` — 主导出入口
 - `shared/src/messages.ts`、`shared/src/types.ts`、`shared/src/modes.ts`、`shared/src/socket.ts` — 协议核心构件
+- `shared/src/schemas.ts` — Zod schema 定义，覆盖会话、消息、同步事件、团队状态、Todo 等
+- `shared/src/sessionSummary.ts` — 会话摘要结构与转换
+- `shared/src/voice.ts` — 语音相关共享协议
 
 ## 各工作区职责
 
@@ -156,6 +176,7 @@ bun run release-all     # 从 cli 包发起 release 流程
 - 本地模式与远程模式切换
 - 后台 runner 生命周期
 - 认证辅助、诊断信息或 MCP bridge 逻辑
+- 新增 agent 集成：使用 `AgentRegistry` 注册 runner，参考 `cli/src/agent/backends/acp/` 实现 ACP 传输
 
 ### `hub/`
 
@@ -165,8 +186,11 @@ bun run release-all     # 从 cli 包发起 release 流程
 - 权限审批 / 拒绝流程
 - 机器在线状态与新建会话
 - HTTP 路由行为
-- 实时更新、事件分发、RPC 路由
+- 实时更新（SSE / Socket.IO）、事件分发、RPC 路由
+- 推送通知（Web Push）
 - Telegram 通知或 Mini App 绑定
+- Relay 模式（通过隧道暴露本地 hub）
+- 团队状态和 Todo 进度同步
 
 ### `web/`
 
