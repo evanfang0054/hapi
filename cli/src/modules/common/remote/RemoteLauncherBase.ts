@@ -22,6 +22,10 @@ export type RemoteLauncherAbortHandlers = {
     onSwitch: () => void | Promise<void>;
 };
 
+export type RemoteLauncherRewindHandler = {
+    onRewind: (params: { targetUuid: string }) => Promise<void>;
+};
+
 type RpcHandlerManagerLike = {
     registerHandler<TRequest = unknown, TResponse = unknown>(
         method: string,
@@ -88,6 +92,21 @@ export abstract class RemoteLauncherBase {
     protected clearAbortHandlers(rpcHandlerManager: RpcHandlerManagerLike): void {
         rpcHandlerManager.registerHandler('abort', async () => {});
         rpcHandlerManager.registerHandler('switch', async () => {});
+    }
+
+    protected setupRewindHandler(
+        rpcHandlerManager: RpcHandlerManagerLike,
+        handler: RemoteLauncherRewindHandler
+    ): void {
+        rpcHandlerManager.registerHandler('rewind', async (params: unknown) => {
+            const { targetUuid } = params as { targetUuid: string }
+            await handler.onRewind({ targetUuid })
+            return { ok: true }
+        });
+    }
+
+    protected clearRewindHandler(rpcHandlerManager: RpcHandlerManagerLike): void {
+        rpcHandlerManager.registerHandler('rewind', async () => {});
     }
 
     protected async requestExit(

@@ -1,4 +1,5 @@
 import React from "react";
+import { join } from "node:path";
 import { Session } from "./session";
 import { RemoteModeDisplay } from "@/ui/ink/RemoteModeDisplay";
 import { claudeRemote } from "./claudeRemote";
@@ -12,6 +13,8 @@ import { PLAN_FAKE_REJECT } from "./sdk/prompts";
 import { EnhancedMode } from "./loop";
 import { OutgoingMessageQueue } from "./utils/OutgoingMessageQueue";
 import type { ClaudePermissionMode } from "@hapi/protocol/types";
+import { truncateJsonl, findFileSnapshot, applyFileSnapshot } from "./utils/rewind";
+import { getProjectPath } from "./utils/path";
 import {
     RemoteLauncherBase,
     type RemoteLauncherDisplayContext,
@@ -31,6 +34,7 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
     private abortFuture: Future<void> | null = null;
     private permissionHandler: PermissionHandler | null = null;
     private handleSessionFound: ((sessionId: string) => void) | null = null;
+    private isRewinding = false;
 
     constructor(session: Session) {
         super(process.env.DEBUG ? session.logPath : undefined);
@@ -89,6 +93,54 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
         this.setupAbortHandlers(session.client.rpcHandlerManager, {
             onAbort: () => this.handleAbortRequest(),
             onSwitch: () => this.handleSwitchRequest()
+        });
+
+        this.setupRewindHandler(session.client.rpcHandlerManager, {
+            onRewind: async ({ targetUuid }) => {
+                if (this.isRewinding) {
+                    logger.debug('[remote]: rewind already in progress');
+                    return;
+                }
+                this.isRewinding = true;
+
+                try {
+                    // 1. Abort current query iteration
+                    if (this.abortController && !this.abortController.signal.aborted) {
+                        this.abortController.abort();
+                    }
+                    await this.abortFuture?.promise;
+
+                    // 2. Truncate JSONL
+                    const claudeSessionId = session.sessionId;
+                    if (!claudeSessionId) {
+                        logger.debug('[remote]: no session id, cannot rewind');
+                        return;
+                    }
+
+                    const projectDir = getProjectPath(session.path);
+                    const jsonlPath = join(projectDir, `${claudeSessionId}.jsonl`);
+
+                    truncateJsonl(jsonlPath, targetUuid);
+
+                    // 3. Try to restore file snapshot (degraded if not found)
+                    const snapshot = findFileSnapshot(jsonlPath, targetUuid);
+                    if (snapshot) {
+                        const restored = applyFileSnapshot(snapshot, session.path);
+                        logger.debug(`[remote]: restored ${restored.length} files from snapshot`);
+                    } else {
+                        logger.debug('[remote]: no file snapshot found, skipping file restore');
+                    }
+
+                    // 4. The main loop will continue because we didn't set exitReason.
+                    // The next iteration of claudeRemote will use the existing sessionId
+                    // as the resume parameter since it's still set in session.sessionId.
+                    logger.debug(`[remote]: rewind complete, process will resume from uuid=${targetUuid}`);
+                } catch (error) {
+                    logger.debug('[remote]: rewind failed', error);
+                } finally {
+                    this.isRewinding = false;
+                }
+            }
         });
 
         const permissionHandler = new PermissionHandler(session);
@@ -409,6 +461,7 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
 
     protected async cleanup(): Promise<void> {
         this.clearAbortHandlers(this.session.client.rpcHandlerManager);
+        this.clearRewindHandler(this.session.client.rpcHandlerManager);
 
         if (this.handleSessionFound) {
             this.session.removeSessionFoundCallback(this.handleSessionFound);
