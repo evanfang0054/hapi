@@ -78,6 +78,7 @@ export type NormalizedMessage = ({
 }) & {
     id: string
     localId: string | null
+    seq?: number | null
     createdAt: number
     isSidechain: boolean
     meta?: unknown
@@ -116,6 +117,7 @@ export type UserTextBlock = {
     kind: 'user-text'
     id: string
     localId: string | null
+    seq?: number | null
     createdAt: number
     text: string
     attachments?: AttachmentMetadata[]

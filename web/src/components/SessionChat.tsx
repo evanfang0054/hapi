@@ -67,7 +67,7 @@ export function SessionChat(props: {
     const agentFlavor = props.session.metadata?.flavor ?? null
     const controlledByUser = props.session.agentState?.controlledByUser === true
     const codexCollaborationModeSupported = agentFlavor === 'codex' && !controlledByUser
-    const { abortSession, switchSession, setPermissionMode, setCollaborationMode, setModel, setEffort } = useSessionActions(
+    const { abortSession, switchSession, setPermissionMode, setCollaborationMode, setModel, setEffort, rewindSession } = useSessionActions(
         props.api,
         props.session.id,
         agentFlavor,
@@ -291,6 +291,17 @@ export function SessionChat(props: {
         props.onRefresh()
     }, [switchSession, props.onRefresh])
 
+    // Rewind handler
+    const handleRewind = useCallback(async (targetSeq: number) => {
+        try {
+            await rewindSession(targetSeq)
+            haptic.notification('success')
+        } catch (e) {
+            haptic.notification('error')
+            console.error('Failed to rewind session:', e)
+        }
+    }, [rewindSession, haptic])
+
     const handleViewFiles = useCallback(() => {
         navigate({
             to: '/sessions/$sessionId/files',
@@ -400,6 +411,7 @@ export function SessionChat(props: {
                             disabled={sessionInactive}
                             onRefresh={props.onRefresh}
                             onRetryMessage={props.onRetryMessage}
+                            onRewindMessage={!controlledByUser ? handleRewind : undefined}
                             onFlushPending={props.onFlushPending}
                             onAtBottomChange={props.onAtBottomChange}
                             isLoadingMessages={props.isLoadingMessages}

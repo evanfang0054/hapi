@@ -10,6 +10,7 @@ export type HappyChatContextValue = {
     disabled: boolean
     onRefresh: () => void
     onRetryMessage?: (localId: string) => void
+    onRewindMessage?: (targetSeq: number) => void
 }
 
 const HappyChatContext = createContext<HappyChatContextValue | null>(null)

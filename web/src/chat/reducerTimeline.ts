@@ -115,6 +115,7 @@ export function reduceTimeline(
                 kind: 'user-text',
                 id: msg.id,
                 localId: msg.localId,
+                seq: msg.seq ?? null,
                 createdAt: msg.createdAt,
                 text: msg.content.text,
                 attachments: msg.content.attachments,

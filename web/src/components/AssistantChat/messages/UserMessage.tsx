@@ -30,6 +30,11 @@ export function HappyUserMessage() {
         const custom = message.metadata.custom as Partial<HappyChatMessageMetadata> | undefined
         return custom?.localId ?? null
     })
+    const seq = useAssistantState(({ message }) => {
+        if (message.role !== 'user') return null
+        const custom = message.metadata.custom as Partial<HappyChatMessageMetadata> | undefined
+        return custom?.seq ?? null
+    })
     const attachments = useAssistantState(({ message }) => {
         if (message.role !== 'user') return undefined
         const custom = message.metadata.custom as Partial<HappyChatMessageMetadata> | undefined
@@ -49,6 +54,7 @@ export function HappyUserMessage() {
     if (role !== 'user') return null
     const canRetry = status === 'failed' && typeof localId === 'string' && Boolean(ctx.onRetryMessage)
     const onRetry = canRetry ? () => ctx.onRetryMessage!(localId) : undefined
+    const canRewind = typeof seq === 'number' && Boolean(ctx.onRewindMessage)
 
     if (isCliOutput) {
         return (
@@ -94,6 +100,19 @@ export function HappyUserMessage() {
                             ? <CheckIcon className="h-3 w-3 text-green-500" />
                             : <CopyIcon className="h-3 w-3" />}
                         <span>{copied ? 'Copied' : 'Copy'}</span>
+                    </button>
+                )}
+                {canRewind && (
+                    <button
+                        type="button"
+                        className="flex items-center gap-1 rounded-full px-2 py-1 text-[10px] text-[var(--app-hint)] transition-colors hover:bg-[var(--app-subtle-bg)] hover:text-[var(--app-fg)]"
+                        onClick={() => ctx.onRewindMessage!(seq)}
+                    >
+                        <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="1 4 1 10 7 10" />
+                            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                        </svg>
+                        <span>Rewind</span>
                     </button>
                 )}
             </div>
