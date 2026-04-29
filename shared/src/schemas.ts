@@ -239,6 +239,11 @@ export const SyncEventSchema = z.discriminatedUnion('type', [
             status: z.string(),
             subscriptionId: z.string().optional()
         }).optional()
+    }),
+    SessionEventBaseSchema.extend({
+        type: z.literal('messages-rewound'),
+        sessionId: z.string(),
+        targetSeq: z.number()
     })
 ])
 
