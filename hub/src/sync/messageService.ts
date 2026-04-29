@@ -63,6 +63,10 @@ export class MessageService {
         }))
     }
 
+    deleteMessagesAfterSeq(sessionId: string, afterSeq: number): number {
+        return this.store.messages.deleteMessagesAfterSeq(sessionId, afterSeq)
+    }
+
     async sendMessage(
         sessionId: string,
         payload: {

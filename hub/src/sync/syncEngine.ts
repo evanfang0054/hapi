@@ -270,6 +270,29 @@ export class SyncEngine {
         await this.rpcGateway.abortSession(sessionId)
     }
 
+    async rewindSession(sessionId: string, targetSeq: number): Promise<void> {
+        const messages = this.messageService.getMessagesPage(sessionId, {
+            limit: 1,
+            beforeSeq: targetSeq + 1
+        })
+        const targetMessage = messages.messages.find(m => m.seq === targetSeq)
+        const targetUuid = targetMessage?.localId
+
+        if (!targetUuid) {
+            throw new Error(`Message with seq ${targetSeq} not found or has no localId`)
+        }
+
+        await this.rpcGateway.rewindSession(sessionId, targetUuid)
+
+        this.messageService.deleteMessagesAfterSeq(sessionId, targetSeq)
+
+        this.handleRealtimeEvent({
+            type: 'messages-rewound' as const,
+            sessionId,
+            targetSeq
+        })
+    }
+
     async archiveSession(sessionId: string): Promise<void> {
         await this.rpcGateway.killSession(sessionId)
         this.handleSessionEnd({ sid: sessionId, time: Date.now() })

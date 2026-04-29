@@ -93,6 +93,10 @@ export class RpcGateway {
         await this.sessionRpc(sessionId, 'abort', { reason: 'User aborted via Telegram Bot' })
     }
 
+    async rewindSession(sessionId: string, targetUuid: string): Promise<void> {
+        await this.sessionRpc(sessionId, 'rewind', { targetUuid })
+    }
+
     async switchSession(sessionId: string, to: 'remote' | 'local'): Promise<void> {
         await this.sessionRpc(sessionId, 'switch', { to })
     }

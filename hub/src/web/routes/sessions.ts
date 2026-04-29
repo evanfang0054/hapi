@@ -196,6 +196,43 @@ export function createSessionsRoutes(getSyncEngine: () => SyncEngine | null): Ho
         return c.json({ ok: true })
     })
 
+    const rewindSchema = z.object({
+        targetSeq: z.number().int().positive()
+    })
+
+    app.post('/sessions/:id/rewind', async (c) => {
+        const engine = requireSyncEngine(c, getSyncEngine)
+        if (engine instanceof Response) {
+            return engine
+        }
+
+        const sessionResult = requireSessionFromParam(c, engine, { requireActive: true })
+        if (sessionResult instanceof Response) {
+            return sessionResult
+        }
+
+        const body = await c.req.json().catch(() => null)
+        const parsed = rewindSchema.safeParse(body)
+        if (!parsed.success) {
+            return c.json({ error: 'Invalid body: targetSeq is required' }, 400)
+        }
+
+        // Only support rewind for remote sessions (controlledByUser is false/undefined in remote mode)
+        const controlledByUser = sessionResult.session.agentState?.controlledByUser
+        if (controlledByUser === true) {
+            return c.json({ error: 'Rewind is only supported for remote sessions' }, 400)
+        }
+
+        try {
+            await engine.rewindSession(sessionResult.sessionId, parsed.data.targetSeq)
+            return c.json({ ok: true })
+        } catch (error) {
+            return c.json({
+                error: error instanceof Error ? error.message : 'Failed to rewind session'
+            }, 500)
+        }
+    })
+
     app.post('/sessions/:id/archive', async (c) => {
         const engine = requireSyncEngine(c, getSyncEngine)
         if (engine instanceof Response) {
