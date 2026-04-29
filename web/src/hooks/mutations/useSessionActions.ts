@@ -33,6 +33,7 @@ export function useSessionActions(
     setEffort: (effort: string | null) => Promise<void>
     renameSession: (name: string) => Promise<void>
     deleteSession: () => Promise<void>
+    rewindSession: (targetSeq: number) => Promise<void>
     deleteSessions: (sessionIds: string[]) => Promise<BulkDeleteSummary>
     isPending: boolean
 } {
@@ -158,6 +159,16 @@ export function useSessionActions(
         },
     })
 
+    const rewindMutation = useMutation({
+        mutationFn: async (targetSeq: number) => {
+            if (!api || !sessionId) {
+                throw new Error('Session unavailable')
+            }
+            await api.rewindSession(sessionId, targetSeq)
+        },
+        onSuccess: () => void invalidateSession(),
+    })
+
     const bulkDeleteMutation = useMutation({
         mutationKey: bulkDeleteMutationKey,
         mutationFn: async (sessionIds: string[]): Promise<BulkDeleteSummary> => {
@@ -203,6 +214,7 @@ export function useSessionActions(
         renameSession: renameMutation.mutateAsync,
         deleteSession: deleteMutation.mutateAsync,
         deleteSessions: bulkDeleteMutation.mutateAsync,
+        rewindSession: rewindMutation.mutateAsync,
         isPending: abortMutation.isPending
             || archiveMutation.isPending
             || switchMutation.isPending
@@ -212,6 +224,7 @@ export function useSessionActions(
             || effortMutation.isPending
             || renameMutation.isPending
             || deleteMutation.isPending
+            || rewindMutation.isPending
             || bulkDeletePendingCount > 0,
     }
 }

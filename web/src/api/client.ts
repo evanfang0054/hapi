@@ -501,6 +501,13 @@ export class ApiClient {
         })
     }
 
+    async rewindSession(sessionId: string, targetSeq: number): Promise<void> {
+        await this.request(`/api/sessions/${encodeURIComponent(sessionId)}/rewind`, {
+            method: 'POST',
+            body: JSON.stringify({ targetSeq })
+        })
+    }
+
     async fetchVoiceToken(options?: { customAgentId?: string; customApiKey?: string }): Promise<{
         allowed: boolean
         token?: string
