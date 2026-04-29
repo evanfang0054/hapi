@@ -286,6 +286,9 @@ export class SyncEngine {
 
         this.messageService.deleteMessagesAfterSeq(sessionId, targetSeq)
 
+        // Refresh session to reflect updated state after rewind
+        this.sessionCache.refreshSession(sessionId)
+
         this.handleRealtimeEvent({
             type: 'messages-rewound' as const,
             sessionId,

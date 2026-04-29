@@ -166,7 +166,12 @@ export function useSessionActions(
             }
             await api.rewindSession(sessionId, targetSeq)
         },
-        onSuccess: () => void invalidateSession(),
+        onSuccess: () => {
+            if (sessionId) {
+                clearMessageWindow(sessionId)
+            }
+            void invalidateSession()
+        },
     })
 
     const bulkDeleteMutation = useMutation({

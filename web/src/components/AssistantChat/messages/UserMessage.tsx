@@ -106,7 +106,11 @@ export function HappyUserMessage() {
                     <button
                         type="button"
                         className="flex items-center gap-1 rounded-full px-2 py-1 text-[10px] text-[var(--app-hint)] transition-colors hover:bg-[var(--app-subtle-bg)] hover:text-[var(--app-fg)]"
-                        onClick={() => ctx.onRewindMessage!(seq)}
+                        onClick={() => {
+                            if (window.confirm('Rewind to this message? Subsequent conversation and file changes will be undone.')) {
+                                ctx.onRewindMessage!(seq)
+                            }
+                        }}
                     >
                         <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="1 4 1 10 7 10" />

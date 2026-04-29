@@ -120,10 +120,13 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
                     const projectDir = getProjectPath(session.path);
                     const jsonlPath = join(projectDir, `${claudeSessionId}.jsonl`);
 
+                    // 2. Find file snapshot BEFORE truncating
+                    const snapshot = findFileSnapshot(jsonlPath, targetUuid);
+
+                    // 3. Truncate JSONL
                     truncateJsonl(jsonlPath, targetUuid);
 
-                    // 3. Try to restore file snapshot (degraded if not found)
-                    const snapshot = findFileSnapshot(jsonlPath, targetUuid);
+                    // 4. Try to restore file snapshot (degraded if not found)
                     if (snapshot) {
                         const restored = applyFileSnapshot(snapshot, session.path);
                         logger.debug(`[remote]: restored ${restored.length} files from snapshot`);
@@ -358,6 +361,10 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
                             return permissionHandler.isAborted(toolCallId);
                         },
                         nextMessage: async () => {
+                            if (this.isRewinding) {
+                                return null;
+                            }
+
                             if (pending) {
                                 let p = pending;
                                 pending = null;
