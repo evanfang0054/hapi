@@ -97,7 +97,7 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
         });
 
         this.setupRewindHandler(session.client.rpcHandlerManager, {
-            onRewind: async ({ userMessageText, targetSeq, userMessageTextOccurrence }) => {
+            onRewind: async ({ userMessageText, targetSeq, userMessageTextOccurrence, mode }) => {
                 if (this.isRewinding) {
                     logger.debug('[remote]: rewind already in progress');
                     return;
@@ -113,6 +113,33 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
                 this.rewindBarrier = new Promise<void>(r => { barrierResolve = r });
 
                 try {
+                    if (mode === 'files-only') {
+                        // Files-only: restore files without aborting or truncating
+                        const claudeSessionId = session.sessionId;
+                        if (!claudeSessionId) {
+                            logger.debug('[remote]: no session id, cannot rewind files');
+                            return;
+                        }
+
+                        const projectDir = getProjectPath(session.path);
+                        const jsonlPath = join(projectDir, `${claudeSessionId}.jsonl`);
+
+                        const occurrence = userMessageTextOccurrence ?? 1;
+                        const hapiSnapshot = findHapiFileSnapshotAfterUserText(jsonlPath, userMessageText, occurrence);
+                        const snapshot = hapiSnapshot ?? findFileSnapshot(jsonlPath);
+
+                        if (snapshot) {
+                            const restored = applyFileSnapshot(snapshot, session.path);
+                            logger.debug(`[remote]: restored ${restored.length} files from snapshot (files-only)`);
+                        } else {
+                            logger.debug('[remote]: no file snapshot found, skipping file restore');
+                        }
+
+                        logger.debug(`[remote]: files-only rewind complete for seq=${targetSeq}`);
+                        return;
+                    }
+
+                    // session-and-files or session-only: abort + truncate JSONL
                     // 1. Abort current query iteration
                     if (this.abortController && !this.abortController.signal.aborted) {
                         this.abortController.abort();
@@ -129,29 +156,29 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
                     const projectDir = getProjectPath(session.path);
                     const jsonlPath = join(projectDir, `${claudeSessionId}.jsonl`);
 
-                    // 3. Capture HAPI snapshots before truncation. They are written after
-                    //    the target user message, so truncation would remove them.
                     const occurrence = userMessageTextOccurrence ?? 1;
-                    const hapiSnapshot = findHapiFileSnapshotAfterUserText(jsonlPath, userMessageText, occurrence);
 
-                    // 4. Truncate JSONL by matching user message text
-                    //    (We cannot use localId/uuid because SDKToLogConverter
-                    //     generates its own UUIDs that differ from Claude Code's JSONL uuids)
-                    truncateJsonlByUserText(jsonlPath, userMessageText, occurrence);
-
-                    // 5. Prefer the target turn's HAPI snapshot. Fall back to Claude's
-                    //    remaining file-history snapshot for older sessions.
-                    const snapshot = hapiSnapshot ?? findFileSnapshot(jsonlPath);
-
-                    // 6. Try to restore file snapshot (degraded if not found)
-                    if (snapshot) {
-                        const restored = applyFileSnapshot(snapshot, session.path);
-                        logger.debug(`[remote]: restored ${restored.length} files from snapshot`);
-                    } else {
-                        logger.debug('[remote]: no file snapshot found, skipping file restore');
+                    // 3. Capture HAPI snapshots before truncation (for session-and-files mode)
+                    let hapiSnapshot: ReturnType<typeof findHapiFileSnapshotAfterUserText> = null;
+                    if (mode === 'session-and-files') {
+                        hapiSnapshot = findHapiFileSnapshotAfterUserText(jsonlPath, userMessageText, occurrence);
                     }
 
-                    logger.debug(`[remote]: rewind complete for seq=${targetSeq}`);
+                    // 4. Truncate JSONL by matching user message text
+                    truncateJsonlByUserText(jsonlPath, userMessageText, occurrence);
+
+                    // 5. Restore files only in session-and-files mode
+                    if (mode === 'session-and-files') {
+                        const snapshot = hapiSnapshot ?? findFileSnapshot(jsonlPath);
+                        if (snapshot) {
+                            const restored = applyFileSnapshot(snapshot, session.path);
+                            logger.debug(`[remote]: restored ${restored.length} files from snapshot`);
+                        } else {
+                            logger.debug('[remote]: no file snapshot found, skipping file restore');
+                        }
+                    }
+
+                    logger.debug(`[remote]: rewind complete for seq=${targetSeq} mode=${mode}`);
                 } catch (error) {
                     logger.debug('[remote]: rewind failed', error);
                     throw error;
