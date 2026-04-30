@@ -36,6 +36,7 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
     private handleSessionFound: ((sessionId: string) => void) | null = null;
     private isRewinding = false;
     private rewindBarrier: Promise<void> | null = null;
+    private rewindMode: string | null = null;
 
     constructor(session: Session) {
         super(process.env.DEBUG ? session.logPath : undefined);
@@ -103,6 +104,7 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
                     return;
                 }
                 this.isRewinding = true;
+                this.rewindMode = mode;
 
                 // Set up barrier so the main loop waits for rewind to complete
                 // before starting a new claudeRemote iteration.
@@ -184,6 +186,12 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
                     throw error;
                 } finally {
                     this.isRewinding = false;
+                    // For session-only mode, stop the main loop to prevent Claude
+                    // from restarting with --resume (which could re-apply file edits)
+                    if (mode === 'session-only') {
+                        this.exitReason = 'session-rewound';
+                        this.shouldExit = true;
+                    }
                     barrierResolve();
                 }
             }

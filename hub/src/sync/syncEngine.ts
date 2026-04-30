@@ -348,7 +348,7 @@ export class SyncEngine {
         const userMessageTextOccurrence = this.getUserMessageTextOccurrence(sessionId, targetSeq, userMessageText)
         await this.rpcGateway.rewindSession(sessionId, { userMessageText, targetSeq, userMessageTextOccurrence, mode })
 
-        if (mode === 'session-and-files' || mode === 'session-only') {
+        if (mode === 'session-and-files') {
             this.messageService.deleteMessagesFromSeq(sessionId, targetSeq)
 
             // Refresh session to reflect updated state after rewind
@@ -359,6 +359,19 @@ export class SyncEngine {
             // leading the session to be marked inactive. Reactivate it so the user
             // can immediately send new messages.
             this.sessionCache.reactivateSession(sessionId)
+
+            this.handleRealtimeEvent({
+                type: 'messages-rewound' as const,
+                sessionId,
+                targetSeq
+            })
+        } else if (mode === 'session-only') {
+            this.messageService.deleteMessagesFromSeq(sessionId, targetSeq)
+            this.sessionCache.refreshSession(sessionId)
+
+            // Do NOT reactivate - the CLI exits after session-only rewind
+            // and won't send heartbeats. The session stays inactive until
+            // the user sends a new message which triggers a fresh session.
 
             this.handleRealtimeEvent({
                 type: 'messages-rewound' as const,
