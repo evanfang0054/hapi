@@ -509,6 +509,11 @@ export function useSSE(options: {
                 queueSessionListInvalidation()
             }
 
+            if (event.type === 'files-rewound') {
+                queueSessionDetailInvalidation(event.sessionId)
+                queueSessionListInvalidation()
+            }
+
             if (event.type === 'session-added' || event.type === 'session-updated' || event.type === 'session-removed') {
                 if (event.type === 'session-removed') {
                     removeSessionSummary(event.sessionId)
