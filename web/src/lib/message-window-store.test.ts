@@ -3,6 +3,7 @@ import type { DecryptedMessage } from '@/types/api'
 import type { SessionMessageSnapshot } from './session-message-snapshot'
 import {
     clearMessageWindow,
+    fetchLatestMessages,
     getMessageWindowState,
     getPersistableMessageWindowSnapshot,
     hydrateMessageWindowFromSnapshot,
@@ -160,6 +161,137 @@ describe('message-window-store rewind refresh', () => {
         expect(state.isLoading).toBe(false)
         expect(state.warning).toBeNull()
         expect(state.atBottom).toBe(true)
+        clearMessageWindow(sessionId)
+    })
+
+    it('refreshes after rewind even when a regular load is already in flight', async () => {
+        const sessionId = 'rewind-during-load'
+        const oldMessage = makeMessage('old-1', 1, 'old')
+        const rewindMessage = makeMessage('rewind-1', 1, 'after rewind')
+        let resolveRegularLoad: ((value: { messages: DecryptedMessage[]; page: { hasMore: boolean } }) => void) | undefined
+        const loadingApi = {
+            getMessages: vi.fn(() => new Promise<{ messages: DecryptedMessage[]; page: { hasMore: boolean } }>((resolve) => {
+                resolveRegularLoad = resolve
+            })),
+        }
+        const rewindApi = createApi([rewindMessage], false)
+
+        hydrateMessageWindowFromSnapshot({
+            sessionId,
+            messages: [oldMessage],
+            oldestSeq: 1,
+            newestSeq: 1,
+            hasMore: false,
+            atBottom: true,
+            savedAt: Date.now(),
+        })
+
+        const regularLoad = fetchLatestMessages(loadingApi as never, sessionId)
+        expect(getMessageWindowState(sessionId).isLoading).toBe(true)
+
+        await refreshMessagesAfterRewind(rewindApi as never, sessionId)
+
+        expect(rewindApi.getMessages).toHaveBeenCalledWith(sessionId, { limit: 50, beforeSeq: null })
+        expect(getMessageWindowState(sessionId).messages).toEqual([rewindMessage])
+
+        const resolve = resolveRegularLoad
+        if (!resolve) {
+            throw new Error('regular load did not start')
+        }
+        resolve({ messages: [oldMessage], page: { hasMore: false } })
+        await regularLoad
+
+        expect(getMessageWindowState(sessionId).messages).toEqual([rewindMessage])
+        clearMessageWindow(sessionId)
+    })
+
+    it('keeps rewind refresh loading while an older regular load resolves first', async () => {
+        const sessionId = 'rewind-loading-after-stale-load'
+        const oldMessage = makeMessage('old-1', 1, 'old')
+        const rewindMessage = makeMessage('rewind-1', 1, 'after rewind')
+        let resolveRegularLoad: ((value: { messages: DecryptedMessage[]; page: { hasMore: boolean } }) => void) | undefined
+        let resolveRewindLoad: ((value: { messages: DecryptedMessage[]; page: { hasMore: boolean } }) => void) | undefined
+        const loadingApi = {
+            getMessages: vi.fn(() => new Promise<{ messages: DecryptedMessage[]; page: { hasMore: boolean } }>((resolve) => {
+                resolveRegularLoad = resolve
+            })),
+        }
+        const rewindApi = {
+            getMessages: vi.fn(() => new Promise<{ messages: DecryptedMessage[]; page: { hasMore: boolean } }>((resolve) => {
+                resolveRewindLoad = resolve
+            })),
+        }
+
+        hydrateMessageWindowFromSnapshot({
+            sessionId,
+            messages: [oldMessage],
+            oldestSeq: 1,
+            newestSeq: 1,
+            hasMore: false,
+            atBottom: true,
+            savedAt: Date.now(),
+        })
+
+        const regularLoad = fetchLatestMessages(loadingApi as never, sessionId)
+        const rewindLoad = refreshMessagesAfterRewind(rewindApi as never, sessionId)
+
+        const resolveRegular = resolveRegularLoad
+        if (!resolveRegular) {
+            throw new Error('regular load did not start')
+        }
+        resolveRegular({ messages: [oldMessage], page: { hasMore: false } })
+        await regularLoad
+
+        expect(getMessageWindowState(sessionId).isLoading).toBe(true)
+
+        const resolveRewind = resolveRewindLoad
+        if (!resolveRewind) {
+            throw new Error('rewind load did not start')
+        }
+        resolveRewind({ messages: [rewindMessage], page: { hasMore: false } })
+        await rewindLoad
+
+        expect(getMessageWindowState(sessionId).messages).toEqual([rewindMessage])
+        expect(getMessageWindowState(sessionId).isLoading).toBe(false)
+        clearMessageWindow(sessionId)
+    })
+
+    it('ignores regular load failure after rewind refresh has advanced the window', async () => {
+        const sessionId = 'rewind-during-load-failure'
+        const oldMessage = makeMessage('old-1', 1, 'old')
+        const rewindMessage = makeMessage('rewind-1', 1, 'after rewind')
+        let rejectRegularLoad: ((reason: Error) => void) | undefined
+        const loadingApi = {
+            getMessages: vi.fn(() => new Promise<{ messages: DecryptedMessage[]; page: { hasMore: boolean } }>((_resolve, reject) => {
+                rejectRegularLoad = reject
+            })),
+        }
+        const rewindApi = createApi([rewindMessage], false)
+
+        hydrateMessageWindowFromSnapshot({
+            sessionId,
+            messages: [oldMessage],
+            oldestSeq: 1,
+            newestSeq: 1,
+            hasMore: false,
+            atBottom: true,
+            savedAt: Date.now(),
+        })
+
+        const regularLoad = fetchLatestMessages(loadingApi as never, sessionId)
+        await refreshMessagesAfterRewind(rewindApi as never, sessionId)
+
+        const reject = rejectRegularLoad
+        if (!reject) {
+            throw new Error('regular load did not start')
+        }
+        reject(new Error('stale network down'))
+        await regularLoad
+
+        const state = getMessageWindowState(sessionId)
+        expect(state.messages).toEqual([rewindMessage])
+        expect(state.isLoading).toBe(false)
+        expect(state.warning).toBeNull()
         clearMessageWindow(sessionId)
     })
 

@@ -197,6 +197,39 @@ describe('useSSE visibility recovery', () => {
     expect(queryClient.getQueryData<{ sessions: Array<{ id: string }> }>(queryKeys.sessions)?.sessions).toEqual([])
   })
 
+  it('clears message window when messages-rewound event arrives without api', () => {
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,
+        },
+      },
+    })
+
+    render(
+      createElement(
+        QueryClientProvider,
+        { client: queryClient },
+        createElement(HookHarness, { onDisconnect: vi.fn() })
+      )
+    )
+
+    const source = MockEventSource.instances[0]
+    expect(source).toBeDefined()
+
+    act(() => {
+      source?.onmessage?.(new MessageEvent('message', {
+        data: JSON.stringify({
+          type: 'messages-rewound',
+          sessionId: 'session-a',
+        }),
+      }))
+    })
+
+    expect(clearMessageWindow).toHaveBeenCalledWith('session-a')
+    expect(refreshMessagesAfterRewind).not.toHaveBeenCalledWith(expect.anything(), 'session-a')
+  })
+
   it('refreshes message window when messages-rewound event arrives and api is available', () => {
     const queryClient = new QueryClient({
       defaultOptions: {

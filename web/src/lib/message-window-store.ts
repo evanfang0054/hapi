@@ -28,6 +28,7 @@ type InternalState = MessageWindowState & {
     pendingOverflowCount: number
     pendingVisibleCount: number
     pendingOverflowVisibleCount: number
+    refreshGeneration: number
 }
 
 type PendingVisibilityCacheEntry = {
@@ -146,6 +147,7 @@ function createState(sessionId: string): InternalState {
         atBottom: true,
         messagesVersion: 0,
         pendingOverflowCount: 0,
+        refreshGeneration: 0,
     }
 }
 
@@ -214,6 +216,7 @@ function buildState(
         pendingOverflowCount?: number
         pendingVisibleCount?: number
         pendingOverflowVisibleCount?: number
+        refreshGeneration?: number
         hasMore?: boolean
         isLoading?: boolean
         isLoadingMore?: boolean
@@ -225,6 +228,7 @@ function buildState(
     const pending = updates.pending ?? prev.pending
     const pendingOverflowCount = updates.pendingOverflowCount ?? prev.pendingOverflowCount
     const pendingOverflowVisibleCount = updates.pendingOverflowVisibleCount ?? prev.pendingOverflowVisibleCount
+    const refreshGeneration = updates.refreshGeneration ?? prev.refreshGeneration
     let pendingVisibleCount = updates.pendingVisibleCount ?? prev.pendingVisibleCount
     const pendingChanged = pending !== prev.pending
     if (pendingChanged && updates.pendingVisibleCount === undefined) {
@@ -253,6 +257,7 @@ function buildState(
         warning: updates.warning !== undefined ? updates.warning : prev.warning,
         atBottom: updates.atBottom !== undefined ? updates.atBottom : prev.atBottom,
         messagesVersion,
+        refreshGeneration,
     }
 }
 
@@ -413,11 +418,15 @@ export async function fetchLatestMessages(api: ApiClient, sessionId: string): Pr
     if (initial.isLoading) {
         return
     }
+    const refreshGeneration = initial.refreshGeneration
     updateState(sessionId, (prev) => buildState(prev, { isLoading: true, warning: null }))
 
     try {
         const response = await api.getMessages(sessionId, { limit: PAGE_SIZE, beforeSeq: null })
         updateState(sessionId, (prev) => {
+            if (prev.refreshGeneration !== refreshGeneration) {
+                return prev
+            }
             if (prev.atBottom) {
                 const merged = mergeMessages(prev.messages, [...prev.pending, ...response.messages])
                 const trimmed = trimVisible(merged, 'append')
@@ -444,17 +453,21 @@ export async function fetchLatestMessages(api: ApiClient, sessionId: string): Pr
         })
     } catch (error) {
         const message = error instanceof Error ? error.message : 'Failed to load messages'
-        updateState(sessionId, (prev) => buildState(prev, { isLoading: false, warning: message }))
+        updateState(sessionId, (prev) => {
+            if (prev.refreshGeneration !== refreshGeneration) {
+                return prev
+            }
+            return buildState(prev, { isLoading: false, warning: message })
+        })
     }
 }
 
 export async function refreshMessagesAfterRewind(api: ApiClient, sessionId: string): Promise<void> {
-    const initial = getState(sessionId)
-    if (initial.isLoading) {
-        return
-    }
-
-    updateState(sessionId, (prev) => buildState(prev, { isLoading: true, warning: null }), true)
+    updateState(sessionId, (prev) => buildState(prev, {
+        isLoading: true,
+        warning: null,
+        refreshGeneration: prev.refreshGeneration + 1,
+    }), true)
 
     try {
         const response = await api.getMessages(sessionId, { limit: PAGE_SIZE, beforeSeq: null })

@@ -606,5 +606,7 @@ In the browser:
 
 - Spec coverage: local rewind action, SSE `messages-rewound`, non-empty refresh UX, replace-not-merge semantics, failure preservation, and tests are all covered.
 - Review follow-up: added coverage for rewind refresh while a regular load is already in flight, and changed `refreshMessagesAfterRewind` so it does not skip the replace-refresh when `isLoading` is already true.
+- Race follow-up: added generation guarding so a stale `fetchLatestMessages` response that started before rewind refresh cannot merge removed messages back into the visible window, overwrite the refreshed window with a stale warning, or clear the loading state of an in-flight rewind refresh.
+- SSE fallback follow-up: added coverage for `messages-rewound` without `api` falling back to `clearMessageWindow`, and with `api` calling `refreshMessagesAfterRewind`.
 - Placeholder scan: no TBD/TODO/fill-in placeholders remain.
 - Type consistency: `refreshMessagesAfterRewind(api: ApiClient, sessionId: string)` is introduced once and used consistently in store, mutation hook, SSE hook, and tests.
