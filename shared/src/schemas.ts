@@ -244,6 +244,11 @@ export const SyncEventSchema = z.discriminatedUnion('type', [
         type: z.literal('messages-rewound'),
         sessionId: z.string(),
         targetSeq: z.number()
+    }),
+    SessionEventBaseSchema.extend({
+        type: z.literal('files-rewound'),
+        sessionId: z.string(),
+        targetSeq: z.number()
     })
 ])
 

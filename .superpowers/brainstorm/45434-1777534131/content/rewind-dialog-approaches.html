@@ -1,0 +1,133 @@
+<h2>Rewind 弹窗设计方案</h2>
+<p class="subtitle">对比两种 UI 方案，选出你觉得更合适的一个</p>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">方案 A — 卡片式单选</div>
+    <div class="mockup-body" style="padding: 16px; font-family: -apple-system, sans-serif;">
+      <div style="background: var(--app-panel-elevated-bg); border-radius: 16px; padding: 20px; max-width: 320px; margin: 0 auto; border: 1px solid var(--app-border);">
+        <!-- Icon -->
+        <div style="text-align: center; margin-bottom: 12px;">
+          <div style="display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 50%; background: var(--app-badge-warning-bg);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--app-badge-warning-text);">
+              <polyline points="1 4 1 10 7 10" />
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+            </svg>
+          </div>
+        </div>
+        <h3 style="text-align: center; margin: 0 0 4px; font-size: 16px;">回撤到这条消息</h3>
+        <p style="text-align: center; margin: 0 0 16px; font-size: 13px; color: var(--app-hint);">选择回撤范围</p>
+
+        <!-- Radio Options -->
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 12px; border: 2px solid var(--app-link); background: rgba(59,130,246,0.06);">
+            <div style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--app-link); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <div style="width: 10px; height: 10px; border-radius: 50%; background: var(--app-link);"></div>
+            </div>
+            <div>
+              <div style="font-size: 14px; font-weight: 500;">会话 + 文件</div>
+              <div style="font-size: 11px; color: var(--app-hint); margin-top: 2px;">回撤消息和 AI 修改的文件</div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 12px; border: 1px solid var(--app-border);">
+            <div style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--app-hint); flex-shrink: 0;"></div>
+            <div>
+              <div style="font-size: 14px; font-weight: 500;">仅会话</div>
+              <div style="font-size: 11px; color: var(--app-hint); margin-top: 2px;">清除消息，不恢复文件</div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 12px; border: 1px solid var(--app-border);">
+            <div style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--app-hint); flex-shrink: 0;"></div>
+            <div>
+              <div style="font-size: 14px; font-weight: 500;">仅文件</div>
+              <div style="font-size: 11px; color: var(--app-hint); margin-top: 2px;">恢复 AI 修改的文件</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div style="display: flex; gap: 10px;">
+          <button style="flex: 1; height: 40px; border-radius: 12px; border: 1px solid var(--app-border); background: var(--app-subtle-bg); font-size: 13px; cursor: pointer;">取消</button>
+          <button style="flex: 1; height: 40px; border-radius: 12px; border: 1px solid var(--app-badge-error-border); background: var(--app-badge-error-bg); color: var(--app-badge-error-text); font-size: 13px; cursor: pointer;">确认回撤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-header">方案 B — 简洁列表式</div>
+    <div class="mockup-body" style="padding: 16px; font-family: -apple-system, sans-serif;">
+      <div style="background: var(--app-panel-elevated-bg); border-radius: 16px; padding: 20px; max-width: 320px; margin: 0 auto; border: 1px solid var(--app-border);">
+        <!-- Icon -->
+        <div style="text-align: center; margin-bottom: 12px;">
+          <div style="display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 50%; background: var(--app-badge-warning-bg);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--app-badge-warning-text);">
+              <polyline points="1 4 1 10 7 10" />
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+            </svg>
+          </div>
+        </div>
+        <h3 style="text-align: center; margin: 0 0 4px; font-size: 16px;">回撤到这条消息</h3>
+        <p style="text-align: center; margin: 0 0 16px; font-size: 13px; color: var(--app-hint);">选择回撤范围</p>
+
+        <!-- Segmented Control -->
+        <div style="display: flex; flex-direction: column; gap: 0; border-radius: 10px; overflow: hidden; border: 1px solid var(--app-border); margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: rgba(59,130,246,0.08); border-bottom: 1px solid var(--app-border);">
+            <div style="width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--app-link); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--app-link);"></div>
+            </div>
+            <span style="font-size: 14px; font-weight: 500;">会话 + 文件</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--app-border);">
+            <div style="width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--app-hint); flex-shrink: 0;"></div>
+            <span style="font-size: 14px;">仅会话</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; padding: 10px 12px;">
+            <div style="width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--app-hint); flex-shrink: 0;"></div>
+            <span style="font-size: 14px;">仅文件</span>
+          </div>
+        </div>
+
+        <!-- Warning -->
+        <div style="border-radius: 10px; border: 1px solid var(--app-badge-warning-border); background: var(--app-badge-warning-bg); padding: 8px 12px; margin-bottom: 16px; font-size: 12px; color: var(--app-badge-warning-text); text-align: center;">
+          此操作不可撤销
+        </div>
+
+        <!-- Buttons -->
+        <div style="display: flex; gap: 10px;">
+          <button style="flex: 1; height: 40px; border-radius: 12px; border: 1px solid var(--app-border); background: var(--app-subtle-bg); font-size: 13px; cursor: pointer;">取消</button>
+          <button style="flex: 1; height: 40px; border-radius: 12px; border: 1px solid var(--app-badge-error-border); background: var(--app-badge-error-bg); color: var(--app-badge-error-text); font-size: 13px; cursor: pointer;">确认回撤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="pros-cons">
+  <div class="pros"><h4>方案 A 优点</h4><ul><li>每个选项有副标题说明，信息更清晰</li><li>触摸区域更大，移动端友好</li><li>选中态更明显（边框变色 + 浅背景）</li></ul></div>
+  <div class="cons"><h4>方案 A 缺点</h4><ul><li>弹窗更高，内容更多</li><li>可能显得略重</li></ul></div>
+</div>
+
+<div class="pros-cons">
+  <div class="pros"><h4>方案 B 优点</h4><ul><li>紧凑，视觉噪音少</li><li>有警告提示「此操作不可撤销」</li><li>列表式控件认知负担低</li></ul></div>
+  <div class="cons"><h4>方案 B 缺点</h4><ul><li>缺少副标题，新用户可能不清楚选项含义</li><li>触摸区域相对较小</li></ul></div>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>卡片式单选</h3>
+      <p>带副标题说明，触摸区域大</p>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>简洁列表式</h3>
+      <p>紧凑，有不可撤销警告</p>
+    </div>
+  </div>
+</div>
