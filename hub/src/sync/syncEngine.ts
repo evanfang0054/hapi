@@ -300,7 +300,7 @@ export class SyncEngine {
 
         await this.rpcGateway.rewindSession(sessionId, { userMessageText, targetSeq })
 
-        this.messageService.deleteMessagesAfterSeq(sessionId, targetSeq)
+        this.messageService.deleteMessagesFromSeq(sessionId, targetSeq)
 
         // Refresh session to reflect updated state after rewind
         this.sessionCache.refreshSession(sessionId)

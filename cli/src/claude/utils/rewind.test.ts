@@ -104,7 +104,7 @@ describe('rewind utilities', () => {
     })
 
     describe('truncateJsonlByUserText', () => {
-        it('truncates file at the user message matching the text', () => {
+        it('truncates file excluding the matched user message and everything after', () => {
             const jsonlPath = join(testDir, 'test.jsonl')
             writeFileSync(jsonlPath, [
                 JSON.stringify({ type: 'user', uuid: 'aaa', parentUuid: null, message: { role: 'user', content: 'hello' } }),
@@ -113,27 +113,31 @@ describe('rewind utilities', () => {
                 JSON.stringify({ type: 'assistant', uuid: 'ddd', parentUuid: 'ccc', message: { role: 'assistant', content: [{ type: 'text', text: 'response after' }] } }),
             ].join('\n') + '\n')
 
-            const foundUuid = truncateJsonlByUserText(jsonlPath, 'rewind to here')
+            const lastKeptUuid = truncateJsonlByUserText(jsonlPath, 'rewind to here')
 
-            expect(foundUuid).toBe('ccc')
+            // Returns the uuid of the last line before the target (assistant bbb)
+            expect(lastKeptUuid).toBe('bbb')
             const chain = buildMessageChain(jsonlPath)
-            expect(chain).toHaveLength(3)
-            expect(chain[2].uuid).toBe('ccc')
+            // Target user message and everything after is removed
+            expect(chain).toHaveLength(2)
+            expect(chain[0].uuid).toBe('aaa')
+            expect(chain[1].uuid).toBe('bbb')
         })
 
         it('handles string content in user messages', () => {
             const jsonlPath = join(testDir, 'test.jsonl')
             writeFileSync(jsonlPath, [
-                JSON.stringify({ type: 'user', uuid: 'aaa', parentUuid: null, message: { role: 'user', content: 'find me' } }),
+                JSON.stringify({ type: 'user', uuid: 'aaa', parentUuid: null, message: { role: 'user', content: 'hello' } }),
                 JSON.stringify({ type: 'assistant', uuid: 'bbb', parentUuid: 'aaa', message: { role: 'assistant', content: 'reply' } }),
+                JSON.stringify({ type: 'user', uuid: 'ccc', parentUuid: 'bbb', message: { role: 'user', content: 'find me' } }),
             ].join('\n') + '\n')
 
-            const foundUuid = truncateJsonlByUserText(jsonlPath, 'find me')
+            const lastKeptUuid = truncateJsonlByUserText(jsonlPath, 'find me')
 
-            expect(foundUuid).toBe('aaa')
+            expect(lastKeptUuid).toBe('bbb')
             const chain = buildMessageChain(jsonlPath)
-            expect(chain).toHaveLength(1)
-            expect(chain[0].uuid).toBe('aaa')
+            expect(chain).toHaveLength(2)
+            expect(chain[1].uuid).toBe('bbb')
         })
 
         it('throws if no matching user message found', () => {

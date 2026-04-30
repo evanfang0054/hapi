@@ -58,9 +58,12 @@ export function buildMessageChain(jsonlPath: string): MessageChainEntry[] {
 }
 
 /**
- * Truncate a JSONL file, keeping all lines up to and including the user message
- * whose text matches the given userMessageText. This is used for rewind because
- * the Hub's localId (from SDKToLogConverter) differs from the JSONL uuid (from Claude Code).
+ * Truncate a JSONL file, removing the user message matching userMessageText
+ * and everything after it. The target user message itself is excluded so that
+ * after --resume Claude Code waits for fresh input rather than re-seeing the
+ * old message.
+ *
+ * Returns the uuid of the last kept message line (for file-snapshot lookup).
  */
 export function truncateJsonlByUserText(jsonlPath: string, userMessageText: string): string | null {
     if (!existsSync(jsonlPath)) {
@@ -70,7 +73,7 @@ export function truncateJsonlByUserText(jsonlPath: string, userMessageText: stri
     const content = readFileSync(jsonlPath, 'utf-8')
     const lines = content.split('\n')
     let targetLineIndex = -1
-    let foundUuid: string | null = null
+    let lastKeptUuid: string | null = null
 
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim()
@@ -90,8 +93,12 @@ export function truncateJsonlByUserText(jsonlPath: string, userMessageText: stri
                         : ''
                 if (text === userMessageText && parsed.uuid) {
                     targetLineIndex = i
-                    foundUuid = parsed.uuid
+                    break
                 }
+            }
+            // Track last meaningful uuid before the target
+            if (parsed.uuid) {
+                lastKeptUuid = parsed.uuid
             }
         } catch {
             // Skip malformed lines
@@ -102,12 +109,13 @@ export function truncateJsonlByUserText(jsonlPath: string, userMessageText: stri
         throw new Error(`No user message found matching text: "${userMessageText.substring(0, 50)}..."`)
     }
 
-    const keptLines = lines.slice(0, targetLineIndex + 1)
+    // Keep lines BEFORE the target user message (exclusive)
+    const keptLines = lines.slice(0, targetLineIndex)
     writeFileSync(jsonlPath, keptLines.join('\n') + '\n')
 
-    logger.debug(`[rewind] Truncated JSONL at line ${targetLineIndex}, text match for "${userMessageText.substring(0, 50)}"`)
+    logger.debug(`[rewind] Truncated JSONL before line ${targetLineIndex}, excluded user message "${userMessageText.substring(0, 50)}"`)
 
-    return foundUuid
+    return lastKeptUuid
 }
 
 /**

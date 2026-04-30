@@ -1,7 +1,7 @@
 import type { Database } from 'bun:sqlite'
 
 import type { StoredMessage } from './types'
-import { addMessage, getMessages, getMessagesAfter, mergeSessionMessages, deleteMessagesAfterSeq } from './messages'
+import { addMessage, getMessages, getMessagesAfter, mergeSessionMessages, deleteMessagesFromSeq } from './messages'
 
 export class MessageStore {
     private readonly db: Database
@@ -26,7 +26,7 @@ export class MessageStore {
         return mergeSessionMessages(this.db, fromSessionId, toSessionId)
     }
 
-    deleteMessagesAfterSeq(sessionId: string, afterSeq: number): number {
-        return deleteMessagesAfterSeq(this.db, sessionId, afterSeq)
+    deleteMessagesFromSeq(sessionId: string, fromSeq: number): number {
+        return deleteMessagesFromSeq(this.db, sessionId, fromSeq)
     }
 }

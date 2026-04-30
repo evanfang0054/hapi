@@ -162,13 +162,13 @@ export function mergeSessionMessages(
     }
 }
 
-export function deleteMessagesAfterSeq(
+export function deleteMessagesFromSeq(
     db: Database,
     sessionId: string,
-    afterSeq: number
+    fromSeq: number
 ): number {
     const result = db.prepare(
-        'DELETE FROM messages WHERE session_id = ? AND seq > ?'
-    ).run(sessionId, afterSeq)
+        'DELETE FROM messages WHERE session_id = ? AND seq >= ?'
+    ).run(sessionId, fromSeq)
     return result.changes
 }
