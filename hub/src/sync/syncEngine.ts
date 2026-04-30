@@ -276,13 +276,29 @@ export class SyncEngine {
             beforeSeq: targetSeq + 1
         })
         const targetMessage = messages.messages.find(m => m.seq === targetSeq)
-        const targetUuid = targetMessage?.localId
 
-        if (!targetUuid) {
-            throw new Error(`Message with seq ${targetSeq} not found or has no localId`)
+        if (!targetMessage) {
+            throw new Error(`Message with seq ${targetSeq} not found`)
         }
 
-        await this.rpcGateway.rewindSession(sessionId, targetUuid)
+        // Extract user message text from content for CLI-side JSONL matching.
+        // We cannot use localId as a JSONL uuid because SDKToLogConverter
+        // generates its own randomUUID() which differs from Claude Code's JSONL uuids.
+        let userMessageText: string | null = null
+        try {
+            const content = typeof targetMessage.content === 'string'
+                ? JSON.parse(targetMessage.content)
+                : targetMessage.content
+            if (content?.content?.text && typeof content.content.text === 'string') {
+                userMessageText = content.content.text
+            }
+        } catch { /* ignore parse errors */ }
+
+        if (!userMessageText) {
+            throw new Error(`Cannot extract user message text from seq ${targetSeq}`)
+        }
+
+        await this.rpcGateway.rewindSession(sessionId, { userMessageText, targetSeq })
 
         this.messageService.deleteMessagesAfterSeq(sessionId, targetSeq)
 

@@ -23,7 +23,7 @@ export type RemoteLauncherAbortHandlers = {
 };
 
 export type RemoteLauncherRewindHandler = {
-    onRewind: (params: { targetUuid: string }) => Promise<void>;
+    onRewind: (params: { userMessageText: string; targetSeq: number }) => Promise<void>;
 };
 
 type RpcHandlerManagerLike = {
@@ -99,8 +99,8 @@ export abstract class RemoteLauncherBase {
         handler: RemoteLauncherRewindHandler
     ): void {
         rpcHandlerManager.registerHandler('rewind', async (params: unknown) => {
-            const { targetUuid } = params as { targetUuid: string }
-            await handler.onRewind({ targetUuid })
+            const { userMessageText, targetSeq } = params as { userMessageText: string; targetSeq: number }
+            await handler.onRewind({ userMessageText, targetSeq })
             return { ok: true }
         });
     }

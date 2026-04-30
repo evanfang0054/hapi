@@ -58,6 +58,59 @@ export function buildMessageChain(jsonlPath: string): MessageChainEntry[] {
 }
 
 /**
+ * Truncate a JSONL file, keeping all lines up to and including the user message
+ * whose text matches the given userMessageText. This is used for rewind because
+ * the Hub's localId (from SDKToLogConverter) differs from the JSONL uuid (from Claude Code).
+ */
+export function truncateJsonlByUserText(jsonlPath: string, userMessageText: string): string | null {
+    if (!existsSync(jsonlPath)) {
+        throw new Error(`JSONL file not found: ${jsonlPath}`)
+    }
+
+    const content = readFileSync(jsonlPath, 'utf-8')
+    const lines = content.split('\n')
+    let targetLineIndex = -1
+    let foundUuid: string | null = null
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim()
+        if (!line) continue
+        try {
+            const parsed = JSON.parse(line)
+            // Look for user messages with matching text content
+            if (parsed.type === 'user' && parsed.message?.role === 'user') {
+                const msgContent = parsed.message.content
+                const text = typeof msgContent === 'string'
+                    ? msgContent
+                    : Array.isArray(msgContent)
+                        ? msgContent
+                            .filter((c: any) => c.type === 'text' && typeof c.text === 'string')
+                            .map((c: any) => c.text)
+                            .join('')
+                        : ''
+                if (text === userMessageText && parsed.uuid) {
+                    targetLineIndex = i
+                    foundUuid = parsed.uuid
+                }
+            }
+        } catch {
+            // Skip malformed lines
+        }
+    }
+
+    if (targetLineIndex === -1) {
+        throw new Error(`No user message found matching text: "${userMessageText.substring(0, 50)}..."`)
+    }
+
+    const keptLines = lines.slice(0, targetLineIndex + 1)
+    writeFileSync(jsonlPath, keptLines.join('\n') + '\n')
+
+    logger.debug(`[rewind] Truncated JSONL at line ${targetLineIndex}, text match for "${userMessageText.substring(0, 50)}"`)
+
+    return foundUuid
+}
+
+/**
  * Truncate a JSONL file, keeping all lines up to and including the line with targetUuid.
  * Both internal and message lines are preserved up to the target.
  */

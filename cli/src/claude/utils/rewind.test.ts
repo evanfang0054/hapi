@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { writeFileSync, mkdirSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
-import { buildMessageChain, truncateJsonl, findFileSnapshot } from './rewind'
+import { buildMessageChain, truncateJsonl, truncateJsonlByUserText, findFileSnapshot } from './rewind'
 
 describe('rewind utilities', () => {
     let testDir: string
@@ -100,6 +100,49 @@ describe('rewind utilities', () => {
 
             const snapshot = findFileSnapshot(jsonlPath, 'aaa')
             expect(snapshot).toBeNull()
+        })
+    })
+
+    describe('truncateJsonlByUserText', () => {
+        it('truncates file at the user message matching the text', () => {
+            const jsonlPath = join(testDir, 'test.jsonl')
+            writeFileSync(jsonlPath, [
+                JSON.stringify({ type: 'user', uuid: 'aaa', parentUuid: null, message: { role: 'user', content: 'hello' } }),
+                JSON.stringify({ type: 'assistant', uuid: 'bbb', parentUuid: 'aaa', message: { role: 'assistant', content: [{ type: 'text', text: 'hi there' }] } }),
+                JSON.stringify({ type: 'user', uuid: 'ccc', parentUuid: 'bbb', message: { role: 'user', content: 'rewind to here' } }),
+                JSON.stringify({ type: 'assistant', uuid: 'ddd', parentUuid: 'ccc', message: { role: 'assistant', content: [{ type: 'text', text: 'response after' }] } }),
+            ].join('\n') + '\n')
+
+            const foundUuid = truncateJsonlByUserText(jsonlPath, 'rewind to here')
+
+            expect(foundUuid).toBe('ccc')
+            const chain = buildMessageChain(jsonlPath)
+            expect(chain).toHaveLength(3)
+            expect(chain[2].uuid).toBe('ccc')
+        })
+
+        it('handles string content in user messages', () => {
+            const jsonlPath = join(testDir, 'test.jsonl')
+            writeFileSync(jsonlPath, [
+                JSON.stringify({ type: 'user', uuid: 'aaa', parentUuid: null, message: { role: 'user', content: 'find me' } }),
+                JSON.stringify({ type: 'assistant', uuid: 'bbb', parentUuid: 'aaa', message: { role: 'assistant', content: 'reply' } }),
+            ].join('\n') + '\n')
+
+            const foundUuid = truncateJsonlByUserText(jsonlPath, 'find me')
+
+            expect(foundUuid).toBe('aaa')
+            const chain = buildMessageChain(jsonlPath)
+            expect(chain).toHaveLength(1)
+            expect(chain[0].uuid).toBe('aaa')
+        })
+
+        it('throws if no matching user message found', () => {
+            const jsonlPath = join(testDir, 'test.jsonl')
+            writeFileSync(jsonlPath, [
+                JSON.stringify({ type: 'user', uuid: 'aaa', parentUuid: null, message: { role: 'user', content: 'hello' } }),
+            ].join('\n') + '\n')
+
+            expect(() => truncateJsonlByUserText(jsonlPath, 'nonexistent text')).toThrow('No user message found')
         })
     })
 })

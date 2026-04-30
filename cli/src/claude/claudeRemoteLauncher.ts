@@ -13,7 +13,7 @@ import { PLAN_FAKE_REJECT } from "./sdk/prompts";
 import { EnhancedMode } from "./loop";
 import { OutgoingMessageQueue } from "./utils/OutgoingMessageQueue";
 import type { ClaudePermissionMode } from "@hapi/protocol/types";
-import { truncateJsonl, findFileSnapshot, applyFileSnapshot } from "./utils/rewind";
+import { truncateJsonl, truncateJsonlByUserText, findFileSnapshot, applyFileSnapshot } from "./utils/rewind";
 import { getProjectPath } from "./utils/path";
 import {
     RemoteLauncherBase,
@@ -96,7 +96,7 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
         });
 
         this.setupRewindHandler(session.client.rpcHandlerManager, {
-            onRewind: async ({ targetUuid }) => {
+            onRewind: async ({ userMessageText, targetSeq }) => {
                 if (this.isRewinding) {
                     logger.debug('[remote]: rewind already in progress');
                     return;
@@ -110,7 +110,7 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
                     }
                     await this.abortFuture?.promise;
 
-                    // 2. Truncate JSONL
+                    // 2. Locate JSONL file
                     const claudeSessionId = session.sessionId;
                     if (!claudeSessionId) {
                         logger.debug('[remote]: no session id, cannot rewind');
@@ -120,13 +120,16 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
                     const projectDir = getProjectPath(session.path);
                     const jsonlPath = join(projectDir, `${claudeSessionId}.jsonl`);
 
-                    // 2. Find file snapshot BEFORE truncating
-                    const snapshot = findFileSnapshot(jsonlPath, targetUuid);
+                    // 3. Truncate JSONL by matching user message text
+                    //    (We cannot use localId/uuid because SDKToLogConverter
+                    //     generates its own UUIDs that differ from Claude Code's JSONL uuids)
+                    const targetUuid = truncateJsonlByUserText(jsonlPath, userMessageText);
 
-                    // 3. Truncate JSONL
-                    truncateJsonl(jsonlPath, targetUuid);
+                    // 4. Find file snapshot BEFORE truncating (already done above since we used text match)
+                    //    Re-read the truncated file to find snapshot
+                    const snapshot = targetUuid ? findFileSnapshot(jsonlPath, targetUuid) : null;
 
-                    // 4. Try to restore file snapshot (degraded if not found)
+                    // 5. Try to restore file snapshot (degraded if not found)
                     if (snapshot) {
                         const restored = applyFileSnapshot(snapshot, session.path);
                         logger.debug(`[remote]: restored ${restored.length} files from snapshot`);
@@ -134,10 +137,10 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
                         logger.debug('[remote]: no file snapshot found, skipping file restore');
                     }
 
-                    // 4. The main loop will continue because we didn't set exitReason.
+                    // 6. The main loop will continue because we didn't set exitReason.
                     // The next iteration of claudeRemote will use the existing sessionId
                     // as the resume parameter since it's still set in session.sessionId.
-                    logger.debug(`[remote]: rewind complete, process will resume from uuid=${targetUuid}`);
+                    logger.debug(`[remote]: rewind complete for seq=${targetSeq}`);
                 } catch (error) {
                     logger.debug('[remote]: rewind failed', error);
                 } finally {
