@@ -383,16 +383,22 @@ export class PermissionHandler extends BasePermissionHandler<PermissionResponse,
     /**
      * Resolves tool call ID based on tool name and input
      */
-    private resolveToolCallId(name: string, args: any): string | null {
+    resolveToolCallIdForInput(name: string, args: any, includeUsed = false): string | null {
+        return this.resolveToolCallId(name, args, false, includeUsed);
+    }
+
+    private resolveToolCallId(name: string, args: any, markUsed = true, includeUsed = false): string | null {
         // Search in reverse (most recent first)
         for (let i = this.toolCalls.length - 1; i >= 0; i--) {
             const call = this.toolCalls[i];
             if (call.name === name && deepEqual(call.input, args)) {
-                if (call.used) {
+                if (call.used && !includeUsed) {
                     return null;
                 }
-                // Found unused match - mark as used and return
-                call.used = true;
+                // Found unused match - optionally mark as used and return
+                if (markUsed) {
+                    call.used = true;
+                }
                 return call.id;
             }
         }

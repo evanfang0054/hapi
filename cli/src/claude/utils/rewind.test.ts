@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { writeFileSync, mkdirSync, rmSync } from 'node:fs'
+import { writeFileSync, mkdirSync, rmSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
-import { buildMessageChain, truncateJsonl, truncateJsonlByUserText, findFileSnapshot } from './rewind'
+import { buildMessageChain, truncateJsonl, truncateJsonlByUserText, findFileSnapshot, findHapiFileSnapshotAfterUserText, applyFileSnapshot, appendHapiFileSnapshot, captureFilesSnapshot } from './rewind'
 
 describe('rewind utilities', () => {
     let testDir: string
@@ -77,28 +77,148 @@ describe('rewind utilities', () => {
     })
 
     describe('findFileSnapshot', () => {
-        it('finds the most recent file-history-snapshot before target uuid', () => {
-            const jsonlPath = join(testDir, 'test.jsonl')
+        it('finds the most recent file-history-snapshot in the file', () => {
+            // Mimic the real path structure:
+            //   ~/.claude/projects/<project>/<sessionId>.jsonl
+            //   ~/.claude/file-history/<sessionId>/<backup>@v1
+            const claudeHome = join(testDir, 'claude-home')
+            const projectDir = join(claudeHome, 'projects', 'myproject')
+            mkdirSync(projectDir, { recursive: true })
+
+            const sessionId = 'test-session'
+            const backupDir = join(claudeHome, 'file-history', sessionId)
+            mkdirSync(backupDir, { recursive: true })
+            writeFileSync(join(backupDir, 'backup1@v1'), 'old content of a.ts')
+            writeFileSync(join(backupDir, 'backup2@v1'), 'old content of b.ts')
+
+            const jsonlPath = join(projectDir, `${sessionId}.jsonl`)
             writeFileSync(jsonlPath, [
-                JSON.stringify({ type: 'file-history-snapshot', uuid: 'snap1', msgId: 'pre', files: { '/a.ts': 'content1' } }),
+                JSON.stringify({ type: 'file-history-snapshot', snapshot: { trackedFileBackups: { '/a.ts': { backupFileName: 'backup1', version: 1 } } } }),
                 JSON.stringify({ type: 'user', uuid: 'aaa', parentUuid: null, message: { role: 'user', content: 'hi' } }),
-                JSON.stringify({ type: 'file-history-snapshot', uuid: 'snap2', msgId: 'bbb', files: { '/b.ts': 'content2' } }),
+                JSON.stringify({ type: 'file-history-snapshot', snapshot: { trackedFileBackups: { '/b.ts': { backupFileName: 'backup2', version: 1 } } } }),
                 JSON.stringify({ type: 'assistant', uuid: 'bbb', parentUuid: 'aaa', message: { role: 'assistant', content: 'hello' } }),
-                JSON.stringify({ type: 'user', uuid: 'ccc', parentUuid: 'bbb', message: { role: 'user', content: 'bye' } }),
             ].join('\n') + '\n')
 
-            const snapshot = findFileSnapshot(jsonlPath, 'ccc')
+            const snapshot = findFileSnapshot(jsonlPath)
             expect(snapshot).not.toBeNull()
-            expect(snapshot!.files['/b.ts']).toBe('content2')
+            expect(snapshot!.files['/b.ts']).toBe('old content of b.ts')
+        })
+
+        it('finds hapi snapshots after the target user message before truncation', () => {
+            const jsonlPath = join(testDir, 'test.jsonl')
+            writeFileSync(jsonlPath, [
+                JSON.stringify({ type: 'user', uuid: 'aaa', parentUuid: null, message: { role: 'user', content: 'before' } }),
+                JSON.stringify({ type: 'assistant', uuid: 'bbb', parentUuid: 'aaa', message: { role: 'assistant', content: 'ok' } }),
+                JSON.stringify({ type: 'user', uuid: 'ccc', parentUuid: 'bbb', message: { role: 'user', content: 'edit files' } }),
+            ].join('\n') + '\n')
+            appendHapiFileSnapshot(jsonlPath, { files: { '/a.ts': 'a before' } })
+            appendHapiFileSnapshot(jsonlPath, { files: { '/b.ts': 'b before' }, deleted: ['/new.ts'] })
+            writeFileSync(jsonlPath, JSON.stringify({ type: 'assistant', uuid: 'ddd', parentUuid: 'ccc', message: { role: 'assistant', content: 'done' } }) + '\n', { flag: 'a' })
+
+            const snapshot = findHapiFileSnapshotAfterUserText(jsonlPath, 'edit files')
+
+            expect(snapshot).not.toBeNull()
+            expect(snapshot!.files).toEqual({ '/a.ts': 'a before', '/b.ts': 'b before' })
+            expect(snapshot!.deleted).toEqual(['/new.ts'])
+        })
+
+        it('keeps the earliest hapi snapshot for the same file in one user turn', () => {
+            const jsonlPath = join(testDir, 'test.jsonl')
+            writeFileSync(jsonlPath, [
+                JSON.stringify({ type: 'user', uuid: 'aaa', parentUuid: null, message: { role: 'user', content: 'edit twice' } }),
+            ].join('\n') + '\n')
+            appendHapiFileSnapshot(jsonlPath, { files: { '/a.ts': 'before first edit' } })
+            appendHapiFileSnapshot(jsonlPath, { files: { '/a.ts': 'after first edit' } })
+
+            const snapshot = findHapiFileSnapshotAfterUserText(jsonlPath, 'edit twice')
+
+            expect(snapshot).not.toBeNull()
+            expect(snapshot!.files['/a.ts']).toBe('before first edit')
+        })
+
+        it('keeps collecting hapi snapshots after following user messages', () => {
+            const jsonlPath = join(testDir, 'test.jsonl')
+            writeFileSync(jsonlPath, [
+                JSON.stringify({ type: 'user', uuid: 'aaa', parentUuid: null, message: { role: 'user', content: 'target' } }),
+            ].join('\n') + '\n')
+            appendHapiFileSnapshot(jsonlPath, { files: { '/a.ts': 'target before' } })
+            writeFileSync(jsonlPath, JSON.stringify({ type: 'user', uuid: 'bbb', parentUuid: 'aaa', message: { role: 'user', content: 'next' } }) + '\n', { flag: 'a' })
+            appendHapiFileSnapshot(jsonlPath, { files: { '/b.ts': 'next before' } })
+
+            const snapshot = findHapiFileSnapshotAfterUserText(jsonlPath, 'target')
+
+            expect(snapshot).not.toBeNull()
+            expect(snapshot!.files).toEqual({ '/a.ts': 'target before', '/b.ts': 'next before' })
+        })
+
+        it('can restore a hapi snapshot captured after the target message before truncation removes it', () => {
+            const filePath = join(testDir, 'README.md')
+            const jsonlPath = join(testDir, 'test.jsonl')
+            writeFileSync(filePath, 'before')
+            writeFileSync(jsonlPath, [
+                JSON.stringify({ type: 'user', uuid: 'aaa', parentUuid: null, message: { role: 'user', content: 'edit readme' } }),
+            ].join('\n') + '\n')
+            appendHapiFileSnapshot(jsonlPath, captureFilesSnapshot([filePath], testDir)!)
+
+            writeFileSync(filePath, 'after')
+            const snapshot = findHapiFileSnapshotAfterUserText(jsonlPath, 'edit readme')
+            truncateJsonlByUserText(jsonlPath, 'edit readme')
+            const restored = applyFileSnapshot(snapshot!, testDir)
+
+            expect(restored).toEqual([filePath])
+            expect(captureFilesSnapshot([filePath], testDir)!.files[filePath]).toBe('before')
+            expect(findFileSnapshot(jsonlPath)).toBeNull()
+        })
+
+        it('finds hapi-file-snapshot entries when Claude file history is absent', () => {
+            const jsonlPath = join(testDir, 'test.jsonl')
+            appendHapiFileSnapshot(jsonlPath, { files: { '/a.ts': 'before edit' } })
+            appendHapiFileSnapshot(jsonlPath, { files: { '/b.ts': 'before second edit' }, deleted: ['/missing.ts'] })
+
+            const snapshot = findFileSnapshot(jsonlPath)
+            expect(snapshot).not.toBeNull()
+            expect(snapshot!.files['/b.ts']).toBe('before second edit')
+            expect(snapshot!.deleted).toEqual(['/missing.ts'])
+        })
+
+        it('captures and restores hapi snapshots from disk', () => {
+            const filePath = join(testDir, 'README.md')
+            writeFileSync(filePath, 'before')
+
+            const snapshot = captureFilesSnapshot([filePath], testDir)
+            expect(snapshot).not.toBeNull()
+
+            writeFileSync(filePath, 'after')
+            const restored = applyFileSnapshot(snapshot!, testDir)
+
+            expect(restored).toEqual([filePath])
+            expect(captureFilesSnapshot([filePath], testDir)!.files[filePath]).toBe('before')
+        })
+
+        it('restores files that were missing when the snapshot was captured', () => {
+            const filePath = join(testDir, 'new-file.md')
+            const snapshot = captureFilesSnapshot([filePath], testDir)
+            expect(snapshot).not.toBeNull()
+            expect(snapshot!.deleted).toEqual([filePath])
+
+            writeFileSync(filePath, 'created later')
+            const restored = applyFileSnapshot(snapshot!, testDir)
+
+            expect(restored).toEqual([filePath])
+            expect(existsSync(filePath)).toBe(false)
         })
 
         it('returns null if no snapshot found', () => {
-            const jsonlPath = join(testDir, 'test.jsonl')
+            const claudeHome = join(testDir, 'claude-home2')
+            const projectDir = join(claudeHome, 'projects', 'myproject')
+            mkdirSync(projectDir, { recursive: true })
+
+            const jsonlPath = join(projectDir, 'test-session2.jsonl')
             writeFileSync(jsonlPath, [
                 JSON.stringify({ type: 'user', uuid: 'aaa', parentUuid: null, message: { role: 'user', content: 'hi' } }),
             ].join('\n') + '\n')
 
-            const snapshot = findFileSnapshot(jsonlPath, 'aaa')
+            const snapshot = findFileSnapshot(jsonlPath)
             expect(snapshot).toBeNull()
         })
     })

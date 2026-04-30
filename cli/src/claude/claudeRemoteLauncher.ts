@@ -13,7 +13,7 @@ import { PLAN_FAKE_REJECT } from "./sdk/prompts";
 import { EnhancedMode } from "./loop";
 import { OutgoingMessageQueue } from "./utils/OutgoingMessageQueue";
 import type { ClaudePermissionMode } from "@hapi/protocol/types";
-import { truncateJsonl, truncateJsonlByUserText, findFileSnapshot, applyFileSnapshot } from "./utils/rewind";
+import { truncateJsonl, truncateJsonlByUserText, findFileSnapshot, findHapiFileSnapshotAfterUserText, applyFileSnapshot, appendHapiFileSnapshot, captureFilesSnapshot } from "./utils/rewind";
 import { getProjectPath } from "./utils/path";
 import {
     RemoteLauncherBase,
@@ -129,16 +129,20 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
                     const projectDir = getProjectPath(session.path);
                     const jsonlPath = join(projectDir, `${claudeSessionId}.jsonl`);
 
-                    // 3. Truncate JSONL by matching user message text
+                    // 3. Capture HAPI snapshots before truncation. They are written after
+                    //    the target user message, so truncation would remove them.
+                    const hapiSnapshot = findHapiFileSnapshotAfterUserText(jsonlPath, userMessageText);
+
+                    // 4. Truncate JSONL by matching user message text
                     //    (We cannot use localId/uuid because SDKToLogConverter
                     //     generates its own UUIDs that differ from Claude Code's JSONL uuids)
-                    const targetUuid = truncateJsonlByUserText(jsonlPath, userMessageText);
+                    truncateJsonlByUserText(jsonlPath, userMessageText);
 
-                    // 4. Find file snapshot BEFORE truncating (already done above since we used text match)
-                    //    Re-read the truncated file to find snapshot
-                    const snapshot = targetUuid ? findFileSnapshot(jsonlPath, targetUuid) : null;
+                    // 5. Prefer the target turn's HAPI snapshot. Fall back to Claude's
+                    //    remaining file-history snapshot for older sessions.
+                    const snapshot = hapiSnapshot ?? findFileSnapshot(jsonlPath);
 
-                    // 5. Try to restore file snapshot (degraded if not found)
+                    // 6. Try to restore file snapshot (degraded if not found)
                     if (snapshot) {
                         const restored = applyFileSnapshot(snapshot, session.path);
                         logger.debug(`[remote]: restored ${restored.length} files from snapshot`);
@@ -181,6 +185,45 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
 
         let planModeToolCalls = new Set<string>();
         let ongoingToolCalls = new Map<string, { parentToolCallId: string | null }>();
+        const snapshotToolCalls = new Set<string>();
+
+        const getSnapshotKey = (toolName: string, input: unknown): string | null => {
+            const toolCallId = permissionHandler.resolveToolCallIdForInput(toolName, input, true);
+            if (toolCallId) return toolCallId;
+
+            try {
+                return `${toolName}:${JSON.stringify(input)}`;
+            } catch {
+                return null;
+            }
+        };
+
+        const captureSnapshotForToolCall = (snapshotKey: string, toolName: string, input: unknown) => {
+            if (!session.sessionId || typeof input !== 'object' || input === null) return;
+            const inputObj = input as { file_path?: unknown; notebook_path?: unknown };
+            const filePath = toolName === 'NotebookEdit' ? inputObj.notebook_path : inputObj.file_path;
+            if (typeof filePath !== 'string') return;
+
+            const projectDir = getProjectPath(session.path);
+            const jsonlPath = join(projectDir, `${session.sessionId}.jsonl`);
+            const snapshot = captureFilesSnapshot([filePath], session.path);
+            if (!snapshot) return;
+
+            appendHapiFileSnapshot(jsonlPath, snapshot);
+            snapshotToolCalls.add(snapshotKey);
+            logger.debug(`[remote]: captured hapi file snapshot for ${filePath}`);
+        };
+
+        const handleToolCallPermission = async (toolName: string, input: unknown, mode: EnhancedMode, options: { signal: AbortSignal }) => {
+            const result = await permissionHandler.handleToolCall(toolName, input, mode, options);
+            if (result.behavior === 'allow' && (toolName === 'Edit' || toolName === 'Write' || toolName === 'NotebookEdit')) {
+                const snapshotKey = getSnapshotKey(toolName, input);
+                if (snapshotKey && !snapshotToolCalls.has(snapshotKey)) {
+                    captureSnapshotForToolCall(snapshotKey, toolName, input);
+                }
+            }
+            return result;
+        };
 
         function onMessage(message: SDKMessage) {
             formatClaudeMessageForInk(message, messageBuffer);
@@ -205,6 +248,9 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
                         if (c.type === 'tool_use') {
                             logger.debug('[remote]: detected tool use ' + c.id! + ' parent: ' + umessage.parent_tool_use_id);
                             ongoingToolCalls.set(c.id!, { parentToolCallId: umessage.parent_tool_use_id ?? null });
+                            if (c.id && (c.name === 'Edit' || c.name === 'Write' || c.name === 'NotebookEdit') && !snapshotToolCalls.has(c.id)) {
+                                captureSnapshotForToolCall(c.id, c.name, c.input);
+                            }
                         }
                     }
                 }
@@ -377,7 +423,7 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
                         allowedTools: session.allowedTools ?? [],
                         mcpServers: session.mcpServers,
                         hookSettingsPath: session.hookSettingsPath,
-                        canCallTool: permissionHandler.handleToolCall,
+                        canCallTool: handleToolCallPermission,
                         isAborted: (toolCallId: string) => {
                             return permissionHandler.isAborted(toolCallId);
                         },

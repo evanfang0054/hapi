@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs'
+import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync, statSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { logger } from '@/ui/logger'
 
@@ -12,13 +12,96 @@ export type MessageChainEntry = {
 
 export type FileSnapshot = {
     files: Record<string, string>
+    deleted?: string[]
 }
+
+type HapiFileSnapshotEntry = {
+    files: Record<string, string | null>
+}
+
+const HAPI_FILE_SNAPSHOT_TYPE = 'hapi-file-snapshot'
 
 const INTERNAL_TYPES = new Set([
     'file-history-snapshot',
+    'hapi-file-snapshot',
     'change',
     'queue-operation',
 ])
+
+function getUserMessageText(parsed: any): string {
+    if (parsed.type !== 'user' || parsed.message?.role !== 'user') return ''
+
+    const msgContent = parsed.message.content
+    return typeof msgContent === 'string'
+        ? msgContent
+        : Array.isArray(msgContent)
+            ? msgContent
+                .filter((c: any) => c.type === 'text' && typeof c.text === 'string')
+                .map((c: any) => c.text)
+                .join('')
+            : ''
+}
+
+function mergeHapiSnapshot(target: FileSnapshot, files: HapiFileSnapshotEntry['files']): void {
+    for (const [filePath, content] of Object.entries(files)) {
+        if (filePath in target.files || target.deleted?.includes(filePath)) continue
+
+        if (typeof content === 'string') {
+            target.files[filePath] = content
+        } else if (content === null) {
+            target.deleted!.push(filePath)
+        }
+    }
+}
+
+function hasSnapshotContent(snapshot: FileSnapshot): boolean {
+    return Object.keys(snapshot.files).length > 0 || (snapshot.deleted?.length ?? 0) > 0
+}
+
+/**
+ * Find HAPI snapshots captured after a target user message. This must run
+ * before truncation because these snapshots are written after the target
+ * message and would otherwise be removed. Since rewind deletes the target
+ * message and everything after it, collect snapshots across the whole suffix.
+ */
+export function findHapiFileSnapshotAfterUserText(jsonlPath: string, userMessageText: string): FileSnapshot | null {
+    if (!existsSync(jsonlPath)) {
+        return null
+    }
+
+    const content = readFileSync(jsonlPath, 'utf-8')
+    const lines = content.split('\n')
+    const snapshot: FileSnapshot = { files: {}, deleted: [] }
+    let foundTarget = false
+
+    for (const rawLine of lines) {
+        const line = rawLine.trim()
+        if (!line) continue
+
+        try {
+            const parsed = JSON.parse(line)
+            const text = getUserMessageText(parsed)
+
+            if (!foundTarget) {
+                if (text === userMessageText) {
+                    foundTarget = true
+                }
+                continue
+            }
+
+            if (parsed.type === HAPI_FILE_SNAPSHOT_TYPE) {
+                const files = parsed.snapshot?.files
+                if (files && typeof files === 'object') {
+                    mergeHapiSnapshot(snapshot, files as HapiFileSnapshotEntry['files'])
+                }
+            }
+        } catch {
+            // Skip malformed lines
+        }
+    }
+
+    return hasSnapshotContent(snapshot) ? snapshot : null
+}
 
 /**
  * Parse a JSONL file and build a message chain of user/assistant/system messages.
@@ -80,18 +163,8 @@ export function truncateJsonlByUserText(jsonlPath: string, userMessageText: stri
         if (!line) continue
         try {
             const parsed = JSON.parse(line)
-            // Look for user messages with matching text content
             if (parsed.type === 'user' && parsed.message?.role === 'user') {
-                const msgContent = parsed.message.content
-                const text = typeof msgContent === 'string'
-                    ? msgContent
-                    : Array.isArray(msgContent)
-                        ? msgContent
-                            .filter((c: any) => c.type === 'text' && typeof c.text === 'string')
-                            .map((c: any) => c.text)
-                            .join('')
-                        : ''
-                if (text === userMessageText && parsed.uuid) {
+                if (getUserMessageText(parsed) === userMessageText && parsed.uuid) {
                     targetLineIndex = i
                     break
                 }
@@ -116,6 +189,49 @@ export function truncateJsonlByUserText(jsonlPath: string, userMessageText: stri
     logger.debug(`[rewind] Truncated JSONL before line ${targetLineIndex}, excluded user message "${userMessageText.substring(0, 50)}"`)
 
     return lastKeptUuid
+}
+
+export function appendHapiFileSnapshot(jsonlPath: string, snapshot: FileSnapshot): void {
+    const files: Record<string, string | null> = {}
+
+    for (const [filePath, content] of Object.entries(snapshot.files)) {
+        files[filePath] = content
+    }
+
+    for (const filePath of snapshot.deleted ?? []) {
+        files[filePath] = null
+    }
+
+    writeFileSync(jsonlPath, JSON.stringify({
+        type: HAPI_FILE_SNAPSHOT_TYPE,
+        snapshot: { files },
+        timestamp: new Date().toISOString()
+    }) + '\n', { flag: 'a' })
+}
+
+export function captureFilesSnapshot(filePaths: string[], cwd: string): FileSnapshot | null {
+    const snapshot: FileSnapshot = { files: {}, deleted: [] }
+    const uniquePaths = [...new Set(filePaths)]
+
+    for (const filePath of uniquePaths) {
+        const absolutePath = filePath.startsWith('/') ? filePath : join(cwd, filePath)
+        try {
+            if (!existsSync(absolutePath)) {
+                snapshot.deleted!.push(filePath)
+                continue
+            }
+            if (!statSync(absolutePath).isFile()) continue
+            snapshot.files[filePath] = readFileSync(absolutePath, 'utf-8')
+        } catch (error) {
+            logger.debug(`[rewind] Failed to capture file snapshot: ${filePath}`, error)
+        }
+    }
+
+    if (Object.keys(snapshot.files).length === 0 && snapshot.deleted!.length === 0) {
+        return null
+    }
+
+    return snapshot
 }
 
 /**
@@ -156,10 +272,18 @@ export function truncateJsonl(jsonlPath: string, targetUuid: string): void {
 }
 
 /**
- * Find the most recent file-history-snapshot that appears before the target uuid.
- * Returns null if no snapshot exists.
+ * Find the most recent file-history-snapshot in a JSONL file.
+ *
+ * Claude Code stores snapshots as:
+ *   { type: "file-history-snapshot", snapshot: { trackedFileBackups: { "<path>": { backupFileName, version, backupTime } } } }
+ *
+ * The actual file contents live in:
+ *   ~/.claude/file-history/<claudeSessionId>/<backupFileName>@v<version>
+ *
+ * We resolve the backup references into actual file contents so that
+ * applyFileSnapshot can write them back.
  */
-export function findFileSnapshot(jsonlPath: string, targetUuid: string): FileSnapshot | null {
+export function findFileSnapshot(jsonlPath: string): FileSnapshot | null {
     if (!existsSync(jsonlPath)) {
         return null
     }
@@ -167,7 +291,12 @@ export function findFileSnapshot(jsonlPath: string, targetUuid: string): FileSna
     const content = readFileSync(jsonlPath, 'utf-8')
     const lines = content.split('\n')
 
-    let foundTarget = false
+    // JSONL path is: ~/.claude/projects/<project>/<sessionId>.jsonl
+    // File history is at: ~/.claude/file-history/<sessionId>/<backupFileName>@v<version>
+    const jsonlBasename = jsonlPath.split('/').pop() || ''
+    const claudeSessionId = jsonlBasename.replace(/\.jsonl$/, '')
+    const claudeHome = dirname(dirname(dirname(jsonlPath))) // ~/.claude from ~/.claude/projects/<project>/<sessionId>.jsonl
+
     let lastSnapshot: FileSnapshot | null = null
 
     for (const line of lines) {
@@ -177,21 +306,47 @@ export function findFileSnapshot(jsonlPath: string, targetUuid: string): FileSna
         try {
             const parsed = JSON.parse(trimmed)
 
-            if (parsed.uuid === targetUuid) {
-                foundTarget = true
-                break
+            if (parsed.type === HAPI_FILE_SNAPSHOT_TYPE) {
+                const files = parsed.snapshot?.files
+                if (files && typeof files === 'object') {
+                    const snapshot: FileSnapshot = { files: {}, deleted: [] }
+                    mergeHapiSnapshot(snapshot, files as HapiFileSnapshotEntry['files'])
+                    lastSnapshot = snapshot
+                }
+                continue
             }
 
-            if (parsed.type === 'file-history-snapshot' && parsed.files && typeof parsed.files === 'object') {
-                lastSnapshot = { files: parsed.files as Record<string, string> }
+            if (parsed.type === 'file-history-snapshot') {
+                const trackedFileBackups = parsed.snapshot?.trackedFileBackups
+                if (trackedFileBackups && typeof trackedFileBackups === 'object') {
+                    const files: Record<string, string> = {}
+                    for (const [filePath, backupInfo] of Object.entries(trackedFileBackups)) {
+                        if (!backupInfo || typeof backupInfo !== 'object') continue
+                        const info = backupInfo as { backupFileName?: string; version?: number }
+                        if (!info.backupFileName) continue
+
+                        const backupPath = join(
+                            claudeHome,
+                            'file-history',
+                            claudeSessionId,
+                            `${info.backupFileName}@v${info.version ?? 1}`
+                        )
+                        try {
+                            if (existsSync(backupPath)) {
+                                files[filePath] = readFileSync(backupPath, 'utf-8')
+                            }
+                        } catch {
+                            // Skip unreadable backups
+                        }
+                    }
+                    if (Object.keys(files).length > 0) {
+                        lastSnapshot = { files }
+                    }
+                }
             }
         } catch {
             // Skip malformed lines
         }
-    }
-
-    if (!foundTarget) {
-        return null
     }
 
     return lastSnapshot
@@ -213,6 +368,18 @@ export function applyFileSnapshot(snapshot: FileSnapshot, cwd: string): string[]
             restored.push(filePath)
         } catch (error) {
             logger.debug(`[rewind] Failed to restore file: ${filePath}`, error)
+        }
+    }
+
+    for (const filePath of snapshot.deleted ?? []) {
+        const absolutePath = filePath.startsWith('/') ? filePath : join(cwd, filePath)
+        try {
+            if (existsSync(absolutePath)) {
+                unlinkSync(absolutePath)
+                restored.push(filePath)
+            }
+        } catch (error) {
+            logger.debug(`[rewind] Failed to delete restored-missing file: ${filePath}`, error)
         }
     }
 
