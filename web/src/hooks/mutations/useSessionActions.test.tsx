@@ -172,7 +172,7 @@ describe('useSessionActions bulk delete', () => {
             await result.current.rewindSession(7)
         })
 
-        expect(api.rewindSession).toHaveBeenCalledWith('session-a', 7)
+        expect(api.rewindSession).toHaveBeenCalledWith('session-a', 7, 'session-and-files')
         expect(refreshMessagesAfterRewind).toHaveBeenCalledWith(api, 'session-a')
         expect(clearMessageWindow).not.toHaveBeenCalledWith('session-a')
     })

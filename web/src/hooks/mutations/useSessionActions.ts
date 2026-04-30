@@ -6,6 +6,8 @@ import { queryKeys } from '@/lib/query-keys'
 import { clearMessageWindow, refreshMessagesAfterRewind } from '@/lib/message-window-store'
 import { isKnownFlavor } from '@/lib/agentFlavorUtils'
 
+export type RewindMode = 'session-and-files' | 'session-only' | 'files-only'
+
 export type BulkDeleteSummary = {
     successCount: number
     failureCount: number
@@ -33,7 +35,7 @@ export function useSessionActions(
     setEffort: (effort: string | null) => Promise<void>
     renameSession: (name: string) => Promise<void>
     deleteSession: () => Promise<void>
-    rewindSession: (targetSeq: number) => Promise<void>
+    rewindSession: (targetSeq: number, mode?: RewindMode) => Promise<void>
     deleteSessions: (sessionIds: string[]) => Promise<BulkDeleteSummary>
     isPending: boolean
 } {
@@ -160,11 +162,11 @@ export function useSessionActions(
     })
 
     const rewindMutation = useMutation({
-        mutationFn: async (targetSeq: number) => {
+        mutationFn: async ({ targetSeq, mode }: { targetSeq: number; mode: RewindMode }) => {
             if (!api || !sessionId) {
                 throw new Error('Session unavailable')
             }
-            await api.rewindSession(sessionId, targetSeq)
+            await api.rewindSession(sessionId, targetSeq, mode)
         },
         onSuccess: () => {
             if (api && sessionId) {
@@ -219,7 +221,7 @@ export function useSessionActions(
         renameSession: renameMutation.mutateAsync,
         deleteSession: deleteMutation.mutateAsync,
         deleteSessions: bulkDeleteMutation.mutateAsync,
-        rewindSession: rewindMutation.mutateAsync,
+        rewindSession: (targetSeq: number, mode: RewindMode = 'session-and-files') => rewindMutation.mutateAsync({ targetSeq, mode }),
         isPending: abortMutation.isPending
             || archiveMutation.isPending
             || switchMutation.isPending

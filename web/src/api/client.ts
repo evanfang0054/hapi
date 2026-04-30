@@ -22,6 +22,7 @@ import type {
     SessionResponse,
     SessionsResponse
 } from '@/types/api'
+import type { RewindMode } from '@/hooks/mutations/useSessionActions'
 
 type ApiClientOptions = {
     baseUrl?: string
@@ -501,10 +502,10 @@ export class ApiClient {
         })
     }
 
-    async rewindSession(sessionId: string, targetSeq: number): Promise<void> {
+    async rewindSession(sessionId: string, targetSeq: number, mode: RewindMode = 'session-and-files'): Promise<void> {
         await this.request(`/api/sessions/${encodeURIComponent(sessionId)}/rewind`, {
             method: 'POST',
-            body: JSON.stringify({ targetSeq })
+            body: JSON.stringify({ targetSeq, mode })
         })
     }
 
