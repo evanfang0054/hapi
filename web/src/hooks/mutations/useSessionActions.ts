@@ -3,7 +3,7 @@ import { isPermissionModeAllowedForFlavor } from '@hapi/protocol'
 import type { ApiClient } from '@/api/client'
 import type { CodexCollaborationMode, PermissionMode } from '@/types/api'
 import { queryKeys } from '@/lib/query-keys'
-import { clearMessageWindow } from '@/lib/message-window-store'
+import { clearMessageWindow, refreshMessagesAfterRewind } from '@/lib/message-window-store'
 import { isKnownFlavor } from '@/lib/agentFlavorUtils'
 
 export type BulkDeleteSummary = {
@@ -167,8 +167,8 @@ export function useSessionActions(
             await api.rewindSession(sessionId, targetSeq)
         },
         onSuccess: () => {
-            if (sessionId) {
-                clearMessageWindow(sessionId)
+            if (api && sessionId) {
+                void refreshMessagesAfterRewind(api, sessionId)
             }
             void invalidateSession()
         },

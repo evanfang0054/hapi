@@ -448,6 +448,36 @@ export async function fetchLatestMessages(api: ApiClient, sessionId: string): Pr
     }
 }
 
+export async function refreshMessagesAfterRewind(api: ApiClient, sessionId: string): Promise<void> {
+    const initial = getState(sessionId)
+    if (initial.isLoading) {
+        return
+    }
+
+    updateState(sessionId, (prev) => buildState(prev, { isLoading: true, warning: null }), true)
+
+    try {
+        const response = await api.getMessages(sessionId, { limit: PAGE_SIZE, beforeSeq: null })
+        updateState(sessionId, (prev) => {
+            const trimmed = trimVisible(response.messages, 'append')
+            return buildState(prev, {
+                messages: trimmed,
+                pending: [],
+                pendingOverflowCount: 0,
+                pendingVisibleCount: 0,
+                pendingOverflowVisibleCount: 0,
+                hasMore: response.page.hasMore,
+                isLoading: false,
+                warning: null,
+                atBottom: true,
+            })
+        }, true)
+    } catch (error) {
+        const message = error instanceof Error ? error.message : 'Failed to refresh messages after rewind'
+        updateState(sessionId, (prev) => buildState(prev, { isLoading: false, warning: message }), true)
+    }
+}
+
 export async function fetchOlderMessages(api: ApiClient, sessionId: string): Promise<void> {
     const initial = getState(sessionId)
     if (initial.isLoadingMore || !initial.hasMore) {

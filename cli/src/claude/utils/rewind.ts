@@ -64,7 +64,7 @@ function hasSnapshotContent(snapshot: FileSnapshot): boolean {
  * message and would otherwise be removed. Since rewind deletes the target
  * message and everything after it, collect snapshots across the whole suffix.
  */
-export function findHapiFileSnapshotAfterUserText(jsonlPath: string, userMessageText: string): FileSnapshot | null {
+export function findHapiFileSnapshotAfterUserText(jsonlPath: string, userMessageText: string, occurrence = 1): FileSnapshot | null {
     if (!existsSync(jsonlPath)) {
         return null
     }
@@ -73,6 +73,7 @@ export function findHapiFileSnapshotAfterUserText(jsonlPath: string, userMessage
     const lines = content.split('\n')
     const snapshot: FileSnapshot = { files: {}, deleted: [] }
     let foundTarget = false
+    let seenOccurrences = 0
 
     for (const rawLine of lines) {
         const line = rawLine.trim()
@@ -84,7 +85,10 @@ export function findHapiFileSnapshotAfterUserText(jsonlPath: string, userMessage
 
             if (!foundTarget) {
                 if (text === userMessageText) {
-                    foundTarget = true
+                    seenOccurrences++
+                    if (seenOccurrences === occurrence) {
+                        foundTarget = true
+                    }
                 }
                 continue
             }
@@ -148,7 +152,7 @@ export function buildMessageChain(jsonlPath: string): MessageChainEntry[] {
  *
  * Returns the uuid of the last kept message line (for file-snapshot lookup).
  */
-export function truncateJsonlByUserText(jsonlPath: string, userMessageText: string): string | null {
+export function truncateJsonlByUserText(jsonlPath: string, userMessageText: string, occurrence = 1): string | null {
     if (!existsSync(jsonlPath)) {
         throw new Error(`JSONL file not found: ${jsonlPath}`)
     }
@@ -157,6 +161,7 @@ export function truncateJsonlByUserText(jsonlPath: string, userMessageText: stri
     const lines = content.split('\n')
     let targetLineIndex = -1
     let lastKeptUuid: string | null = null
+    let seenOccurrences = 0
 
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim()
@@ -165,8 +170,11 @@ export function truncateJsonlByUserText(jsonlPath: string, userMessageText: stri
             const parsed = JSON.parse(line)
             if (parsed.type === 'user' && parsed.message?.role === 'user') {
                 if (getUserMessageText(parsed) === userMessageText && parsed.uuid) {
-                    targetLineIndex = i
-                    break
+                    seenOccurrences++
+                    if (seenOccurrences === occurrence) {
+                        targetLineIndex = i
+                        break
+                    }
                 }
             }
             // Track last meaningful uuid before the target
@@ -305,16 +313,6 @@ export function findFileSnapshot(jsonlPath: string): FileSnapshot | null {
 
         try {
             const parsed = JSON.parse(trimmed)
-
-            if (parsed.type === HAPI_FILE_SNAPSHOT_TYPE) {
-                const files = parsed.snapshot?.files
-                if (files && typeof files === 'object') {
-                    const snapshot: FileSnapshot = { files: {}, deleted: [] }
-                    mergeHapiSnapshot(snapshot, files as HapiFileSnapshotEntry['files'])
-                    lastSnapshot = snapshot
-                }
-                continue
-            }
 
             if (parsed.type === 'file-history-snapshot') {
                 const trackedFileBackups = parsed.snapshot?.trackedFileBackups

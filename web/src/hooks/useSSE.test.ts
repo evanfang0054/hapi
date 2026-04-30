@@ -5,11 +5,12 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useSSE } from './useSSE'
 import { queryKeys } from '@/lib/query-keys'
-import { clearMessageWindow } from '@/lib/message-window-store'
+import { clearMessageWindow, refreshMessagesAfterRewind } from '@/lib/message-window-store'
 
 vi.mock('@/lib/message-window-store', () => ({
   clearMessageWindow: vi.fn(),
   ingestIncomingMessages: vi.fn(),
+  refreshMessagesAfterRewind: vi.fn(),
 }))
 
 class MockEventSource {
@@ -47,12 +48,26 @@ function HookHarness(props: { onDisconnect: (reason: string) => void }) {
   return null
 }
 
+function HookHarnessWithApi(props: { api: unknown }) {
+  useSSE({
+    enabled: true,
+    token: 'token-1',
+    baseUrl: 'https://example.com',
+    api: props.api as never,
+    subscription: { all: true },
+    onEvent: vi.fn(),
+  })
+
+  return null
+}
+
 describe('useSSE visibility recovery', () => {
   beforeEach(() => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2026-04-13T10:00:00Z'))
     vi.spyOn(Math, 'random').mockReturnValue(0)
     MockEventSource.instances = []
+    vi.clearAllMocks()
     Object.defineProperty(window, 'EventSource', {
       configurable: true,
       writable: true,
@@ -180,6 +195,40 @@ describe('useSSE visibility recovery', () => {
     expect(clearMessageWindow).toHaveBeenCalledWith('session-a')
     expect(queryClient.getQueryData(queryKeys.session('session-a'))).toBeUndefined()
     expect(queryClient.getQueryData<{ sessions: Array<{ id: string }> }>(queryKeys.sessions)?.sessions).toEqual([])
+  })
+
+  it('refreshes message window when messages-rewound event arrives and api is available', () => {
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,
+        },
+      },
+    })
+    const api = { getMessages: vi.fn() }
+
+    render(
+      createElement(
+        QueryClientProvider,
+        { client: queryClient },
+        createElement(HookHarnessWithApi, { api })
+      )
+    )
+
+    const source = MockEventSource.instances[0]
+    expect(source).toBeDefined()
+
+    act(() => {
+      source?.onmessage?.(new MessageEvent('message', {
+        data: JSON.stringify({
+          type: 'messages-rewound',
+          sessionId: 'session-a',
+        }),
+      }))
+    })
+
+    expect(refreshMessagesAfterRewind).toHaveBeenCalledWith(api, 'session-a')
+    expect(clearMessageWindow).not.toHaveBeenCalledWith('session-a')
   })
 })
 

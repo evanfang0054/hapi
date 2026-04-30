@@ -97,7 +97,7 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
         });
 
         this.setupRewindHandler(session.client.rpcHandlerManager, {
-            onRewind: async ({ userMessageText, targetSeq }) => {
+            onRewind: async ({ userMessageText, targetSeq, userMessageTextOccurrence }) => {
                 if (this.isRewinding) {
                     logger.debug('[remote]: rewind already in progress');
                     return;
@@ -131,12 +131,13 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
 
                     // 3. Capture HAPI snapshots before truncation. They are written after
                     //    the target user message, so truncation would remove them.
-                    const hapiSnapshot = findHapiFileSnapshotAfterUserText(jsonlPath, userMessageText);
+                    const occurrence = userMessageTextOccurrence ?? 1;
+                    const hapiSnapshot = findHapiFileSnapshotAfterUserText(jsonlPath, userMessageText, occurrence);
 
                     // 4. Truncate JSONL by matching user message text
                     //    (We cannot use localId/uuid because SDKToLogConverter
                     //     generates its own UUIDs that differ from Claude Code's JSONL uuids)
-                    truncateJsonlByUserText(jsonlPath, userMessageText);
+                    truncateJsonlByUserText(jsonlPath, userMessageText, occurrence);
 
                     // 5. Prefer the target turn's HAPI snapshot. Fall back to Claude's
                     //    remaining file-history snapshot for older sessions.
@@ -153,6 +154,7 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
                     logger.debug(`[remote]: rewind complete for seq=${targetSeq}`);
                 } catch (error) {
                     logger.debug('[remote]: rewind failed', error);
+                    throw error;
                 } finally {
                     this.isRewinding = false;
                     barrierResolve();
@@ -216,7 +218,7 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
 
         const handleToolCallPermission = async (toolName: string, input: unknown, mode: EnhancedMode, options: { signal: AbortSignal }) => {
             const result = await permissionHandler.handleToolCall(toolName, input, mode, options);
-            if (result.behavior === 'allow' && (toolName === 'Edit' || toolName === 'Write' || toolName === 'NotebookEdit')) {
+            if (result.behavior === 'allow' && (toolName === 'Edit' || toolName === 'MultiEdit' || toolName === 'Write' || toolName === 'NotebookEdit')) {
                 const snapshotKey = getSnapshotKey(toolName, input);
                 if (snapshotKey && !snapshotToolCalls.has(snapshotKey)) {
                     captureSnapshotForToolCall(snapshotKey, toolName, input);
@@ -248,7 +250,7 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
                         if (c.type === 'tool_use') {
                             logger.debug('[remote]: detected tool use ' + c.id! + ' parent: ' + umessage.parent_tool_use_id);
                             ongoingToolCalls.set(c.id!, { parentToolCallId: umessage.parent_tool_use_id ?? null });
-                            if (c.id && (c.name === 'Edit' || c.name === 'Write' || c.name === 'NotebookEdit') && !snapshotToolCalls.has(c.id)) {
+                            if (c.id && (c.name === 'Edit' || c.name === 'MultiEdit' || c.name === 'Write' || c.name === 'NotebookEdit') && !snapshotToolCalls.has(c.id)) {
                                 captureSnapshotForToolCall(c.id, c.name, c.input);
                             }
                         }

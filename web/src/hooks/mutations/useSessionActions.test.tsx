@@ -5,10 +5,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { ReactNode } from 'react'
 import { useSessionActions } from './useSessionActions'
 import { queryKeys } from '@/lib/query-keys'
-import { clearMessageWindow } from '@/lib/message-window-store'
+import { clearMessageWindow, refreshMessagesAfterRewind } from '@/lib/message-window-store'
 
 vi.mock('@/lib/message-window-store', () => ({
     clearMessageWindow: vi.fn(),
+    refreshMessagesAfterRewind: vi.fn(),
 }))
 
 describe('useSessionActions bulk delete', () => {
@@ -149,5 +150,30 @@ describe('useSessionActions bulk delete', () => {
         await waitFor(() => {
             expect(result.current.isPending).toBe(false)
         })
+    })
+
+    it('refreshes the message window after rewind succeeds without clearing it', async () => {
+        const api = {
+            rewindSession: vi.fn().mockResolvedValue(undefined),
+        }
+        const queryClient = new QueryClient({
+            defaultOptions: {
+                queries: { retry: false },
+                mutations: { retry: false },
+            },
+        })
+
+        const { result } = renderHook(
+            () => useSessionActions(api as any, 'session-a'),
+            { wrapper: createWrapper(queryClient) }
+        )
+
+        await act(async () => {
+            await result.current.rewindSession(7)
+        })
+
+        expect(api.rewindSession).toHaveBeenCalledWith('session-a', 7)
+        expect(refreshMessagesAfterRewind).toHaveBeenCalledWith(api, 'session-a')
+        expect(clearMessageWindow).not.toHaveBeenCalledWith('session-a')
     })
 })

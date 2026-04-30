@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { isObject, toSessionSummary } from '@hapi/protocol'
+import type { ApiClient } from '@/api/client'
 import type {
     Machine,
     MachinesResponse,
@@ -11,7 +12,7 @@ import type {
     SyncEvent
 } from '@/types/api'
 import { queryKeys } from '@/lib/query-keys'
-import { clearMessageWindow, ingestIncomingMessages } from '@/lib/message-window-store'
+import { clearMessageWindow, ingestIncomingMessages, refreshMessagesAfterRewind } from '@/lib/message-window-store'
 
 type SSESubscription = {
     all?: boolean
@@ -172,6 +173,7 @@ export function useSSE(options: {
     enabled: boolean
     token: string
     baseUrl: string
+    api?: ApiClient | null
     subscription?: SSESubscription
     onEvent: (event: SyncEvent) => void
     onConnect?: () => void
@@ -498,7 +500,11 @@ export function useSSE(options: {
             }
 
             if (event.type === 'messages-rewound') {
-                clearMessageWindow(event.sessionId)
+                if (options.api) {
+                    void refreshMessagesAfterRewind(options.api, event.sessionId)
+                } else {
+                    clearMessageWindow(event.sessionId)
+                }
                 queueSessionDetailInvalidation(event.sessionId)
                 queueSessionListInvalidation()
             }
@@ -637,7 +643,7 @@ export function useSSE(options: {
             }
             setSubscriptionId(null)
         }
-    }, [options.baseUrl, options.enabled, options.token, subscriptionKey, queryClient, reconnectNonce])
+    }, [options.api, options.baseUrl, options.enabled, options.token, subscriptionKey, queryClient, reconnectNonce])
 
     return { subscriptionId }
 }

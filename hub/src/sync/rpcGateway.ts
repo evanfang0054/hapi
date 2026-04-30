@@ -93,7 +93,7 @@ export class RpcGateway {
         await this.sessionRpc(sessionId, 'abort', { reason: 'User aborted via Telegram Bot' })
     }
 
-    async rewindSession(sessionId: string, params: { userMessageText: string; targetSeq: number }): Promise<void> {
+    async rewindSession(sessionId: string, params: { userMessageText: string; targetSeq: number; userMessageTextOccurrence?: number }): Promise<void> {
         await this.sessionRpc(sessionId, 'rewind', params)
     }
 

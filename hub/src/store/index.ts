@@ -178,6 +178,7 @@ export class Store {
                 agent_state_version INTEGER DEFAULT 1,
                 model TEXT,
                 effort TEXT,
+                permission_mode TEXT DEFAULT NULL,
                 todos TEXT,
                 todos_updated_at INTEGER,
                 team_state TEXT,

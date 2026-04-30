@@ -166,6 +166,45 @@ export class SyncEngine {
         return this.messageService.getMessagesAfter(sessionId, options)
     }
 
+    private extractUserMessageText(message: DecryptedMessage): string | null {
+        try {
+            const content = typeof message.content === 'string'
+                ? JSON.parse(message.content)
+                : message.content
+            if (content?.content?.text && typeof content.content.text === 'string') {
+                return content.content.text
+            }
+        } catch { /* ignore parse errors */ }
+        return null
+    }
+
+    private getUserMessageTextOccurrence(sessionId: string, targetSeq: number, userMessageText: string): number {
+        let occurrence = 0
+        let beforeSeq: number | null = targetSeq + 1
+
+        while (beforeSeq !== null) {
+            const page = this.messageService.getMessagesPage(sessionId, {
+                limit: 200,
+                beforeSeq
+            })
+
+            for (const message of page.messages) {
+                const seq = message.seq
+                if (seq === null || seq > targetSeq) continue
+                if (this.extractUserMessageText(message) === userMessageText) {
+                    occurrence++
+                }
+            }
+
+            if (!page.page.hasMore) {
+                break
+            }
+            beforeSeq = page.page.nextBeforeSeq
+        }
+
+        return Math.max(occurrence, 1)
+    }
+
     handleRealtimeEvent(event: SyncEvent): void {
         if (event.type === 'session-updated' && event.sessionId) {
             this.sessionCache.refreshSession(event.sessionId)
@@ -300,21 +339,14 @@ export class SyncEngine {
         // Extract user message text from content for CLI-side JSONL matching.
         // We cannot use localId as a JSONL uuid because SDKToLogConverter
         // generates its own randomUUID() which differs from Claude Code's JSONL uuids.
-        let userMessageText: string | null = null
-        try {
-            const content = typeof targetMessage.content === 'string'
-                ? JSON.parse(targetMessage.content)
-                : targetMessage.content
-            if (content?.content?.text && typeof content.content.text === 'string') {
-                userMessageText = content.content.text
-            }
-        } catch { /* ignore parse errors */ }
+        const userMessageText = this.extractUserMessageText(targetMessage)
 
         if (!userMessageText) {
             throw new Error(`Cannot extract user message text from seq ${targetSeq}`)
         }
 
-        await this.rpcGateway.rewindSession(sessionId, { userMessageText, targetSeq })
+        const userMessageTextOccurrence = this.getUserMessageTextOccurrence(sessionId, targetSeq, userMessageText)
+        await this.rpcGateway.rewindSession(sessionId, { userMessageText, targetSeq, userMessageTextOccurrence })
 
         this.messageService.deleteMessagesFromSeq(sessionId, targetSeq)
 

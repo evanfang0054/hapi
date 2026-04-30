@@ -151,6 +151,21 @@ describe('rewind utilities', () => {
             expect(snapshot!.files).toEqual({ '/a.ts': 'target before', '/b.ts': 'next before' })
         })
 
+        it('finds hapi snapshots after the requested repeated user text occurrence', () => {
+            const jsonlPath = join(testDir, 'test.jsonl')
+            writeFileSync(jsonlPath, [
+                JSON.stringify({ type: 'user', uuid: 'aaa', parentUuid: null, message: { role: 'user', content: 'repeat' } }),
+            ].join('\n') + '\n')
+            appendHapiFileSnapshot(jsonlPath, { files: { '/first.ts': 'first before' } })
+            writeFileSync(jsonlPath, JSON.stringify({ type: 'user', uuid: 'bbb', parentUuid: 'aaa', message: { role: 'user', content: 'repeat' } }) + '\n', { flag: 'a' })
+            appendHapiFileSnapshot(jsonlPath, { files: { '/second.ts': 'second before' } })
+
+            const snapshot = findHapiFileSnapshotAfterUserText(jsonlPath, 'repeat', 2)
+
+            expect(snapshot).not.toBeNull()
+            expect(snapshot!.files).toEqual({ '/second.ts': 'second before' })
+        })
+
         it('can restore a hapi snapshot captured after the target message before truncation removes it', () => {
             const filePath = join(testDir, 'README.md')
             const jsonlPath = join(testDir, 'test.jsonl')
@@ -170,15 +185,12 @@ describe('rewind utilities', () => {
             expect(findFileSnapshot(jsonlPath)).toBeNull()
         })
 
-        it('finds hapi-file-snapshot entries when Claude file history is absent', () => {
+        it('ignores hapi-file-snapshot entries when Claude file history is absent', () => {
             const jsonlPath = join(testDir, 'test.jsonl')
             appendHapiFileSnapshot(jsonlPath, { files: { '/a.ts': 'before edit' } })
             appendHapiFileSnapshot(jsonlPath, { files: { '/b.ts': 'before second edit' }, deleted: ['/missing.ts'] })
 
-            const snapshot = findFileSnapshot(jsonlPath)
-            expect(snapshot).not.toBeNull()
-            expect(snapshot!.files['/b.ts']).toBe('before second edit')
-            expect(snapshot!.deleted).toEqual(['/missing.ts'])
+            expect(findFileSnapshot(jsonlPath)).toBeNull()
         })
 
         it('captures and restores hapi snapshots from disk', () => {
@@ -267,6 +279,22 @@ describe('rewind utilities', () => {
             ].join('\n') + '\n')
 
             expect(() => truncateJsonlByUserText(jsonlPath, 'nonexistent text')).toThrow('No user message found')
+        })
+
+        it('truncates at the requested repeated user text occurrence', () => {
+            const jsonlPath = join(testDir, 'test.jsonl')
+            writeFileSync(jsonlPath, [
+                JSON.stringify({ type: 'user', uuid: 'aaa', parentUuid: null, message: { role: 'user', content: 'repeat' } }),
+                JSON.stringify({ type: 'assistant', uuid: 'bbb', parentUuid: 'aaa', message: { role: 'assistant', content: 'first reply' } }),
+                JSON.stringify({ type: 'user', uuid: 'ccc', parentUuid: 'bbb', message: { role: 'user', content: 'repeat' } }),
+                JSON.stringify({ type: 'assistant', uuid: 'ddd', parentUuid: 'ccc', message: { role: 'assistant', content: 'second reply' } }),
+            ].join('\n') + '\n')
+
+            const lastKeptUuid = truncateJsonlByUserText(jsonlPath, 'repeat', 2)
+
+            expect(lastKeptUuid).toBe('bbb')
+            const chain = buildMessageChain(jsonlPath)
+            expect(chain.map((entry) => entry.uuid)).toEqual(['aaa', 'bbb'])
         })
     })
 })

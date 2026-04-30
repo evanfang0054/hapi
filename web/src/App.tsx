@@ -318,6 +318,7 @@ function AppInner() {
         enabled: Boolean(api && token),
         token: token ?? '',
         baseUrl,
+        api,
         subscription: eventSubscription,
         onConnect: handleSseConnect,
         onDisconnect: handleSseDisconnect,
