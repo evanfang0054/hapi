@@ -112,10 +112,18 @@ export const UpdateMachineBodySchema = z.object({
 
 export type UpdateMachineBody = z.infer<typeof UpdateMachineBodySchema>
 
+export const UpdateMessagesRewoundBodySchema = z.object({
+    t: z.literal('messages-rewound'),
+    sid: z.string(),
+    targetSeq: z.number()
+})
+
+export type UpdateMessagesRewoundBody = z.infer<typeof UpdateMessagesRewoundBodySchema>
+
 export const UpdateSchema = z.object({
     id: z.string(),
     seq: z.number(),
-    body: z.union([UpdateNewMessageBodySchema, UpdateSessionBodySchema, UpdateMachineBodySchema]),
+    body: z.union([UpdateNewMessageBodySchema, UpdateSessionBodySchema, UpdateMachineBodySchema, UpdateMessagesRewoundBodySchema]),
     createdAt: z.number()
 })
 

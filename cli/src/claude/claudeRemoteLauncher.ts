@@ -35,6 +35,7 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
     private permissionHandler: PermissionHandler | null = null;
     private handleSessionFound: ((sessionId: string) => void) | null = null;
     private isRewinding = false;
+    private rewindBarrier: Promise<void> | null = null;
 
     constructor(session: Session) {
         super(process.env.DEBUG ? session.logPath : undefined);
@@ -103,6 +104,14 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
                 }
                 this.isRewinding = true;
 
+                // Set up barrier so the main loop waits for rewind to complete
+                // before starting a new claudeRemote iteration.
+                // Without this, the main loop resumes before rewind finishes
+                // (microtask scheduling race), causing nextMessage to return null
+                // and claudeRemote to exit immediately.
+                let barrierResolve!: () => void;
+                this.rewindBarrier = new Promise<void>(r => { barrierResolve = r });
+
                 try {
                     // 1. Abort current query iteration
                     if (this.abortController && !this.abortController.signal.aborted) {
@@ -137,14 +146,12 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
                         logger.debug('[remote]: no file snapshot found, skipping file restore');
                     }
 
-                    // 6. The main loop will continue because we didn't set exitReason.
-                    // The next iteration of claudeRemote will use the existing sessionId
-                    // as the resume parameter since it's still set in session.sessionId.
                     logger.debug(`[remote]: rewind complete for seq=${targetSeq}`);
                 } catch (error) {
                     logger.debug('[remote]: rewind failed', error);
                 } finally {
                     this.isRewinding = false;
+                    barrierResolve();
                 }
             }
         });
@@ -332,6 +339,17 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
 
             let previousSessionId: string | null = null;
             while (!this.exitReason) {
+                // Wait for any in-progress rewind to complete before starting
+                // a new claudeRemote iteration. Without this barrier, the main
+                // loop resumes before the rewind handler finishes (microtask
+                // scheduling race), causing nextMessage to see isRewinding=true
+                // and return null, which makes claudeRemote exit immediately.
+                const barrier = this.rewindBarrier;
+                if (barrier) {
+                    await barrier;
+                    this.rewindBarrier = null;
+                }
+
                 logger.debug('[remote]: launch');
                 messageBuffer.addMessage('═'.repeat(40), 'status');
 
@@ -364,10 +382,6 @@ class ClaudeRemoteLauncher extends RemoteLauncherBase {
                             return permissionHandler.isAborted(toolCallId);
                         },
                         nextMessage: async () => {
-                            if (this.isRewinding) {
-                                return null;
-                            }
-
                             if (pending) {
                                 let p = pending;
                                 pending = null;

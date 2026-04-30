@@ -7,6 +7,7 @@
  * - No E2E encryption; data is stored as JSON in SQLite
  */
 
+import { randomUUID } from 'node:crypto'
 import type { CodexCollaborationMode, DecryptedMessage, PermissionMode, Session, SyncEvent } from '@hapi/protocol/types'
 import type { Server } from 'socket.io'
 import type { Store } from '../store'
@@ -50,6 +51,7 @@ export class SyncEngine {
     private readonly machineCache: MachineCache
     private readonly messageService: MessageService
     private readonly rpcGateway: RpcGateway
+    private readonly io: Server
     private inactivityTimer: NodeJS.Timeout | null = null
 
     constructor(
@@ -58,6 +60,7 @@ export class SyncEngine {
         rpcRegistry: RpcRegistry,
         sseManager: SSEManager
     ) {
+        this.io = io
         this.eventPublisher = new EventPublisher(sseManager, (event) => this.resolveNamespace(event))
         this.sessionCache = new SessionCache(store, this.eventPublisher)
         this.machineCache = new MachineCache(store, this.eventPublisher)
@@ -176,6 +179,19 @@ export class SyncEngine {
             if (!this.getSession(event.sessionId)) {
                 this.sessionCache.refreshSession(event.sessionId)
             }
+        }
+
+        if (event.type === 'messages-rewound') {
+            this.io.of('/cli').to(`session:${event.sessionId}`).emit('update', {
+                id: randomUUID(),
+                seq: Date.now(),
+                createdAt: Date.now(),
+                body: {
+                    t: 'messages-rewound',
+                    sid: event.sessionId,
+                    targetSeq: event.targetSeq
+                }
+            })
         }
 
         this.eventPublisher.emit(event)
@@ -304,6 +320,12 @@ export class SyncEngine {
 
         // Refresh session to reflect updated state after rewind
         this.sessionCache.refreshSession(sessionId)
+
+        // Ensure session stays active after rewind. The CLI aborts the Claude
+        // process during rewind which may cause the heartbeat to briefly stop,
+        // leading the session to be marked inactive. Reactivate it so the user
+        // can immediately send new messages.
+        this.sessionCache.reactivateSession(sessionId)
 
         this.handleRealtimeEvent({
             type: 'messages-rewound' as const,

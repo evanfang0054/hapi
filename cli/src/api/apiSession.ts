@@ -206,6 +206,14 @@ export class ApiSessionClient extends EventEmitter {
                     return
                 }
 
+                if (data.body.t === 'messages-rewound') {
+                    const rewindBaseSeq = Math.max(0, data.body.targetSeq - 1)
+                    if (this.lastSeenMessageSeq === null || this.lastSeenMessageSeq > rewindBaseSeq) {
+                        this.lastSeenMessageSeq = rewindBaseSeq
+                    }
+                    return
+                }
+
                 if (data.body.t === 'update-session') {
                     if (data.body.metadata && data.body.metadata.version > this.metadataVersion) {
                         const parsed = MetadataSchema.safeParse(data.body.metadata.value)

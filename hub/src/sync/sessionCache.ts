@@ -255,6 +255,19 @@ export class SessionCache {
         this.publisher.emit({ type: 'session-updated', sessionId: session.id, data: { active: false, thinking: false } })
     }
 
+    reactivateSession(sessionId: string): void {
+        const session = this.sessions.get(sessionId) ?? this.refreshSession(sessionId)
+        if (!session) return
+
+        const wasActive = session.active
+        session.active = true
+        session.activeAt = Date.now()
+
+        if (!wasActive) {
+            this.publisher.emit({ type: 'session-updated', sessionId: session.id, data: { active: true } })
+        }
+    }
+
     expireInactive(now: number = Date.now()): void {
         const sessionTimeoutMs = 30_000
 
