@@ -11,6 +11,7 @@ export type HappyChatContextValue = {
     onRefresh: () => void
     onRetryMessage?: (localId: string) => void
     onRewindMessage?: (targetSeq: number) => void
+    onRewindRequest?: (targetSeq: number) => void
 }
 
 const HappyChatContext = createContext<HappyChatContextValue | null>(null)

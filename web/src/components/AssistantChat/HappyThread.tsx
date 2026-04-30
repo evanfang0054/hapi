@@ -67,6 +67,7 @@ export function HappyThread(props: {
     onRefresh: () => void
     onRetryMessage?: (localId: string) => void
     onRewindMessage?: (targetSeq: number) => void
+    onRewindRequest?: (targetSeq: number) => void
     onFlushPending: () => void
     onAtBottomChange: (atBottom: boolean) => void
     isLoadingMessages: boolean
@@ -320,7 +321,8 @@ export function HappyThread(props: {
             disabled: props.disabled,
             onRefresh: props.onRefresh,
             onRetryMessage: props.onRetryMessage,
-            onRewindMessage: props.onRewindMessage
+            onRewindMessage: props.onRewindMessage,
+            onRewindRequest: props.onRewindRequest
         }}>
             <ThreadPrimitive.Root className="relative flex min-h-0 flex-1 flex-col">
                 <ThreadPrimitive.Viewport asChild autoScroll={autoScrollEnabled}>

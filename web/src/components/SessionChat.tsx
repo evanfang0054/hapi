@@ -27,6 +27,8 @@ import { SessionHeader } from '@/components/SessionHeader'
 import { TeamPanel } from '@/components/TeamPanel'
 import { usePlatform } from '@/hooks/usePlatform'
 import { useSessionActions } from '@/hooks/mutations/useSessionActions'
+import { RewindDialog } from '@/components/RewindDialog'
+import type { RewindMode } from '@/hooks/mutations/useSessionActions'
 import { useVoiceOptional } from '@/lib/voice-context'
 import { RealtimeVoiceSession, registerSessionStore, registerVoiceHooksStore, voiceHooks } from '@/realtime'
 import { isRemoteTerminalSupported } from '@/utils/terminalSupport'
@@ -294,13 +296,31 @@ export function SessionChat(props: {
     // Rewind handler
     const handleRewind = useCallback(async (targetSeq: number) => {
         try {
-            await rewindSession(targetSeq)
+            await rewindSession(targetSeq, 'session-and-files')
             haptic.notification('success')
         } catch (e) {
             haptic.notification('error')
             console.error('Failed to rewind session:', e)
         }
     }, [rewindSession, haptic])
+
+    const [rewindTargetSeq, setRewindTargetSeq] = useState<number | null>(null)
+
+    const handleRewindRequest = useCallback((targetSeq: number) => {
+        setRewindTargetSeq(targetSeq)
+    }, [])
+
+    const handleRewindWithMode = useCallback(async (mode: RewindMode) => {
+        if (rewindTargetSeq === null) return
+        try {
+            await rewindSession(rewindTargetSeq, mode)
+            haptic.notification('success')
+        } catch (e) {
+            haptic.notification('error')
+            console.error('Failed to rewind session:', e)
+            throw e
+        }
+    }, [rewindTargetSeq, rewindSession, haptic])
 
     const handleViewFiles = useCallback(() => {
         navigate({
@@ -412,6 +432,7 @@ export function SessionChat(props: {
                             onRefresh={props.onRefresh}
                             onRetryMessage={props.onRetryMessage}
                             onRewindMessage={!controlledByUser ? handleRewind : undefined}
+                            onRewindRequest={!controlledByUser ? handleRewindRequest : undefined}
                             onFlushPending={props.onFlushPending}
                             onAtBottomChange={props.onAtBottomChange}
                             isLoadingMessages={props.isLoadingMessages}
@@ -470,6 +491,13 @@ export function SessionChat(props: {
                     onStatusChange={voice.setStatus}
                 />
             )}
+
+            <RewindDialog
+                isOpen={rewindTargetSeq !== null}
+                onClose={() => setRewindTargetSeq(null)}
+                onConfirm={handleRewindWithMode}
+                isPending={false}
+            />
         </div>
     )
 }

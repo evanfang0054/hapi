@@ -54,7 +54,7 @@ export function HappyUserMessage() {
     if (role !== 'user') return null
     const canRetry = status === 'failed' && typeof localId === 'string' && Boolean(ctx.onRetryMessage)
     const onRetry = canRetry ? () => ctx.onRetryMessage!(localId) : undefined
-    const canRewind = typeof seq === 'number' && Boolean(ctx.onRewindMessage)
+    const canRewind = typeof seq === 'number' && Boolean(ctx.onRewindMessage || ctx.onRewindRequest)
 
     if (isCliOutput) {
         return (
@@ -107,8 +107,10 @@ export function HappyUserMessage() {
                         type="button"
                         className="flex items-center gap-1 rounded-full px-2 py-1 text-[10px] text-[var(--app-hint)] transition-colors hover:bg-[var(--app-subtle-bg)] hover:text-[var(--app-fg)]"
                         onClick={() => {
-                            if (window.confirm('Rewind to this message? Subsequent conversation and file changes will be undone.')) {
-                                ctx.onRewindMessage!(seq)
+                            if (ctx.onRewindRequest) {
+                                ctx.onRewindRequest(seq)
+                            } else if (ctx.onRewindMessage) {
+                                ctx.onRewindMessage(seq)
                             }
                         }}
                     >
