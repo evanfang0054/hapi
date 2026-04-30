@@ -325,7 +325,7 @@ export class SyncEngine {
         await this.rpcGateway.abortSession(sessionId)
     }
 
-    async rewindSession(sessionId: string, targetSeq: number): Promise<void> {
+    async rewindSession(sessionId: string, targetSeq: number, mode: string = 'session-and-files'): Promise<void> {
         const messages = this.messageService.getMessagesPage(sessionId, {
             limit: 1,
             beforeSeq: targetSeq + 1
@@ -346,24 +346,32 @@ export class SyncEngine {
         }
 
         const userMessageTextOccurrence = this.getUserMessageTextOccurrence(sessionId, targetSeq, userMessageText)
-        await this.rpcGateway.rewindSession(sessionId, { userMessageText, targetSeq, userMessageTextOccurrence })
+        await this.rpcGateway.rewindSession(sessionId, { userMessageText, targetSeq, userMessageTextOccurrence, mode })
 
-        this.messageService.deleteMessagesFromSeq(sessionId, targetSeq)
+        if (mode === 'session-and-files' || mode === 'session-only') {
+            this.messageService.deleteMessagesFromSeq(sessionId, targetSeq)
 
-        // Refresh session to reflect updated state after rewind
-        this.sessionCache.refreshSession(sessionId)
+            // Refresh session to reflect updated state after rewind
+            this.sessionCache.refreshSession(sessionId)
 
-        // Ensure session stays active after rewind. The CLI aborts the Claude
-        // process during rewind which may cause the heartbeat to briefly stop,
-        // leading the session to be marked inactive. Reactivate it so the user
-        // can immediately send new messages.
-        this.sessionCache.reactivateSession(sessionId)
+            // Ensure session stays active after rewind. The CLI aborts the Claude
+            // process during rewind which may cause the heartbeat to briefly stop,
+            // leading the session to be marked inactive. Reactivate it so the user
+            // can immediately send new messages.
+            this.sessionCache.reactivateSession(sessionId)
 
-        this.handleRealtimeEvent({
-            type: 'messages-rewound' as const,
-            sessionId,
-            targetSeq
-        })
+            this.handleRealtimeEvent({
+                type: 'messages-rewound' as const,
+                sessionId,
+                targetSeq
+            })
+        } else if (mode === 'files-only') {
+            this.handleRealtimeEvent({
+                type: 'files-rewound' as const,
+                sessionId,
+                targetSeq
+            })
+        }
     }
 
     async archiveSession(sessionId: string): Promise<void> {

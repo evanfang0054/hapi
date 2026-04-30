@@ -31,9 +31,68 @@ describe('SyncEngine take-over', () => {
             expect(calls).toEqual([[session.id, {
                 userMessageText: 'repeat',
                 targetSeq: 3,
-                userMessageTextOccurrence: 2
+                userMessageTextOccurrence: 2,
+                mode: 'session-and-files'
             }]])
             expect(store.messages.getMessages(session.id).map((message) => message.seq)).toEqual([1, 2, 3, 4])
+        } finally {
+            engine.stop()
+        }
+    })
+
+    it('handles session-only mode correctly', async () => {
+        const store = new Store(':memory:')
+        const events: unknown[] = []
+        const engine = new SyncEngine(
+            store,
+            { of: () => ({ to: () => ({ emit() {} }) }) } as never,
+            new RpcRegistry(),
+            { broadcast() {} } as never
+        )
+        ;(engine as any).handleRealtimeEvent = (event: unknown) => { events.push(event) }
+        ;(engine as any).sessionCache = {
+            refreshSession: () => {},
+            reactivateSession: () => {},
+        }
+
+        try {
+            const session = store.sessions.getOrCreateSession('session-1', {}, {}, 'default')
+            store.messages.addMessage(session.id, { role: 'user', content: { type: 'text', text: 'hello' } })
+            store.messages.addMessage(session.id, { role: 'assistant', content: { type: 'text', text: 'reply' } })
+
+            ;(engine as any).rpcGateway.rewindSession = async () => {}
+
+            await engine.rewindSession(session.id, 1, 'session-only')
+
+            expect(store.messages.getMessages(session.id).length).toBe(0)
+            expect(events).toEqual([{ type: 'messages-rewound', sessionId: session.id, targetSeq: 1 }])
+        } finally {
+            engine.stop()
+        }
+    })
+
+    it('handles files-only mode without deleting messages', async () => {
+        const store = new Store(':memory:')
+        const events: unknown[] = []
+        const engine = new SyncEngine(
+            store,
+            { of: () => ({ to: () => ({ emit() {} }) }) } as never,
+            new RpcRegistry(),
+            { broadcast() {} } as never
+        )
+        ;(engine as any).handleRealtimeEvent = (event: unknown) => { events.push(event) }
+
+        try {
+            const session = store.sessions.getOrCreateSession('session-1', {}, {}, 'default')
+            store.messages.addMessage(session.id, { role: 'user', content: { type: 'text', text: 'hello' } })
+            store.messages.addMessage(session.id, { role: 'assistant', content: { type: 'text', text: 'reply' } })
+
+            ;(engine as any).rpcGateway.rewindSession = async () => {}
+
+            await engine.rewindSession(session.id, 1, 'files-only')
+
+            expect(store.messages.getMessages(session.id).length).toBe(2)
+            expect(events).toEqual([{ type: 'files-rewound', sessionId: session.id, targetSeq: 1 }])
         } finally {
             engine.stop()
         }

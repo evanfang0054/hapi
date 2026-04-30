@@ -197,7 +197,8 @@ export function createSessionsRoutes(getSyncEngine: () => SyncEngine | null): Ho
     })
 
     const rewindSchema = z.object({
-        targetSeq: z.number().int().positive()
+        targetSeq: z.number().int().positive(),
+        mode: z.enum(['session-and-files', 'session-only', 'files-only']).default('session-and-files')
     })
 
     app.post('/sessions/:id/rewind', async (c) => {
@@ -214,7 +215,7 @@ export function createSessionsRoutes(getSyncEngine: () => SyncEngine | null): Ho
         const body = await c.req.json().catch(() => null)
         const parsed = rewindSchema.safeParse(body)
         if (!parsed.success) {
-            return c.json({ error: 'Invalid body: targetSeq is required' }, 400)
+            return c.json({ error: 'Invalid body: targetSeq and mode are required' }, 400)
         }
 
         // Only support rewind for remote sessions (controlledByUser is false/undefined in remote mode)
@@ -224,7 +225,7 @@ export function createSessionsRoutes(getSyncEngine: () => SyncEngine | null): Ho
         }
 
         try {
-            await engine.rewindSession(sessionResult.sessionId, parsed.data.targetSeq)
+            await engine.rewindSession(sessionResult.sessionId, parsed.data.targetSeq, parsed.data.mode)
             return c.json({ ok: true })
         } catch (error) {
             return c.json({
