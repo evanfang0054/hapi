@@ -25,7 +25,8 @@
         "test:web": "cd web && bun run test",
         "clean-session": "bun run hub/scripts/cleanup-sessions.ts",
         "release-all": "cd cli && bun run release-all",
-        "deploy-local": "./scripts/deploy-local.sh"
+        "deploy-local": "./scripts/deploy-local.sh",
+        "docker": "docker build -t hapi ."
     },
     "devDependencies": {
         "concurrently": "^9.2.1",

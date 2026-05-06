@@ -1,0 +1,26 @@
+services:
+  hapi:
+    build: .
+    container_name: hapi
+    ports:
+      - "3006:3006"
+    volumes:
+      - hapi-data:/data
+    environment:
+      # Required: set your own token for CLI authentication
+      - CLI_API_TOKEN=${CLI_API_TOKEN:-}
+      # Optional: bind to all interfaces (already set in Dockerfile)
+      - HAPI_LISTEN_HOST=0.0.0.0
+      - HAPI_LISTEN_PORT=3006
+      # Optional: public URL for Telegram Mini App and CORS
+      - HAPI_PUBLIC_URL=${HAPI_PUBLIC_URL:-}
+      # Optional: Telegram bot token for notifications
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      # Optional: Web Push contact info
+      - VAPID_SUBJECT=${VAPID_SUBJECT:-mailto:admin@hapi.run}
+      # Optional: CORS origins (comma-separated)
+      - CORS_ORIGINS=${CORS_ORIGINS:-}
+    restart: unless-stopped
+
+volumes:
+  hapi-data:
